@@ -2,7 +2,8 @@
 Xiropht Remote Node version 0.2.1.3b compatible with Windows with Netframework 4.6 and other OS who use Mono.
 
 
-<Windows>:
+[Windows]:
+
 For compile the remote node source, you have to use Visual Studio 2013 to 2017 and support Netframework 4.6.
 
 For execute the remote node with arguments on a .bat file instead to follow each time instructions: 
@@ -14,7 +15,8 @@ Xiropht-Remote2.exe your_wallet_address Y
 
 Xiropht-Remote2.exe your_wallet_address N
 
-<Linux>:
+[Linux]:
+
 For compile the remote node source, you have to use Mono-Complete , you can also directly execute the .exe program from a released binary with that command line once you have install mono-complete package: 
 
 -> mono Xiropht-Remote2.exe
