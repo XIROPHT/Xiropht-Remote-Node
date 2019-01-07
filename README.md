@@ -6,7 +6,8 @@ Xiropht Remote Node version 0.2.1.3b compatible with Windows with Netframework 4
 
 For compile the remote node source, you have to use Visual Studio 2013 to 2017 and support Netframework 4.6.
 
-The Xiropht-Connector-All is required, you find the release and source here: https://github.com/XIROPHT/Xiropht-Connector-All
+The Xiropht-Connector-All is required, you find the release and source here:
+https://github.com/XIROPHT/Xiropht-Connector-All
 
 For execute the remote node with arguments on a .bat file instead to follow each time instructions: 
 
