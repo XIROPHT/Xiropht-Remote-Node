@@ -22,7 +22,10 @@ Xiropht-Remote2.exe your_wallet_address N
 [Linux]:
 
 For compile the remote node source, you have to use Mono-Complete.
-The Xiropht-Connector-All is required, you find the release and source here: https://github.com/XIROPHT/Xiropht-Connector-All
+The Xiropht-Connector-All is required, you find the release and source here: 
+
+https://github.com/XIROPHT/Xiropht-Connector-All
+
 You can also directly execute the .exe program from a released binary with that command line once you have install mono-complete package: 
 
 -> mono Xiropht-Remote2.exe
