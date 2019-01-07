@@ -35,26 +35,33 @@ For compile the executable windows into a linux binary you should use that comma
 -> mkbundle Xiropht-Remote2.exe -o Xiropht-Remote2 Xiropht-Connector-All.dll --deps
 
 Then you will get Xiropht-Remote2 binary file if you follow this command line.
+
 -> For execute that binary you have just to use for example: ./Xiropht-Remote2
 
 For execute your binary compiled with arguments:
 
 - For start a public remote node:
+
 -> ./Xiropht-Remote2 your_wallet_address Y
 
 - For start a private remote node:
+
 -> ./Xiropht-Remote2 your_wallet_address N
 
 For execute the remote node without to compile it with arguments:
 
 - For start a public remote node:
+
 -> mono Xiropht-Remote2.exe your_wallet_address Y
 
 - For start a private remote node:
+
 -> mono Xiropht-Remote2.exe your_wallet_address N
 
 [Advantage to compile the remote node into a binary]
 
 1. You don't have to keep everytime every library like Xiropht-Connector-All.dll because the previously command for make your binary file, compile every dependencies together into a unique file.
+
 2. Normaly the same OS version don't have to install mono-complete package for run it.
+
 3. A better performance.
