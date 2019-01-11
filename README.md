@@ -32,7 +32,7 @@ You can also directly execute the .exe program from a released binary with that 
 
 For compile the executable windows into a linux binary you should use that command: 
 
--> mkbundle Xiropht-Remote2.exe -o Xiropht-Remote2 Xiropht-Connector-All.dll --deps
+-> mkbundle Xiropht-Remote2.exe -o Xiropht-Remote2 Xiropht-Connector-All.dll --deps -z --static
 
 Then you will get Xiropht-Remote2 binary file if you follow this command line.
 
