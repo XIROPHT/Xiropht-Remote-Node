@@ -745,7 +745,12 @@ namespace Xiropht_Remote2.RemoteNode
                         {
                             if (totalBlockMined < ClassRemoteNodeSync.ListOfBlock.Count)
                                 ClassRemoteNodeSync.ListOfBlock.Clear();
-                            ClassRemoteNodeSync.CurrentBlockLeft = "" + (10000000 - totalBlockMined);
+
+                            var totalBlockLeft =
+                                Math.Round(
+                                    (Decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ","), System.Globalization.NumberStyles.Any,
+                                         Program.GlobalCultureInfo) / 10) - totalBlockMined, 0);
+                            ClassRemoteNodeSync.CurrentBlockLeft = "" + totalBlockLeft;
                             ClassLog.Log("Total Block Left: " + ClassRemoteNodeSync.CurrentBlockLeft, 2, 2);
                         }
 

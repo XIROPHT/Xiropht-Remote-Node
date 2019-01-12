@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using Xiropht_Connector_All.Utils;
 using Xiropht_Remote2.Api;
@@ -39,14 +40,17 @@ namespace Xiropht_Remote2.Command
                         Console.WriteLine("Total Block(s) mined in the Blockchain: " + ClassRemoteNodeSync.TotalBlockMined);
                         Console.WriteLine("Total Block(s) left to mining: " + ClassRemoteNodeSync.CurrentBlockLeft);
                         Console.WriteLine("Total pending transaction in the network: " + ClassRemoteNodeSync.TotalPendingTransaction);
-                        Console.WriteLine("Total Fee in the network: " + ClassRemoteNodeSync.CurrentTotalFee);
+                        Console.WriteLine("Total Fee in the network: " + ClassRemoteNodeSync.CurrentTotalFee, Program.GlobalCultureInfo);
                         Console.WriteLine("Current Mining Difficulty: " + ClassRemoteNodeSync.CurrentDifficulty);
                         if (ClassRemoteNodeSync.CurrentHashrate != null)
                         {
-                            Console.WriteLine("Current Mining Hashrate: " + ClassUtils.GetTranslateHashrate(ClassRemoteNodeSync.CurrentHashrate.Replace(".", ","), 2).Replace(",", "."));
+                            Console.WriteLine("Current Mining Hashrate: " + ClassUtils.GetTranslateHashrate(ClassRemoteNodeSync.CurrentHashrate.Replace(".", ","), 2).Replace(",", "."), Program.GlobalCultureInfo);
                         }
-                        Console.WriteLine("Total Coin Max Supply: " + ClassUtils.GetTranslateBigNumber(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ",")).Replace(",", "."));
-                        Console.WriteLine("Total Coin Circulating: " + ClassRemoteNodeSync.CoinCirculating);
+
+                        //var tmp = Decimal.Parse(ClassUtils.GetTranslateBigNumber(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ",")), NumberStyles.Any, Program.GlobalCultureInfo);
+                        Console.WriteLine("Total Coin Max Supply: " + ClassRemoteNodeSync.CoinMaxSupply, Program.GlobalCultureInfo);
+
+                        Console.WriteLine("Total Coin Circulating: " + ClassRemoteNodeSync.CoinCirculating, Program.GlobalCultureInfo);
 
                         if (ClassRemoteNodeSync.WantToBePublicNode)
                         {

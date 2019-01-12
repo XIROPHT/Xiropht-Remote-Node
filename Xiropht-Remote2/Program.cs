@@ -102,7 +102,7 @@ namespace Xiropht_Remote2
                 ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
                 Thread.Sleep(2000);
             }
-            Console.WriteLine("Remote node Xiropht - 0.2.1.3b");
+            Console.WriteLine("Remote node Xiropht - 0.2.1.4b");
             if (string.IsNullOrEmpty(RemoteNodeWalletAddress))
             {
                 Console.WriteLine(
