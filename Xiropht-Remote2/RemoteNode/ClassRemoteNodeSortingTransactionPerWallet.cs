@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Xiropht_Remote2.Data;
-using Xiropht_Remote2.Log;
+using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.Log;
 
-namespace Xiropht_Remote2.RemoteNode
+namespace Xiropht_RemoteNode.RemoteNode
 {
     public class ClassRemoteNodeSortingTransactionPerWallet
     {

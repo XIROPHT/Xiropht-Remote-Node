@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Xiropht_Connector_All.Remote;
 using Xiropht_Connector_All.Seed;
 using Xiropht_Connector_All.Setting;
-using Xiropht_Remote2.Data;
-using Xiropht_Remote2.Log;
+using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.Log;
 
-namespace Xiropht_Remote2.RemoteNode
+namespace Xiropht_RemoteNode.RemoteNode
 {
     public class ClassRemoteNodeObject
     {

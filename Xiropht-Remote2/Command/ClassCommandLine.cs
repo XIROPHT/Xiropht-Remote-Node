@@ -2,11 +2,11 @@
 using System.Globalization;
 using System.Threading;
 using Xiropht_Connector_All.Utils;
-using Xiropht_Remote2.Api;
-using Xiropht_Remote2.Data;
-using Xiropht_Remote2.RemoteNode;
+using Xiropht_RemoteNode.Api;
+using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.RemoteNode;
 
-namespace Xiropht_Remote2.Command
+namespace Xiropht_RemoteNode.Command
 {
     public class ClassCommandLine
     {

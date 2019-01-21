@@ -2,9 +2,9 @@
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-using Xiropht_Remote2.Data;
+using Xiropht_RemoteNode.Data;
 
-namespace Xiropht_Remote2.Utils
+namespace Xiropht_RemoteNode.Utils
 {
     public class Utils
     {

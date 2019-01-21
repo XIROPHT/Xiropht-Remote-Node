@@ -9,10 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.Remote;
 using Xiropht_Connector_All.Setting;
-using Xiropht_Remote2.Data;
-using Xiropht_Remote2.Log;
+using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.Log;
 
-namespace Xiropht_Remote2.Api
+namespace Xiropht_RemoteNode.Api
 {
     public class ClassApiBanObject
     {

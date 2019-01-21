@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
-using Xiropht_Remote2.Data;
-using Xiropht_Remote2.Log;
+using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.Log;
 
-namespace Xiropht_Remote2.RemoteNode
+namespace Xiropht_RemoteNode.RemoteNode
 {
     public class ClassRemoteNodeKey
     {

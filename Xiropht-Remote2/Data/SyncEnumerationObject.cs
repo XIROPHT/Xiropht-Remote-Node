@@ -1,4 +1,4 @@
-﻿namespace Xiropht_Remote2.Data
+﻿namespace Xiropht_RemoteNode.Data
 {
     public class SyncEnumerationObject
     {

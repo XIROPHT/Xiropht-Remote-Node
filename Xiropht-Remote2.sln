@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xiropht-Remote2", "Xiropht-Remote2\Xiropht-Remote2.csproj", "{1A74F703-7575-4661-B90B-5686CC7C548E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xiropht-RemoteNode", "Xiropht-Remote2\Xiropht-RemoteNode.csproj", "{1A74F703-7575-4661-B90B-5686CC7C548E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

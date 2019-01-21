@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xiropht_Remote2.Log
+namespace Xiropht_RemoteNode.Log
 {
     public class ClassLog
     {
