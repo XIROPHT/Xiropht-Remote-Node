@@ -1,5 +1,5 @@
 # Xiropht-Remote-Node
-Xiropht Remote Node version 0.2.1.4b compatible with Windows with Netframework 4.6 and other OS who use Mono.
+Xiropht Remote Node version 0.2.1.5b compatible with Windows with Netframework 4.6 and other OS who use Mono.
 
 
 **In production, we suggest to compile in Release Mode for disable log files.**
@@ -15,11 +15,11 @@ https://github.com/XIROPHT/Xiropht-Connector-All
 For execute the remote node with arguments on a .bat file instead to follow each time instructions: 
 
 - For start a public remote node:
-Xiropht-Remote2.exe your_wallet_address Y 
+Xiropht-RemoteNode.exe your_wallet_address Y 
 
 - For start a private remote node:
 
-Xiropht-Remote2.exe your_wallet_address N
+Xiropht-RemoteNode.exe your_wallet_address N
 
 [Linux]:
 
@@ -30,35 +30,35 @@ https://github.com/XIROPHT/Xiropht-Connector-All
 
 You can also directly execute the .exe program from a released binary with that command line once you have install mono-complete package: 
 
--> mono Xiropht-Remote2.exe
+-> mono Xiropht-RemoteNode.exe
 
 For compile the executable windows into a linux binary you should use that command: 
 
--> mkbundle Xiropht-Remote2.exe -o Xiropht-Remote2 Xiropht-Connector-All.dll --deps -z --static
+-> mkbundle Xiropht-RemoteNode.exe -o Xiropht-RemoteNode Xiropht-Connector-All.dll --deps -z --static
 
 Then you will get Xiropht-Remote2 binary file if you follow this command line.
 
--> For execute that binary you have just to use for example: ./Xiropht-Remote2
+-> For execute that binary you have just to use for example: ./Xiropht-RemoteNode
 
 For execute your binary compiled with arguments:
 
 - For start a public remote node:
 
--> ./Xiropht-Remote2 your_wallet_address Y
+-> ./Xiropht-RemoteNode your_wallet_address Y
 
 - For start a private remote node:
 
--> ./Xiropht-Remote2 your_wallet_address N
+-> ./Xiropht-RemoteNode your_wallet_address N
 
 For execute the remote node without to compile it with arguments:
 
 - For start a public remote node:
 
--> mono Xiropht-Remote2.exe your_wallet_address Y
+-> mono Xiropht-RemoteNode.exe your_wallet_address Y
 
 - For start a private remote node:
 
--> mono Xiropht-Remote2.exe your_wallet_address N
+-> mono Xiropht-RemoteNode.exe your_wallet_address N
 
 [Advantage to compile the remote node into a binary]
 
