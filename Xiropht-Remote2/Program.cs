@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.Setting;
@@ -55,6 +57,7 @@ namespace Xiropht_RemoteNode
 
         public static void Main(string[] args)
         {
+            Thread.CurrentThread.Name = Path.GetFileName(Environment.GetCommandLineArgs()[0]);
             var isMakeHisChoose = false;
             if (args.Length > 0)
             {
@@ -102,7 +105,7 @@ namespace Xiropht_RemoteNode
                 ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
                 Thread.Sleep(2000);
             }
-            Console.WriteLine("Remote node Xiropht - 0.2.1.4b");
+            Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version+"b");
             if (string.IsNullOrEmpty(RemoteNodeWalletAddress))
             {
                 Console.WriteLine(
