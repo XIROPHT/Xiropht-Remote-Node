@@ -61,7 +61,11 @@ namespace Xiropht_RemoteNode.Data
                             }
                         }
                     }
-                    ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                    if (ClassRemoteNodeKey.LastTransactionIdRead != ListOfTransaction.Count)
+                    {
+                        ClassRemoteNodeKey.LastTransactionIdRead = ListOfTransaction.Count;
+                        ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                    }
                     if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
                     {
                         ClassRemoteNodeSave.SaveTransaction(false);

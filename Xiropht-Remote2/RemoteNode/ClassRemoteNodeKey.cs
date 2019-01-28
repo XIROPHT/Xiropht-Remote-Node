@@ -85,8 +85,18 @@ namespace Xiropht_RemoteNode.RemoteNode
             _threadUpdateHashBlockList = new Thread(delegate ()
             {
 
-                ClassRemoteNodeSync.HashBlockList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
+                try
+                {
+                    if (LastBlockIdRead != ClassRemoteNodeSync.ListOfBlock.Count)
+                    {
+                        LastBlockIdRead = ClassRemoteNodeSync.ListOfBlock.Count;
+                        ClassRemoteNodeSync.HashBlockList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
+                    }
+                }
+                catch
+                {
 
+                }
                 ClassLog.Log("Hash key from block list generated: " + ClassRemoteNodeSync.HashBlockList + " ", 1, 1);
             });
             _threadUpdateHashBlockList.Start();
