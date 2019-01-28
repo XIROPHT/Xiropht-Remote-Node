@@ -382,7 +382,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                             break;
                                                         }
 
-                                                        Thread.Sleep(100);
+                                                        Thread.Sleep(150);
                                                     }
                                                     else
                                                     {
@@ -433,7 +433,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                 break;
                                                             }
 
-                                                            Thread.Sleep(50);
+                                                            Thread.Sleep(100);
                                                         }
                                                     }
                                                 }
