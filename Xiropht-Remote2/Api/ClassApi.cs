@@ -370,10 +370,11 @@ namespace Xiropht_RemoteNode.Api
 
                         try
                         {
-                            using (var bufferPacket = new ApiObjectConnectionPacket())
-                            {
-                                int received = await _clientApiStreamReader.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length);
+                            var bufferPacket = new ApiObjectConnectionPacket();
+                            int received = 0;
 
+                            while ((received = await _clientApiStreamReader.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length).ConfigureAwait(false)) > 0)
+                            {
                                 if (received > 0)
                                 {
                                     bufferPacket.packet = new string(bufferPacket.buffer, 0, received);
@@ -382,72 +383,78 @@ namespace Xiropht_RemoteNode.Api
                                     _totalPacketPerSecond++;
                                     _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-                                    if (bufferPacket.packet.Contains("*"))
+                                    ThreadPool.QueueUserWorkItem(async delegate
                                     {
-                                        var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
-                                        if (splitPacket.Length > 1)
+                                        if (bufferPacket.packet.Contains("*"))
                                         {
-                                            foreach (var packetMerged in splitPacket)
+                                            var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
+                                            if (splitPacket.Length > 1)
                                             {
-                                                if (_incomingConnectionStatus)
+                                                foreach (var packetMerged in splitPacket)
                                                 {
-                                                    if (packetMerged != null)
+                                                    if (_incomingConnectionStatus)
                                                     {
-                                                        if (!string.IsNullOrEmpty(packetMerged))
+                                                        if (packetMerged != null)
                                                         {
-                                                            if (packetMerged.Length > 1)
+                                                            if (!string.IsNullOrEmpty(packetMerged))
                                                             {
-
-                                                                var packetReplace = packetMerged.Replace("*", "");
-                                                                ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
-
-                                                                await Task.Run(async delegate
+                                                                if (packetMerged.Length > 1)
                                                                 {
-                                                                    await Task.Delay(splitPacket.Length * 10);
-                                                                    if (_incomingConnectionStatus)
+
+                                                                    var packetReplace = packetMerged.Replace("*", "");
+                                                                    ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
+
+                                                                    await Task.Run(async delegate
                                                                     {
-                                                                        if (!await HandleIncomingPacketAsync(packetReplace))
+                                                                        if (_incomingConnectionStatus)
                                                                         {
-                                                                            ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                                            _incomingConnectionStatus = false;
+                                                                            if (!await HandleIncomingPacketAsync(packetReplace).ConfigureAwait(false))
+                                                                            {
+                                                                                ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
+                                                                                _incomingConnectionStatus = false;
+                                                                            }
                                                                         }
-                                                                    }
-                                                                }).ConfigureAwait(false);
+                                                                    }).ConfigureAwait(false);
+                                                                }
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
+                                            else
+                                            {
+                                                if (_incomingConnectionStatus)
+                                                {
+                                                    var packetReplace = bufferPacket.packet.Replace("*", "");
+                                                    ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
+
+                                                    await Task.Run(async delegate
+                                                    {
+                                                        if (!await HandleIncomingPacketAsync(packetReplace).ConfigureAwait(false))
+                                                        {
+                                                            ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
+                                                            _incomingConnectionStatus = false;
+                                                        }
+                                                    }).ConfigureAwait(false);
+                                                }
+                                            }
                                         }
                                         else
                                         {
+
+                                            ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
+
                                             if (_incomingConnectionStatus)
                                             {
-                                                var packetReplace = bufferPacket.packet.Replace("*", "");
-                                                ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
-                                                if (!await HandleIncomingPacketAsync(packetReplace))
+
+                                                if (!await HandleIncomingPacketAsync(bufferPacket.packet).ConfigureAwait(false))
                                                 {
                                                     ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
                                                     _incomingConnectionStatus = false;
                                                 }
                                             }
                                         }
-                                    }
-                                    else
-                                    {
-
-                                        ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
-
-                                        if (_incomingConnectionStatus)
-                                        {
-
-                                            if (!await HandleIncomingPacketAsync(bufferPacket.packet))
-                                            {
-                                                ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                _incomingConnectionStatus = false;
-                                            }
-                                        }
-                                    }
+                                    });
 
                                 }
                             }
