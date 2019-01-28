@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using Xiropht_RemoteNode.RemoteNode;
 
 namespace Xiropht_RemoteNode.Data
 {
@@ -35,5 +37,40 @@ namespace Xiropht_RemoteNode.Data
         public static bool ImPublicNode; // This information show if your node is listed on the list of public nodes or not.
         public static string MyOwnIP; // This information save your public ip for check if your are in the list of nodes.
         public static List<string> ListOfPublicNodes = new List<string>();
+        public static List<string> ListCollectionTransaction = new List<string>();
+
+        public static void CollectionTransaction()
+        {
+            var threadCollectionTransaction = new Thread(delegate ()
+            {
+                while (!Program.Closed)
+                {
+                    for (int i = 0; i < ListCollectionTransaction.Count; i++)
+                    {
+                        if (i < ListCollectionTransaction.Count)
+                        {
+                            if (!ListOfTransaction.ContainsValue(ListCollectionTransaction[i]))
+                            {
+                                if (!ListOfTransaction.ContainsKey(ListOfTransaction.Count))
+                                {
+                                    ListOfTransaction.Add(ListOfTransaction.Count, ListCollectionTransaction[i]);
+                                }
+                            }
+                        }
+                    }
+                    ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                    if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
+                    {
+                        ClassRemoteNodeSave.SaveTransaction(false);
+                    }
+                    Thread.Sleep(100);
+                    if (ListOfTransaction.Count.ToString() == TotalTransaction)
+                    {
+                        ListCollectionTransaction.Clear();
+                    }
+                }
+            });
+            threadCollectionTransaction.Start();
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
         public static void StartUpdateTrustedKey()
         {
-            _threadUpdateTrustedKey = new Thread(delegate()
+            _threadUpdateTrustedKey = new Thread(delegate ()
             {
                 while (!Program.Closed)
                 {
@@ -33,7 +33,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 ClassRemoteNodeSync.TotalBlockMined + ClassRemoteNodeSync.CurrentTotalFee +
                                 ClassRemoteNodeSync.TotalPendingTransaction + ClassRemoteNodeSync
                                     .ListOfBlock[ClassRemoteNodeSync.ListOfBlock.Count - 1]
-                                    .Split(new[] {"#"}, StringSplitOptions.None)[6]);
+                                    .Split(new[] { "#" }, StringSplitOptions.None)[6]);
                         else
                             ClassRemoteNodeSync.TrustedKey = Utils.Utils.ConvertStringtoMD5(
                                 ClassRemoteNodeSync.CoinCirculating + ClassRemoteNodeSync.CoinMaxSupply +
@@ -62,23 +62,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                 GC.SuppressFinalize(_threadUpdateHashTransactionList);
             }
 
-            _threadUpdateHashTransactionList = new Thread(delegate()
+            _threadUpdateHashTransactionList = new Thread(delegate ()
             {
-                if (DataTransactionRead == null || string.IsNullOrWhiteSpace(DataTransactionRead))
-                    DataTransactionRead = string.Empty;
-                if (ClassRemoteNodeSync.ListOfTransaction.Count > 0 &&
-                    LastTransactionIdRead != ClassRemoteNodeSync.ListOfTransaction.Count)
-                {
-                    /*for (var i = LastTransactionIdRead; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++)
-                        if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
-                            DataTransactionRead += ClassRemoteNodeSync.ListOfTransaction[i];
-                    LastTransactionIdRead = ClassRemoteNodeSync.ListOfTransaction.Count;
-                    ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(DataTransactionRead);*/
 
-
-                    ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
-                }
-
+                ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
 
                 ClassLog.Log(
                     "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
@@ -95,22 +82,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                 GC.SuppressFinalize(_threadUpdateHashBlockList);
             }
 
-            _threadUpdateHashBlockList = new Thread(delegate()
+            _threadUpdateHashBlockList = new Thread(delegate ()
             {
-                if (DataBlockRead == null || string.IsNullOrWhiteSpace(DataBlockRead)) DataBlockRead = string.Empty;
-                if (ClassRemoteNodeSync.ListOfBlock.Count > 0 &&
-                    LastBlockIdRead != ClassRemoteNodeSync.ListOfBlock.Count)
-                {
-                    /*for (var i = LastBlockIdRead; i < ClassRemoteNodeSync.ListOfBlock.Count; i++)
-                        if (i < ClassRemoteNodeSync.ListOfBlock.Count)
-                            DataBlockRead += ClassRemoteNodeSync.ListOfBlock[i];
 
-                    LastBlockIdRead = ClassRemoteNodeSync.ListOfBlock.Count;
-                    ClassRemoteNodeSync.HashBlockList = Utils.Utils.ConvertStringtoMD5(DataBlockRead);*/
-
-                    ClassRemoteNodeSync.HashBlockList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
-
-                }
+                ClassRemoteNodeSync.HashBlockList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
 
                 ClassLog.Log("Hash key from block list generated: " + ClassRemoteNodeSync.HashBlockList + " ", 1, 1);
             });

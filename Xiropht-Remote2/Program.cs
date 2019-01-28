@@ -283,6 +283,7 @@ namespace Xiropht_RemoteNode
                     ClassRemoteNodeKey.StartUpdateHashTransactionList();
                     ClassRemoteNodeKey.StartUpdateHashBlockList();
                     ClassRemoteNodeKey.StartUpdateTrustedKey();
+                    ClassRemoteNodeSync.CollectionTransaction();
 
                     Console.WriteLine("Enable API..");
                     ClassApi.StartApiRemoteNode();
