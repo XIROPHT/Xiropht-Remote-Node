@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -37,7 +38,7 @@ namespace Xiropht_RemoteNode
         public static ClassRemoteNodeObject
             RemoteNodeObjectToBePublic; // Sync the node for get the public node list information and ask to be public if not.
 
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectTransaction; // Sync the node for get each transaction data information.
 
         public static ClassRemoteNodeObject
@@ -54,6 +55,7 @@ namespace Xiropht_RemoteNode
         public static string Certificate;
         public static CultureInfo GlobalCultureInfo = new CultureInfo("fr-FR");
         public static bool Closed;
+        public static int TotalConnectionTransactionSync;
 
         public static void Main(string[] args)
         {
@@ -138,6 +140,16 @@ namespace Xiropht_RemoteNode
                     }
                 }
             }
+            Console.WriteLine("How many connections do you want to open for sync transaction? (By default 1): ");
+            string choose = Console.ReadLine();
+            if (int.TryParse(choose, out var numberOfConnection))
+            {
+                TotalConnectionTransactionSync = numberOfConnection;
+            }
+            else
+            {
+                TotalConnectionTransactionSync = 1;
+            }
 
             Certificate = ClassUtils.GenerateCertificate();
             Console.WriteLine("Initialize Remote Node Sync Objects..");
@@ -150,7 +162,11 @@ namespace Xiropht_RemoteNode
                 new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentDifficulty);
             RemoteNodeObjectCurrentRate = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentRate);
             RemoteNodeObjectToBePublic = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectToBePublic);
-            RemoteNodeObjectTransaction = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTransaction);
+            RemoteNodeObjectTransaction = new List<ClassRemoteNodeObject>();
+            for (int i = 0; i < TotalConnectionTransactionSync; i++)
+            {
+                RemoteNodeObjectTransaction.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTransaction, i));
+            }
             RemoteNodeObjectTotalFee = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalFee);
             RemoteNodeObjectBlock = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlock);
             RemoteNodeObjectTotalTransaction = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalTransaction);
@@ -190,31 +206,41 @@ namespace Xiropht_RemoteNode
                                             if (await RemoteNodeObjectCurrentRate.StartConnectionAsync())
                                             {
                                                 await Task.Delay(100);
-                                                if (await RemoteNodeObjectTransaction.StartConnectionAsync())
+                                                for (int i = 0; i < RemoteNodeObjectTransaction.Count; i++)
                                                 {
-                                                    await Task.Delay(100);
-                                                    if (await RemoteNodeObjectTotalFee.StartConnectionAsync())
+                                                    if (i < RemoteNodeObjectTransaction.Count)
                                                     {
-                                                        await Task.Delay(100);
-                                                        if (await RemoteNodeObjectBlock.StartConnectionAsync())
+                                                        if (await RemoteNodeObjectTransaction[i].StartConnectionAsync())
                                                         {
                                                             await Task.Delay(100);
-                                                            if (await RemoteNodeObjectTotalTransaction.StartConnectionAsync())
+                                                        }
+
+                                                    }
+                                                }
+
+                                                await Task.Delay(100);
+                                                if (await RemoteNodeObjectTotalFee.StartConnectionAsync())
+                                                {
+                                                    await Task.Delay(100);
+                                                    if (await RemoteNodeObjectBlock.StartConnectionAsync())
+                                                    {
+                                                        await Task.Delay(100);
+                                                        if (await RemoteNodeObjectTotalTransaction.StartConnectionAsync())
+                                                        {
+                                                            await Task.Delay(100);
+                                                            if (ClassRemoteNodeSync.WantToBePublicNode)
                                                             {
-                                                                await Task.Delay(100);
-                                                                if (ClassRemoteNodeSync.WantToBePublicNode)
-                                                                {
-                                                                    if (await RemoteNodeObjectToBePublic.StartConnectionAsync()
-                                                                    ) initializeConnection = true;
-                                                                }
-                                                                else
-                                                                {
-                                                                    initializeConnection = true;
-                                                                }
+                                                                if (await RemoteNodeObjectToBePublic.StartConnectionAsync()
+                                                                ) initializeConnection = true;
+                                                            }
+                                                            else
+                                                            {
+                                                                initializeConnection = true;
                                                             }
                                                         }
                                                     }
                                                 }
+
                                             }
                                         }
                                     }
@@ -240,7 +266,13 @@ namespace Xiropht_RemoteNode
                             RemoteNodeObjectTotalFee.StopConnection();
                             RemoteNodeObjectTotalPendingTransaction.StopConnection();
                             RemoteNodeObjectTotalTransaction.StopConnection();
-                            RemoteNodeObjectTransaction.StopConnection();
+                            for (int i = 0; i < RemoteNodeObjectTransaction.Count; i++)
+                            {
+                                if (i < RemoteNodeObjectTransaction.Count)
+                                {
+                                    RemoteNodeObjectTransaction[i].StopConnection();
+                                }
+                            }
                             await Task.Delay(10000);
                         }
                     }

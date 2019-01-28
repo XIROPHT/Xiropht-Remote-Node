@@ -13,13 +13,16 @@ namespace Xiropht_RemoteNode.RemoteNode
 {
     public class ClassRemoteNodeObject
     {
+        private int IdConnection;
+
         /// <summary>
         ///     Constructor, initialize remote node object of sync.
         /// </summary>
         /// <param name="type"></param>
-        public ClassRemoteNodeObject(string type)
+        public ClassRemoteNodeObject(string type, int idConnection = 0)
         {
             RemoteNodeObjectType = type;
+            IdConnection = idConnection;
         }
 
         /// <summary>
@@ -330,112 +333,64 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 if (int.TryParse(ClassRemoteNodeSync.TotalTransaction,
                                                     out var askTransaction))
                                                 {
-                                                    askTransaction -= ClassRemoteNodeSync.ListOfTransaction.Count;
                                                     int totalTransactionSaved =
                                                         ClassRemoteNodeSync.ListOfTransaction.Count;
 
-                                                    /*if (askTransaction >= ClassConnectorSetting.MaxSyncByRange)
+                                                    
+                                                    for (int i = 0; i < askTransaction; i++)
                                                     {
-
-                                                        bool cancelTransaction = false;
-
-                                                        int transactionIdMinAsked = totalTransactionSaved;
-                                                        int transactionIdMaxAsked = transactionIdMinAsked + ClassConnectorSetting.MaxSyncByRange;
-                                                        RemoteNodeObjectInReceiveTransaction = true;
-                                                        if (!await RemoteNodeObjectTcpClient
-                                                            .SendPacketToSeedNodeAsync(
-                                                                ClassRemoteNodeCommand
-                                                                    .ClassRemoteNodeSendToSeedEnumeration
-                                                                    .RemoteAskTransactionPerId + "|" +
-                                                                transactionIdMinAsked + "|" + transactionIdMaxAsked, Program.Certificate, false, true).ConfigureAwait(false))
+                                                        if (int.TryParse(ClassRemoteNodeSync.TotalTransaction, out var askTransactionTmp))
                                                         {
-                                                            RemoteNodeObjectConnectionStatus = false;
-                                                            break;
-                                                        }
-
-                                                        while (RemoteNodeObjectInReceiveTransaction)
-                                                        {
-                                                            var lastPacketReceivedTimeStamp =
-                                                                Program.RemoteNodeObjectTotalTransaction
-                                                                    .RemoteNodeObjectLastPacketReceived;
-                                                            var currentTimestamp =
-                                                                DateTimeOffset.Now.ToUnixTimeSeconds();
-                                                            if (lastPacketReceivedTimeStamp + 10 < currentTimestamp)
+                                                            if (ClassRemoteNodeSync.ListOfTransaction.Count < askTransactionTmp)
                                                             {
-                                                                ClassLog.Log(
-                                                                    "Sync object transaction, take too much time to receive a transaction, cancel and retry now.",
-                                                                    2, 3);
-                                                                cancelTransaction = true;
-                                                                break;
+                                                                bool cancelTransaction = false;
+
+                                                                int transactionIdAsked = i + totalTransactionSaved;
+                                                                RemoteNodeObjectInReceiveTransaction = true;
+                                                                if (!await RemoteNodeObjectTcpClient
+                                                                    .SendPacketToSeedNodeAsync(
+                                                                        ClassRemoteNodeCommand
+                                                                            .ClassRemoteNodeSendToSeedEnumeration
+                                                                            .RemoteAskTransactionPerId + "|" +
+                                                                        transactionIdAsked, Program.Certificate, false, true).ConfigureAwait(false))
+                                                                {
+                                                                    RemoteNodeObjectConnectionStatus = false;
+                                                                    break;
+                                                                }
+
+                                                                while (RemoteNodeObjectInReceiveTransaction)
+                                                                {
+                                                                    var lastPacketReceivedTimeStamp =
+                                                                        Program.RemoteNodeObjectTotalTransaction
+                                                                            .RemoteNodeObjectLastPacketReceived;
+                                                                    var currentTimestamp =
+                                                                        DateTimeOffset.Now.ToUnixTimeSeconds();
+                                                                    if (lastPacketReceivedTimeStamp + 10 < currentTimestamp)
+                                                                    {
+                                                                        ClassLog.Log(
+                                                                            "Sync object transaction, take too much time to receive a transaction, cancel and retry now.",
+                                                                            2, 3);
+                                                                        cancelTransaction = true;
+                                                                        break;
+                                                                    }
+
+                                                                    if (!RemoteNodeObjectConnectionStatus)
+                                                                    {
+                                                                        break;
+                                                                    }
+
+                                                                    Thread.Sleep(100);
+                                                                }
+
+                                                                if (cancelTransaction)
+                                                                {
+                                                                    break;
+                                                                }
+
+                                                                Thread.Sleep(100);
                                                             }
-
-                                                            if (!RemoteNodeObjectConnectionStatus)
-                                                            {
-                                                                break;
-                                                            }
-
-                                                            Thread.Sleep(10);
                                                         }
-
-                                                        if (cancelTransaction)
-                                                        {
-                                                            break;
-                                                        }
-
-                                                        Thread.Sleep(10);
                                                     }
-                                                    else
-                                                    {*/
-
-                                                        for (int i = 0; i < askTransaction; i++)
-                                                        {
-                                                            bool cancelTransaction = false;
-
-                                                            int transactionIdAsked = totalTransactionSaved + i;
-                                                            RemoteNodeObjectInReceiveTransaction = true;
-                                                            if (!await RemoteNodeObjectTcpClient
-                                                                .SendPacketToSeedNodeAsync(
-                                                                    ClassRemoteNodeCommand
-                                                                        .ClassRemoteNodeSendToSeedEnumeration
-                                                                        .RemoteAskTransactionPerId + "|" +
-                                                                    transactionIdAsked, Program.Certificate, false, true).ConfigureAwait(false))
-                                                            {
-                                                                RemoteNodeObjectConnectionStatus = false;
-                                                                break;
-                                                            }
-
-                                                            while (RemoteNodeObjectInReceiveTransaction)
-                                                            {
-                                                                var lastPacketReceivedTimeStamp =
-                                                                    Program.RemoteNodeObjectTotalTransaction
-                                                                        .RemoteNodeObjectLastPacketReceived;
-                                                                var currentTimestamp =
-                                                                    DateTimeOffset.Now.ToUnixTimeSeconds();
-                                                                if (lastPacketReceivedTimeStamp + 10 < currentTimestamp)
-                                                                {
-                                                                    ClassLog.Log(
-                                                                        "Sync object transaction, take too much time to receive a transaction, cancel and retry now.",
-                                                                        2, 3);
-                                                                    cancelTransaction = true;
-                                                                    break;
-                                                                }
-
-                                                                if (!RemoteNodeObjectConnectionStatus)
-                                                                {
-                                                                    break;
-                                                                }
-
-                                                                Thread.Sleep(50);
-                                                            }
-
-                                                            if (cancelTransaction)
-                                                            {
-                                                                break;
-                                                            }
-
-                                                            Thread.Sleep(100);
-                                                        }
-                                                    //}
                                                 }
                                             }
                                         }
@@ -853,7 +808,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             {
                                                 if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
                                                 {
-                                                    ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
+                                                    ClassLog.Log("Connection ID: " + IdConnection + " - Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
 
                                                     RemoteNodeObjectConnectionStatus = false;
                                                     RemoteNodeObjectLoginStatus = false;
@@ -864,7 +819,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
                                                     if (ClassRemoteNodeSync.ListOfTransaction.Count.ToString() == ClassRemoteNodeSync.TotalTransaction)
                                                     {
-                                                        ClassLog.Log("Transaction synced, " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
+                                                        ClassLog.Log("Connection ID: "+IdConnection+" - Transaction synced, " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
                                                         ClassRemoteNodeKey.StartUpdateHashTransactionList();
                                                         if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
                                                         {
@@ -873,7 +828,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     }
                                                     else
                                                     {
-                                                        ClassLog.Log("Transaction synced at: " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+                                                        ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced at: " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
                                                     }
                                                     RemoteNodeObjectInReceiveTransaction = false;
                                                 }
@@ -896,7 +851,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 {
                                     if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
                                     {
-                                        ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
+                                        ClassLog.Log("Connection ID: " + IdConnection + " - Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
 
                                         RemoteNodeObjectConnectionStatus = false;
                                         RemoteNodeObjectLoginStatus = false;
@@ -908,7 +863,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
                                         if (ClassRemoteNodeSync.ListOfTransaction.Count.ToString() == ClassRemoteNodeSync.TotalTransaction)
                                         {
-                                            ClassLog.Log("Transaction synced, " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
+                                            ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced, " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
                                             ClassRemoteNodeKey.StartUpdateHashTransactionList();
                                             if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
                                             {
@@ -917,7 +872,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         }
                                         else
                                         {
-                                            ClassLog.Log("Transaction synced at: " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+                                            ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced at: " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
 
                                         }
                                         RemoteNodeObjectInReceiveTransaction = false;

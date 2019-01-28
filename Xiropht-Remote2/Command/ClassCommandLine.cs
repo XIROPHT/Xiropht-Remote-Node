@@ -161,7 +161,13 @@ namespace Xiropht_RemoteNode.Command
                         Program.RemoteNodeObjectTotalFee.StopConnection();
                         Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
                         Program.RemoteNodeObjectTotalTransaction.StopConnection();
-                        Program.RemoteNodeObjectTransaction.StopConnection();
+                        for (int i = 0; i < Program.RemoteNodeObjectTransaction.Count; i++)
+                        {
+                            if (i < Program.RemoteNodeObjectTransaction.Count)
+                            {
+                                Program.RemoteNodeObjectTransaction[i].StopConnection();
+                            }
+                        }
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop api..");
                         ClassApi.StopApi();
