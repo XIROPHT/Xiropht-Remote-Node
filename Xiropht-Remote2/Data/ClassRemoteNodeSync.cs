@@ -53,7 +53,10 @@ namespace Xiropht_RemoteNode.Data
                             {
                                 if (!ListOfTransaction.ContainsKey(ListOfTransaction.Count))
                                 {
-                                    ListOfTransaction.Add(ListOfTransaction.Count, ListCollectionTransaction[i]);
+                                    if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(ListCollectionTransaction[i]))
+                                    {
+                                        ListOfTransaction.Add(ListOfTransaction.Count, ListCollectionTransaction[i]);
+                                    }
                                 }
                             }
                         }

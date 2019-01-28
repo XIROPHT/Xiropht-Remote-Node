@@ -805,7 +805,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
                                         {
 
-                                            if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
+                                            if (!ClassRemoteNodeSortingTransactionPerWallet.CheckTransactionSyntax(transactionSubString))
                                             {
                                                 ClassLog.Log("Connection ID: " + IdConnection + " - Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
 
@@ -844,7 +844,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             var transactionSubString = decompressTransaction.Substring(0, decompressTransaction.Length - 1);
                             if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
                             {
-                                if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
+                                if (!ClassRemoteNodeSortingTransactionPerWallet.CheckTransactionSyntax(transactionSubString))
                                 {
                                     ClassLog.Log("Connection ID: " + IdConnection + " - Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
 
