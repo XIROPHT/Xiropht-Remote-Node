@@ -115,9 +115,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                             RemoteNodeObjectConnectionStatus = false;
                             break;
                         }
-                        var packetReceived = await RemoteNodeObjectTcpClient
-                            .ReceivePacketFromSeedNodeAsync(Program.Certificate, false, true);
+                        var packetReceived = await RemoteNodeObjectTcpClient.ReceivePacketFromSeedNodeAsync(Program.Certificate, false, true);
 
+   
                         if (packetReceived == ClassSeedNodeStatus.SeedError)
                         {
                             RemoteNodeObjectConnectionStatus = false;
@@ -334,7 +334,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     int totalTransactionSaved =
                                                         ClassRemoteNodeSync.ListOfTransaction.Count;
 
-                                                    if (askTransaction >= ClassConnectorSetting.MaxSyncByRange)
+                                                    /*if (askTransaction >= ClassConnectorSetting.MaxSyncByRange)
                                                     {
 
                                                         bool cancelTransaction = false;
@@ -360,7 +360,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                     .RemoteNodeObjectLastPacketReceived;
                                                             var currentTimestamp =
                                                                 DateTimeOffset.Now.ToUnixTimeSeconds();
-                                                            if (lastPacketReceivedTimeStamp + 5 < currentTimestamp)
+                                                            if (lastPacketReceivedTimeStamp + 10 < currentTimestamp)
                                                             {
                                                                 ClassLog.Log(
                                                                     "Sync object transaction, take too much time to receive a transaction, cancel and retry now.",
@@ -374,7 +374,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                 break;
                                                             }
 
-                                                            Thread.Sleep(100);
+                                                            Thread.Sleep(10);
                                                         }
 
                                                         if (cancelTransaction)
@@ -382,10 +382,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                             break;
                                                         }
 
-                                                        Thread.Sleep(150);
+                                                        Thread.Sleep(10);
                                                     }
                                                     else
-                                                    {
+                                                    {*/
 
                                                         for (int i = 0; i < askTransaction; i++)
                                                         {
@@ -435,7 +435,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                                             Thread.Sleep(100);
                                                         }
-                                                    }
+                                                    //}
                                                 }
                                             }
                                         }
