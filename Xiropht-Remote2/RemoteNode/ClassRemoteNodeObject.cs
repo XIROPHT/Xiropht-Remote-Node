@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Xiropht_Connector_All.Remote;
 using Xiropht_Connector_All.Seed;
 using Xiropht_Connector_All.Setting;
+using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
 
@@ -333,7 +334,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     int totalTransactionSaved =
                                                         ClassRemoteNodeSync.ListOfTransaction.Count;
 
-                                                    if (askTransaction >= ClassConnectorSetting.MaxSyncByRange & !Program.RemoteNodeObjectBlock.RemoteNodeObjectInSyncBlock)
+                                                    if (askTransaction >= ClassConnectorSetting.MaxSyncByRange)
                                                     {
 
                                                         bool cancelTransaction = false;
@@ -359,7 +360,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                     .RemoteNodeObjectLastPacketReceived;
                                                             var currentTimestamp =
                                                                 DateTimeOffset.Now.ToUnixTimeSeconds();
-                                                            if (lastPacketReceivedTimeStamp + 10 < currentTimestamp)
+                                                            if (lastPacketReceivedTimeStamp + 5 < currentTimestamp)
                                                             {
                                                                 ClassLog.Log(
                                                                     "Sync object transaction, take too much time to receive a transaction, cancel and retry now.",
@@ -835,7 +836,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendTransactionPerId: // Receive a transaction information.
                         RemoteNodeObjectLastPacketReceived =
                             DateTimeOffset.Now.ToUnixTimeSeconds();
-                        var splitTransaction = packetSplit[1].Split(new[] { "END" }, StringSplitOptions.None);
+                        var decompressTransaction = ClassUtils.DecompressWallet(packetSplit[1]);
+                        var splitTransaction = decompressTransaction.Split(new[] { "END" }, StringSplitOptions.None);
                         if (splitTransaction.Length > 1)
                         {
                             for (var i = 0; i < splitTransaction.Length; i++)
@@ -845,38 +847,41 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     if (splitTransaction[i].Length > 0)
                                     {
                                         var transactionSubString = splitTransaction[i].Substring(0, splitTransaction[i].Length - 1);
-                                        if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
+                                        if (transactionSubString.Length > 1)
                                         {
-                                            if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
+                                            if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
                                             {
-                                                ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
-
-                                                RemoteNodeObjectConnectionStatus = false;
-                                                RemoteNodeObjectLoginStatus = false;
-                                                RemoteNodeObjectTcpClient?.DisconnectToSeed();
-                                            }
-                                            else
-                                            {
-                                                ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
-                                                if (ClassRemoteNodeSync.ListOfTransaction.Count.ToString() == ClassRemoteNodeSync.TotalTransaction)
+                                                if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
                                                 {
-                                                    ClassLog.Log("Transaction synced, " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
-                                                    ClassRemoteNodeKey.StartUpdateHashTransactionList();
-                                                    if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
-                                                    {
-                                                        ClassRemoteNodeSave.SaveTransaction(true);
-                                                    }
+                                                    ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
+
+                                                    RemoteNodeObjectConnectionStatus = false;
+                                                    RemoteNodeObjectLoginStatus = false;
+                                                    RemoteNodeObjectTcpClient?.DisconnectToSeed();
                                                 }
                                                 else
                                                 {
-                                                    ClassLog.Log("Transaction synced at: " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+                                                    ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
+                                                    if (ClassRemoteNodeSync.ListOfTransaction.Count.ToString() == ClassRemoteNodeSync.TotalTransaction)
+                                                    {
+                                                        ClassLog.Log("Transaction synced, " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
+                                                        ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                                                        if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
+                                                        {
+                                                            ClassRemoteNodeSave.SaveTransaction(true);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        ClassLog.Log("Transaction synced at: " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+                                                    }
+                                                    RemoteNodeObjectInReceiveTransaction = false;
                                                 }
+                                            }
+                                            else
+                                            {
                                                 RemoteNodeObjectInReceiveTransaction = false;
                                             }
-                                        }
-                                        else
-                                        {
-                                            RemoteNodeObjectInReceiveTransaction = false;
                                         }
                                     }
                                 }
@@ -884,36 +889,39 @@ namespace Xiropht_RemoteNode.RemoteNode
                         }
                         else
                         {
-                            var transactionSubString = packetSplit[1].Substring(0, packetSplit[1].Length - 1);
+                            var transactionSubString = decompressTransaction.Substring(0, decompressTransaction.Length - 1);
                             if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
                             {
-                                if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
+                                if (transactionSubString.Length > 1)
                                 {
-                                    ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
-
-                                    RemoteNodeObjectConnectionStatus = false;
-                                    RemoteNodeObjectLoginStatus = false;
-                                    RemoteNodeObjectTcpClient?.DisconnectToSeed();
-
-                                }
-                                else
-                                {
-                                    ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
-                                    if (ClassRemoteNodeSync.ListOfTransaction.Count.ToString() == ClassRemoteNodeSync.TotalTransaction)
+                                    if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
                                     {
-                                        ClassLog.Log("Transaction synced, " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
-                                        ClassRemoteNodeKey.StartUpdateHashTransactionList();
-                                        if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
-                                        {
-                                            ClassRemoteNodeSave.SaveTransaction(true);
-                                        }
+                                        ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
+
+                                        RemoteNodeObjectConnectionStatus = false;
+                                        RemoteNodeObjectLoginStatus = false;
+                                        RemoteNodeObjectTcpClient?.DisconnectToSeed();
+
                                     }
                                     else
                                     {
-                                        ClassLog.Log("Transaction synced at: " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+                                        ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
+                                        if (ClassRemoteNodeSync.ListOfTransaction.Count.ToString() == ClassRemoteNodeSync.TotalTransaction)
+                                        {
+                                            ClassLog.Log("Transaction synced, " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
+                                            ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                                            if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
+                                            {
+                                                ClassRemoteNodeSave.SaveTransaction(true);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ClassLog.Log("Transaction synced at: " + ClassRemoteNodeSync.ListOfTransaction.Count + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
 
+                                        }
+                                        RemoteNodeObjectInReceiveTransaction = false;
                                     }
-                                    RemoteNodeObjectInReceiveTransaction = false;
                                 }
                             }
                             else
