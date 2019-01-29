@@ -152,20 +152,19 @@ namespace Xiropht_RemoteNode.Command
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop each connection of the remote node.");
                         Program.RemoteNodeObjectBlock.StopConnection();
-                        Program.RemoteNodeObjectCoinCirculating.StopConnection();
-                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection();
-                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection();
-                        Program.RemoteNodeObjectCurrentRate.StopConnection();
-                        Program.RemoteNodeObjectToBePublic.StopConnection();
-                        Program.RemoteNodeObjectTotalBlockMined.StopConnection();
-                        Program.RemoteNodeObjectTotalFee.StopConnection();
-                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
-                        Program.RemoteNodeObjectTotalTransaction.StopConnection();
                         for (int i = 0; i < Program.RemoteNodeObjectTransaction.Count; i++)
                         {
                             if (i < Program.RemoteNodeObjectTransaction.Count)
                             {
                                 Program.RemoteNodeObjectTransaction[i].StopConnection();
+                                Program.RemoteNodeObjectCoinCirculating[i].StopConnection();
+                                Program.RemoteNodeObjectCoinMaxSupply[i].StopConnection();
+                                Program.RemoteNodeObjectCurrentDifficulty[i].StopConnection();
+                                Program.RemoteNodeObjectCurrentRate[i].StopConnection();
+                                Program.RemoteNodeObjectTotalBlockMined[i].StopConnection();
+                                Program.RemoteNodeObjectTotalFee[i].StopConnection();
+                                Program.RemoteNodeObjectTotalPendingTransaction[i].StopConnection();
+                                Program.RemoteNodeObjectTotalTransaction[i].StopConnection();
                             }
                         }
                         Thread.Sleep(1000);

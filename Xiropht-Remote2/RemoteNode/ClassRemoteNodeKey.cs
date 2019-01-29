@@ -55,22 +55,14 @@ namespace Xiropht_RemoteNode.RemoteNode
 
         public static void StartUpdateHashTransactionList()
         {
-            if (_threadUpdateHashTransactionList != null &&
-                (_threadUpdateHashTransactionList.IsAlive || _threadUpdateHashTransactionList != null))
-            {
-                _threadUpdateHashTransactionList.Abort();
-                GC.SuppressFinalize(_threadUpdateHashTransactionList);
-            }
+            
 
-            _threadUpdateHashTransactionList = new Thread(delegate ()
-            {
-
+           
                 ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
 
                 ClassLog.Log(
                     "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
-            });
-            _threadUpdateHashTransactionList.Start();
+           
         }
 
         public static void StartUpdateHashBlockList()

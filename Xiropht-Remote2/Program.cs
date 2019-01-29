@@ -17,22 +17,22 @@ namespace Xiropht_RemoteNode
 {
     public class Program
     {
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectCoinMaxSupply; // Sync the node for get coin max supply information.
 
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectCoinCirculating; // Sync the node for get coin circulating information.
 
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectTotalBlockMined; // Sync the node for get total block mined information.
 
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectTotalPendingTransaction; // Sync the node for get total pending transaction information.
 
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectCurrentDifficulty; // Sync the node for get current mining difficulty information.
 
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectCurrentRate; // Sync the node for get current mining hashrate information.
 
         public static ClassRemoteNodeObject
@@ -41,12 +41,12 @@ namespace Xiropht_RemoteNode
         public static List<ClassRemoteNodeObject>
             RemoteNodeObjectTransaction; // Sync the node for get each transaction data information.
 
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectTotalFee; // Sync the node for get current amount of fee information.
 
         public static ClassRemoteNodeObject RemoteNodeObjectBlock; // Sync the node for get each block data information.
 
-        public static ClassRemoteNodeObject
+        public static List<ClassRemoteNodeObject>
             RemoteNodeObjectTotalTransaction; // Sync the node for get total number of transaction information.
 
         public static string RemoteNodeWalletAddress; // Wallet Address of the owner.
@@ -55,7 +55,7 @@ namespace Xiropht_RemoteNode
         public static string Certificate;
         public static CultureInfo GlobalCultureInfo = new CultureInfo("fr-FR");
         public static bool Closed;
-        public static int TotalConnectionTransactionSync;
+        public static int TotalConnectionSync;
 
         public static void Main(string[] args)
         {
@@ -140,36 +140,43 @@ namespace Xiropht_RemoteNode
                     }
                 }
             }
-            Console.WriteLine("How many connections do you want to open for sync transaction? (By default 1): ");
+            Console.WriteLine("How many connections do you want to open for sync? (By default 1): ");
             string choose = Console.ReadLine();
             if (int.TryParse(choose, out var numberOfConnection))
             {
-                TotalConnectionTransactionSync = numberOfConnection;
+                TotalConnectionSync = numberOfConnection;
             }
             else
             {
-                TotalConnectionTransactionSync = 1;
+                TotalConnectionSync = 1;
             }
 
             Certificate = ClassUtils.GenerateCertificate();
             Console.WriteLine("Initialize Remote Node Sync Objects..");
-            RemoteNodeObjectCoinMaxSupply = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinSupply);
-            RemoteNodeObjectCoinCirculating = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinCirculating);
-            RemoteNodeObjectTotalBlockMined = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlockMined);
-            RemoteNodeObjectTotalPendingTransaction =
-                new ClassRemoteNodeObject(SyncEnumerationObject.ObjectPendingTransaction);
-            RemoteNodeObjectCurrentDifficulty =
-                new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentDifficulty);
-            RemoteNodeObjectCurrentRate = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentRate);
+
             RemoteNodeObjectToBePublic = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectToBePublic);
+            RemoteNodeObjectCoinMaxSupply = new List<ClassRemoteNodeObject>();
+            RemoteNodeObjectCoinCirculating = new List<ClassRemoteNodeObject>();
+            RemoteNodeObjectTotalBlockMined = new List<ClassRemoteNodeObject>();
+            RemoteNodeObjectTotalPendingTransaction = new List<ClassRemoteNodeObject>();
+            RemoteNodeObjectCurrentDifficulty = new List<ClassRemoteNodeObject>();
+            RemoteNodeObjectCurrentRate = new List<ClassRemoteNodeObject>();
+            RemoteNodeObjectTotalFee = new List<ClassRemoteNodeObject>();
+            RemoteNodeObjectTotalTransaction = new List<ClassRemoteNodeObject>();
             RemoteNodeObjectTransaction = new List<ClassRemoteNodeObject>();
-            for (int i = 0; i < TotalConnectionTransactionSync; i++)
+            for (int i = 0; i < TotalConnectionSync; i++)
             {
+                RemoteNodeObjectCoinMaxSupply.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinSupply, i));
+                RemoteNodeObjectCoinCirculating.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinCirculating, i));
+                RemoteNodeObjectTotalBlockMined.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlockMined, i));
+                RemoteNodeObjectTotalPendingTransaction.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectPendingTransaction, i));
+                RemoteNodeObjectCurrentDifficulty.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentDifficulty, i));
+                RemoteNodeObjectCurrentRate.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentRate, i));
+                RemoteNodeObjectTotalFee.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalFee, i));
+                RemoteNodeObjectTotalTransaction.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalTransaction, i));
                 RemoteNodeObjectTransaction.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTransaction, i));
             }
-            RemoteNodeObjectTotalFee = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalFee);
             RemoteNodeObjectBlock = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlock);
-            RemoteNodeObjectTotalTransaction = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalTransaction);
             ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
 
             Task.Run(async delegate ()
@@ -188,94 +195,97 @@ namespace Xiropht_RemoteNode
                     {
                         Console.WriteLine("Start Remote Node Sync Objects Connection..");
 
-                        if (await RemoteNodeObjectCoinMaxSupply.StartConnectionAsync())
+                        for (int i = 0; i < RemoteNodeObjectCoinMaxSupply.Count; i++)
                         {
-                            await Task.Delay(100);
-                            if (await RemoteNodeObjectCoinCirculating.StartConnectionAsync())
+
+                            if (await RemoteNodeObjectCoinMaxSupply[i].StartConnectionAsync())
                             {
-                                await Task.Delay(100);
-                                if (await RemoteNodeObjectTotalBlockMined.StartConnectionAsync())
+                                await Task.Delay(10);
+                            }
+                            if (await RemoteNodeObjectCoinCirculating[i].StartConnectionAsync())
+                            {
+                                await Task.Delay(10);
+                            }
+                            if (await RemoteNodeObjectTotalBlockMined[i].StartConnectionAsync())
+                            {
+                                await Task.Delay(10);
+                            }
+                            if (await RemoteNodeObjectTotalPendingTransaction[i].StartConnectionAsync())
+                            {
+                                await Task.Delay(10);
+                            }
+                            if (await RemoteNodeObjectCurrentDifficulty[i].StartConnectionAsync())
+                            {
+                                await Task.Delay(10);
+                            }
+                            if (await RemoteNodeObjectCurrentRate[i].StartConnectionAsync())
+                            {
+                                await Task.Delay(10);
+                            }
+                            if (await RemoteNodeObjectTransaction[i].StartConnectionAsync())
+                            {
+                                await Task.Delay(10);
+                            }
+                            if (await RemoteNodeObjectTotalFee[i].StartConnectionAsync())
+                            {
+                                await Task.Delay(10);
+                            }
+                            if (await RemoteNodeObjectTotalTransaction[i].StartConnectionAsync())
+                            {
+                                await Task.Delay(10);
+                            }
+
+                        }
+
+                        await Task.Delay(100);
+                        if (await RemoteNodeObjectBlock.StartConnectionAsync())
+                        {
+                            if (ClassRemoteNodeSync.WantToBePublicNode)
+                            {
+                                if (await RemoteNodeObjectToBePublic.StartConnectionAsync())
                                 {
-                                    await Task.Delay(100);
-                                    if (await RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync())
-                                    {
-                                        await Task.Delay(100);
-                                        if (await RemoteNodeObjectCurrentDifficulty.StartConnectionAsync())
-                                        {
-                                            await Task.Delay(100);
-                                            if (await RemoteNodeObjectCurrentRate.StartConnectionAsync())
-                                            {
-                                                await Task.Delay(100);
-                                                for (int i = 0; i < RemoteNodeObjectTransaction.Count; i++)
-                                                {
-                                                    if (i < RemoteNodeObjectTransaction.Count)
-                                                    {
-                                                        if (await RemoteNodeObjectTransaction[i].StartConnectionAsync())
-                                                        {
-                                                            await Task.Delay(100);
-                                                        }
-
-                                                    }
-                                                }
-
-                                                await Task.Delay(100);
-                                                if (await RemoteNodeObjectTotalFee.StartConnectionAsync())
-                                                {
-                                                    await Task.Delay(100);
-                                                    if (await RemoteNodeObjectBlock.StartConnectionAsync())
-                                                    {
-                                                        await Task.Delay(100);
-                                                        if (await RemoteNodeObjectTotalTransaction.StartConnectionAsync())
-                                                        {
-                                                            await Task.Delay(100);
-                                                            if (ClassRemoteNodeSync.WantToBePublicNode)
-                                                            {
-                                                                if (await RemoteNodeObjectToBePublic.StartConnectionAsync()
-                                                                ) initializeConnection = true;
-                                                            }
-                                                            else
-                                                            {
-                                                                initializeConnection = true;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-
-                                            }
-                                        }
-                                    }
+                                    initializeConnection = true;
                                 }
                             }
+                            else
+                            {
+                                initializeConnection = true;
+                            }
+
                         }
 
-                        if (initializeConnection)
-                        {
-                            Console.WriteLine("Remote node objects successfully connected.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Remote node objects can't connect to the network, retry in 10 seconds..");
-                            ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
-                            RemoteNodeObjectBlock.StopConnection();
-                            RemoteNodeObjectCoinCirculating.StopConnection();
-                            RemoteNodeObjectCoinMaxSupply.StopConnection();
-                            RemoteNodeObjectCurrentDifficulty.StopConnection();
-                            RemoteNodeObjectCurrentRate.StopConnection();
-                            RemoteNodeObjectToBePublic.StopConnection();
-                            RemoteNodeObjectTotalBlockMined.StopConnection();
-                            RemoteNodeObjectTotalFee.StopConnection();
-                            RemoteNodeObjectTotalPendingTransaction.StopConnection();
-                            RemoteNodeObjectTotalTransaction.StopConnection();
-                            for (int i = 0; i < RemoteNodeObjectTransaction.Count; i++)
-                            {
-                                if (i < RemoteNodeObjectTransaction.Count)
-                                {
-                                    RemoteNodeObjectTransaction[i].StopConnection();
-                                }
-                            }
-                            await Task.Delay(10000);
-                        }
                     }
+
+                    if (initializeConnection)
+                    {
+                        Console.WriteLine("Remote node objects successfully connected.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Remote node objects can't connect to the network, retry in 10 seconds..");
+                        ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
+                        RemoteNodeObjectBlock.StopConnection();
+                        RemoteNodeObjectToBePublic.StopConnection();
+                        for (int i = 0; i < RemoteNodeObjectTransaction.Count; i++)
+                        {
+                            if (i < RemoteNodeObjectTransaction.Count)
+                            {
+                                RemoteNodeObjectTransaction[i].StopConnection();
+                                RemoteNodeObjectCoinCirculating[i].StopConnection();
+                                RemoteNodeObjectCoinMaxSupply[i].StopConnection();
+                                RemoteNodeObjectCurrentDifficulty[i].StopConnection();
+                                RemoteNodeObjectCurrentRate[i].StopConnection();
+                                RemoteNodeObjectTotalBlockMined[i].StopConnection();
+                                RemoteNodeObjectTotalFee[i].StopConnection();
+                                RemoteNodeObjectTotalPendingTransaction[i].StopConnection();
+                                RemoteNodeObjectTotalTransaction[i].StopConnection();
+
+                            }
+                        }
+                        await Task.Delay(10000);
+                    }
+                
+
 
                     Console.WriteLine("Enable Check Remote Node Objects connection..");
                     ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();

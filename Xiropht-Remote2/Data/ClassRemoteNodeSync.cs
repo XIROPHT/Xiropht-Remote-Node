@@ -45,36 +45,56 @@ namespace Xiropht_RemoteNode.Data
             {
                 while (!Program.Closed)
                 {
-                    for (int i = 0; i < ListCollectionTransaction.Count; i++)
+                    try
                     {
-                        if (i < ListCollectionTransaction.Count)
+                        if (ListCollectionTransaction != null)
                         {
-                            if (!ListOfTransaction.ContainsValue(ListCollectionTransaction[i]))
+                            var tmpList = new List<string>(ListCollectionTransaction);
+
+
+                            for (int i = 0; i < tmpList.Count; i++)
                             {
-                                if (!ListOfTransaction.ContainsKey(ListOfTransaction.Count))
+                                if (i < tmpList.Count)
                                 {
-                                    if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(ListCollectionTransaction[i]))
+                                    if (!ListOfTransaction.ContainsValue(tmpList[i]))
                                     {
-                                        ListOfTransaction.Add(ListOfTransaction.Count, ListCollectionTransaction[i]);
+                                        if (!ListOfTransaction.ContainsKey(ListOfTransaction.Count))
+                                        {
+                                            if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(tmpList[i]))
+                                            {
+                                                ListOfTransaction.Add(ListOfTransaction.Count, tmpList[i]);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            tmpList.Clear();
+
+
+                            if (ListOfTransaction.Count.ToString() == TotalTransaction)
+                            {
+                                ListCollectionTransaction.Clear();
+                                if (ClassRemoteNodeKey.LastTransactionIdRead != ListOfTransaction.Count)
+                                {
+                                    ClassRemoteNodeKey.LastTransactionIdRead = ListOfTransaction.Count;
+                                    ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                                }
+                                if (ClassRemoteNodeSave.TotalTransactionSaved != ListOfTransaction.Count)
+                                {
+                                    if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
+                                    {
+                                        ClassRemoteNodeSave.SaveTransaction(false);
                                     }
                                 }
                             }
                         }
                     }
-                    if (ClassRemoteNodeKey.LastTransactionIdRead != ListOfTransaction.Count)
+                    catch
                     {
-                        ClassRemoteNodeKey.LastTransactionIdRead = ListOfTransaction.Count;
-                        ClassRemoteNodeKey.StartUpdateHashTransactionList();
-                    }
-                    if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
-                    {
-                        ClassRemoteNodeSave.SaveTransaction(false);
+
                     }
                     Thread.Sleep(100);
-                    if (ListOfTransaction.Count.ToString() == TotalTransaction)
-                    {
-                        ListCollectionTransaction.Clear();
-                    }
                 }
             });
             threadCollectionTransaction.Start();

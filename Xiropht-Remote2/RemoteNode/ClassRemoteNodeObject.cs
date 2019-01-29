@@ -360,9 +360,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                                                 while (RemoteNodeObjectInReceiveTransaction)
                                                                 {
-                                                                    var lastPacketReceivedTimeStamp =
-                                                                        Program.RemoteNodeObjectTotalTransaction
-                                                                            .RemoteNodeObjectLastPacketReceived;
+                                                                    var lastPacketReceivedTimeStamp = RemoteNodeObjectLastPacketReceived;
                                                                     var currentTimestamp =
                                                                         DateTimeOffset.Now.ToUnixTimeSeconds();
                                                                     if (lastPacketReceivedTimeStamp + 10 < currentTimestamp)
