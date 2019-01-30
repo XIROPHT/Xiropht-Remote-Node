@@ -27,7 +27,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     try
                     {
                         if (ClassRemoteNodeSync.ListOfBlock.Count > 0)
-                            ClassRemoteNodeSync.TrustedKey = Utils.Utils.ConvertStringtoMD5(
+                            ClassRemoteNodeSync.TrustedKey = Utils.Utils.ConvertStringToSha512(
                                 ClassRemoteNodeSync.CoinCirculating + ClassRemoteNodeSync.CoinMaxSupply +
                                 ClassRemoteNodeSync.CurrentDifficulty + ClassRemoteNodeSync.CurrentHashrate +
                                 ClassRemoteNodeSync.TotalBlockMined + ClassRemoteNodeSync.CurrentTotalFee +
@@ -35,7 +35,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     .ListOfBlock[ClassRemoteNodeSync.ListOfBlock.Count - 1]
                                     .Split(new[] { "#" }, StringSplitOptions.None)[6]);
                         else
-                            ClassRemoteNodeSync.TrustedKey = Utils.Utils.ConvertStringtoMD5(
+                            ClassRemoteNodeSync.TrustedKey = Utils.Utils.ConvertStringToSha512(
                                 ClassRemoteNodeSync.CoinCirculating + ClassRemoteNodeSync.CoinMaxSupply +
                                 ClassRemoteNodeSync.CurrentDifficulty + ClassRemoteNodeSync.CurrentHashrate +
                                 ClassRemoteNodeSync.TotalBlockMined + ClassRemoteNodeSync.CurrentTotalFee +
@@ -69,7 +69,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     try
                     {
 
-                        ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
+                        ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
 
                     }
                     catch
@@ -101,7 +101,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     if (LastBlockIdRead != ClassRemoteNodeSync.ListOfBlock.Count)
                     {
                         LastBlockIdRead = ClassRemoteNodeSync.ListOfBlock.Count;
-                        ClassRemoteNodeSync.HashBlockList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
+                        ClassRemoteNodeSync.HashBlockList = Utils.Utils.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
                     }
                 }
                 catch

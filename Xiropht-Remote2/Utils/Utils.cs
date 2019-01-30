@@ -2,7 +2,6 @@
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-using Xiropht_RemoteNode.Data;
 
 namespace Xiropht_RemoteNode.Utils
 {
@@ -25,7 +24,7 @@ namespace Xiropht_RemoteNode.Utils
 
 
 
-        public static string ConvertStringtoMD5(string str)
+        public static string ConvertStringToSha512(string str)
         {
             using (var hash = SHA512.Create())
             {
