@@ -140,7 +140,7 @@ namespace Xiropht_RemoteNode
                     }
                 }
             }
-            TotalConnectionSync = 5;
+            TotalConnectionSync = 1;
             /*Console.WriteLine("How many connections do you want to open for sync? (By default 1): ");
             string choose = Console.ReadLine();
             if (int.TryParse(choose, out var numberOfConnection))

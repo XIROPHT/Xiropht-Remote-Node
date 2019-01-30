@@ -1138,7 +1138,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// <summary>
         ///     Setting
         /// </summary>
-        private const int RemoteNodeObjectLoopSendRequestInterval = 1 * 1000;
+        private const int RemoteNodeObjectLoopSendRequestInterval = 100;
 
         /// <summary>
         ///     Reserved to type of transaction sync.
