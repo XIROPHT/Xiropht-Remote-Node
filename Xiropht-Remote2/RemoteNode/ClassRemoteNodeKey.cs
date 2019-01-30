@@ -9,6 +9,7 @@ namespace Xiropht_RemoteNode.RemoteNode
     {
         private static Thread _threadUpdateTrustedKey;
         private static Thread _threadUpdateHashBlockList;
+        private static Thread _threadUpdateHashTransactionList;
 
         private static readonly int ThreadUpdateTrustedKeyInterval = 500;
 
@@ -54,14 +55,33 @@ namespace Xiropht_RemoteNode.RemoteNode
 
         public static void StartUpdateHashTransactionList()
         {
-            
 
-           
-                ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
+            if (_threadUpdateHashTransactionList != null &&(_threadUpdateHashTransactionList.IsAlive || _threadUpdateHashTransactionList != null))
+            {
+                _threadUpdateHashTransactionList.Abort();
+                GC.SuppressFinalize(_threadUpdateHashTransactionList);
+            }
 
-                ClassLog.Log(
-                    "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
-           
+            _threadUpdateHashTransactionList = new Thread(delegate ()
+            {
+               
+                    try
+                    {
+                        if (LastTransactionIdRead != ClassRemoteNodeSync.ListOfTransaction.Count)
+                        {
+                            LastTransactionIdRead = ClassRemoteNodeSync.ListOfTransaction.Count;
+                            ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
+
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+                    ClassLog.Log(
+                        "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
+            });
+            _threadUpdateHashTransactionList.Start();
         }
 
         public static void StartUpdateHashBlockList()
