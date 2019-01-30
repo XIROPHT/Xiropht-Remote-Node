@@ -336,9 +336,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     int totalTransactionSaved =
                                                         ClassRemoteNodeSync.ListOfTransaction.Count;
 
-                                                    if (totalTransactionSaved+IdConnection < askTransaction)
+                                                    if (totalTransactionSaved < askTransaction)
                                                     {
-                                                        for (int i = totalTransactionSaved+IdConnection; i < askTransaction; i++)
+                                                        for (int i = totalTransactionSaved; i < askTransaction; i++)
                                                         {
                                                             if (int.TryParse(ClassRemoteNodeSync.TotalTransaction, out var askTransactionTmp))
                                                             {
@@ -346,7 +346,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                 {
                                                                     bool cancelTransaction = false;
                                                                     totalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count;
-                                                                    i = totalTransactionSaved + IdConnection;
                                                                     int transactionIdAsked = i;
 
                                                                     if (transactionIdAsked <= askTransactionTmp)
@@ -573,7 +572,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                     if (RemoteNodeObjectType != SyncEnumerationObject.ObjectTransaction)
                     {
-                        await Task.Delay(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next request.
+                        Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next request.
                     }
                     else
                     {
@@ -581,7 +580,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         {
                             if (totalTransactionToSync <= ClassRemoteNodeSync.ListOfTransaction.Count)
                             {
-                                await Task.Delay(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next sync of transaction.
+                               Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next sync of transaction.
                             }
                         }
                     }
@@ -810,7 +809,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                         RemoteNodeObjectLastPacketReceived =
                             DateTimeOffset.Now.ToUnixTimeSeconds();
 
-                        Thread.Sleep((10 * (IdConnection)+1) + Program.TotalConnectionSync);
                         ClassLog.Log("Transaction Received: " + packetSplit[1], 2, 2);
 
                         var decompressTransaction = ClassUtils.DecompressData(packetSplit[1]);

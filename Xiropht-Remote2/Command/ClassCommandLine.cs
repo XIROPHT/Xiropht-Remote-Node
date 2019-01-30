@@ -152,11 +152,12 @@ namespace Xiropht_RemoteNode.Command
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop each connection of the remote node.");
                         Program.RemoteNodeObjectBlock.StopConnection();
-                        for (int i = 0; i < Program.RemoteNodeObjectTransaction.Count; i++)
+                        Program.RemoteNodeObjectTransaction.StopConnection();
+                        for (int i = 0; i < Program.TotalConnectionSync; i++)
                         {
-                            if (i < Program.RemoteNodeObjectTransaction.Count)
+                            if (i < Program.TotalConnectionSync)
                             {
-                                Program.RemoteNodeObjectTransaction[i].StopConnection();
+                                Program.RemoteNodeObjectTotalTransaction[i].StopConnection();
                                 Program.RemoteNodeObjectCoinCirculating[i].StopConnection();
                                 Program.RemoteNodeObjectCoinMaxSupply[i].StopConnection();
                                 Program.RemoteNodeObjectCurrentDifficulty[i].StopConnection();
@@ -164,7 +165,6 @@ namespace Xiropht_RemoteNode.Command
                                 Program.RemoteNodeObjectTotalBlockMined[i].StopConnection();
                                 Program.RemoteNodeObjectTotalFee[i].StopConnection();
                                 Program.RemoteNodeObjectTotalPendingTransaction[i].StopConnection();
-                                Program.RemoteNodeObjectTotalTransaction[i].StopConnection();
                             }
                         }
                         Thread.Sleep(1000);

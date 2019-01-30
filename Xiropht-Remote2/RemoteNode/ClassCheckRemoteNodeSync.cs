@@ -349,57 +349,55 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                         }
                     }
-                    for (int i = 0; i < Program.RemoteNodeObjectTransaction.Count; i++)
+
+
+                    if (!Program.RemoteNodeObjectTransaction.RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTransaction.RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
                     {
-                        if (i < Program.RemoteNodeObjectTransaction.Count)
+                        while (!BlockchainNetworkStatus)
                         {
-                            if (!Program.RemoteNodeObjectTransaction[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTransaction[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                            if (Program.Closed)
                             {
-                                while (!BlockchainNetworkStatus)
-                                {
-                                    if (Program.Closed)
-                                    {
-                                        break;
-                                    }
-                                    Thread.Sleep(1000);
-                                }
-                                ClassLog.Log("Object Sync Transaction disconnected, reconnect now..", 2, 3);
+                                break;
+                            }
+                            Thread.Sleep(1000);
+                        }
+                        ClassLog.Log("Object Sync Transaction disconnected, reconnect now..", 2, 3);
 
-                                Program.RemoteNodeObjectTransaction[i].StopConnection();
-                                await Program.RemoteNodeObjectTransaction[i].StartConnectionAsync();
+                        Program.RemoteNodeObjectTransaction.StopConnection();
+                        await Program.RemoteNodeObjectTransaction.StartConnectionAsync();
 
+                        if (Program.Closed)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTransaction.RemoteNodeObjectLastPacketReceived;
+                        var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                        if (lastPacketReceivedTimeStamp + 5 < currentTimestamp)
+                        {
+                            while (!BlockchainNetworkStatus)
+                            {
                                 if (Program.Closed)
                                 {
                                     break;
                                 }
+                                Thread.Sleep(1000);
                             }
-                            else
+                            ClassLog.Log("Object Sync Transaction disconnected, reconnect now..", 2, 3);
+
+                            Program.RemoteNodeObjectTransaction.StopConnection();
+                            await Program.RemoteNodeObjectTransaction.StartConnectionAsync();
+
+                            if (Program.Closed)
                             {
-                                var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTransaction[i].RemoteNodeObjectLastPacketReceived;
-                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                                if (lastPacketReceivedTimeStamp + 5 < currentTimestamp)
-                                {
-                                    while (!BlockchainNetworkStatus)
-                                    {
-                                        if (Program.Closed)
-                                        {
-                                            break;
-                                        }
-                                        Thread.Sleep(1000);
-                                    }
-                                    ClassLog.Log("Object Sync Transaction disconnected, reconnect now..", 2, 3);
-
-                                    Program.RemoteNodeObjectTransaction[i].StopConnection();
-                                    await Program.RemoteNodeObjectTransaction[i].StartConnectionAsync();
-
-                                    if (Program.Closed)
-                                    {
-                                        break;
-                                    }
-                                }
+                                break;
                             }
                         }
                     }
+                        
+                    
 
                     for (int i = 0; i < Program.RemoteNodeObjectTotalTransaction.Count; i++)
                     {
@@ -523,11 +521,12 @@ namespace Xiropht_RemoteNode.RemoteNode
             {
                 BlockchainNetworkStatus = false;
                 Program.RemoteNodeObjectBlock.StopConnection();
-                for (int i = 0; i < Program.RemoteNodeObjectTransaction.Count; i++)
+                Program.RemoteNodeObjectTransaction.StopConnection();
+                for (int i = 0; i < Program.TotalConnectionSync; i++)
                 {
-                    if (i < Program.RemoteNodeObjectTransaction.Count)
+                    if (i < Program.TotalConnectionSync)
                     {
-                        Program.RemoteNodeObjectTransaction[i].StopConnection();
+                        Program.RemoteNodeObjectTotalTransaction[i].StopConnection();
                         Program.RemoteNodeObjectCoinCirculating[i].StopConnection();
                         Program.RemoteNodeObjectCoinMaxSupply[i].StopConnection();
                         Program.RemoteNodeObjectCurrentDifficulty[i].StopConnection();
@@ -535,8 +534,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                         Program.RemoteNodeObjectTotalBlockMined[i].StopConnection();
                         Program.RemoteNodeObjectTotalFee[i].StopConnection();
                         Program.RemoteNodeObjectTotalPendingTransaction[i].StopConnection();
-                        Program.RemoteNodeObjectTotalTransaction[i].StopConnection();
-
                     }
                 }
             }
