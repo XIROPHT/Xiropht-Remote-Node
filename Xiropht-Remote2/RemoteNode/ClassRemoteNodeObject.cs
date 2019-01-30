@@ -269,7 +269,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                                         if (!RemoteNodeObjectConnectionStatus) break;
 
-                                                        await Task.Delay(100);
+                                                        await Task.Delay(00);
                                                     }
 
                                                     if (cancelBlock)
@@ -421,7 +421,6 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                             #endregion
 
-
                             #region Sync Total Block Mined Information
 
                             case SyncEnumerationObject.ObjectBlockMined:
@@ -570,17 +569,30 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 #endregion
                         }
 
-                    if (RemoteNodeObjectType != SyncEnumerationObject.ObjectTransaction)
+                    if (RemoteNodeObjectType != SyncEnumerationObject.ObjectTransaction && RemoteNodeObjectType != SyncEnumerationObject.ObjectBlock)
                     {
                         Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next request.
                     }
                     else
                     {
-                        if (int.TryParse(ClassRemoteNodeSync.TotalTransaction, out var totalTransactionToSync))
+                        if (RemoteNodeObjectType == SyncEnumerationObject.ObjectTransaction)
                         {
-                            if (totalTransactionToSync <= ClassRemoteNodeSync.ListOfTransaction.Count)
+                            if (int.TryParse(ClassRemoteNodeSync.TotalTransaction, out var totalTransactionToSync))
                             {
-                               Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next sync of transaction.
+                                if (totalTransactionToSync <= ClassRemoteNodeSync.ListOfTransaction.Count)
+                                {
+                                    Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next sync of transaction.
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (int.TryParse(ClassRemoteNodeSync.TotalBlockMined, out var totalBlockMinedToSync))
+                            {
+                                if (totalBlockMinedToSync <= ClassRemoteNodeSync.ListOfBlock.Count)
+                                {
+                                    Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next sync of transaction.
+                                }
                             }
                         }
                     }
