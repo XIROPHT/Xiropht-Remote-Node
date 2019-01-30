@@ -8,10 +8,9 @@ namespace Xiropht_RemoteNode.RemoteNode
     public class ClassRemoteNodeKey
     {
         private static Thread _threadUpdateTrustedKey;
-        private static Thread _threadUpdateHashTransactionList;
         private static Thread _threadUpdateHashBlockList;
 
-        private static readonly int ThreadUpdateTrustedKeyInterval = 2 * 1000;
+        private static readonly int ThreadUpdateTrustedKeyInterval = 500;
 
         public static int LastTransactionIdRead;
         public static int LastBlockIdRead;

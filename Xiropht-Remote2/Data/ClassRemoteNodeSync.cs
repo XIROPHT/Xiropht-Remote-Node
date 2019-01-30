@@ -45,12 +45,14 @@ namespace Xiropht_RemoteNode.Data
             {
                 while (!Program.Closed)
                 {
-                    try
-                    {
-                        if (ListCollectionTransaction != null)
-                        {
-                            var tmpList = new List<string>(ListCollectionTransaction);
 
+                    if (ListCollectionTransaction != null)
+                    {
+                        List<string> tmpList = null;
+                        bool continueInsert = true;
+                        try
+                        {
+                            tmpList = new List<string>(ListCollectionTransaction);
 
                             for (int i = 0; i < tmpList.Count; i++)
                             {
@@ -68,9 +70,17 @@ namespace Xiropht_RemoteNode.Data
                                     }
                                 }
                             }
-
+                        }
+                        catch
+                        {
+                            continueInsert = false;
+                        }
+                        if (tmpList != null)
+                        {
                             tmpList.Clear();
-
+                        }
+                        if (continueInsert)
+                        {
 
                             if (ListOfTransaction.Count.ToString() == TotalTransaction)
                             {
@@ -90,11 +100,8 @@ namespace Xiropht_RemoteNode.Data
                             }
                         }
                     }
-                    catch
-                    {
 
-                    }
-                    Thread.Sleep(100);
+                    Thread.Sleep(10);
                 }
             });
             threadCollectionTransaction.Start();
