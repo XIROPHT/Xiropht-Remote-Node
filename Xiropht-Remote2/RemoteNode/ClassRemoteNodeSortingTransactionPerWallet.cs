@@ -17,6 +17,10 @@ namespace Xiropht_RemoteNode.RemoteNode
         {
             try
             {
+                if (ClassRemoteNodeSync.ListTransactionPerWallet == null)
+                {
+                    ClassRemoteNodeSync.ListTransactionPerWallet = new Dictionary<float, List<string>>();
+                }
                 var dataTransactionSplit = transaction.Split(new[] { "-" }, StringSplitOptions.None);
                 float idWalletSender;
 
@@ -111,6 +115,10 @@ namespace Xiropht_RemoteNode.RemoteNode
         {
             try
             {
+                if (ClassRemoteNodeSync.ListTransactionPerWallet == null)
+                {
+                    ClassRemoteNodeSync.ListTransactionPerWallet = new Dictionary<float, List<string>>();
+                }
                 var dataTransactionSplit = transaction.Split(new[] { "-" }, StringSplitOptions.None);
                 float idWalletSender;
 

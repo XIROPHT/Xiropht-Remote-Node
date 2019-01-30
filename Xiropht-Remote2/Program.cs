@@ -140,7 +140,7 @@ namespace Xiropht_RemoteNode
                     }
                 }
             }
-            Console.WriteLine("How many connections do you want to open for sync? (By default 1): ");
+            /*Console.WriteLine("How many connections do you want to open for sync? (By default 1): ");
             string choose = Console.ReadLine();
             if (int.TryParse(choose, out var numberOfConnection))
             {
@@ -149,7 +149,9 @@ namespace Xiropht_RemoteNode
             else
             {
                 TotalConnectionSync = 1;
-            }
+            }*/
+
+            TotalConnectionSync = 1;
 
             Certificate = ClassUtils.GenerateCertificate();
             Console.WriteLine("Initialize Remote Node Sync Objects..");

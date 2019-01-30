@@ -382,7 +382,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                                 break;
                                                                             }
 
-                                                                            Thread.Sleep(100);
+                                                                            Thread.Sleep(10);
                                                                         }
                                                                     }
                                                                     if (cancelTransaction)
@@ -390,7 +390,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                         RemoteNodeObjectConnectionStatus = false;
                                                                     }
 
-                                                                    Thread.Sleep(100);
+                                                                    //Thread.Sleep(100);
 
                                                                 }
                                                             }
@@ -579,7 +579,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         if (int.TryParse(ClassRemoteNodeSync.TotalTransaction, out var totalTransactionToSync))
                         {
-                            if (totalTransactionToSync == ClassRemoteNodeSync.ListOfTransaction.Count)
+                            if (totalTransactionToSync <= ClassRemoteNodeSync.ListOfTransaction.Count)
                             {
                                 await Task.Delay(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next sync of transaction.
                             }
@@ -810,6 +810,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         RemoteNodeObjectLastPacketReceived =
                             DateTimeOffset.Now.ToUnixTimeSeconds();
 
+                        Thread.Sleep((10 * (IdConnection)+1) + Program.TotalConnectionSync);
                         ClassLog.Log("Transaction Received: " + packetSplit[1], 2, 2);
 
                         var decompressTransaction = ClassUtils.DecompressData(packetSplit[1]);
@@ -845,7 +846,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 //ClassRemoteNodeSync.ListCollectionTransaction.Add(transactionSubString);
                                                 if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
                                                 {
-                                                    ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                                                    if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
+                                                    {
+                                                        ClassRemoteNodeSave.SaveTransaction(true);
+                                                    }
                                                     ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
 
                                                 }
@@ -887,10 +891,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     {
                                         ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
                                         ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString);
-                                        //ClassRemoteNodeSync.ListCollectionTransaction.Add(transactionSubString);
                                         if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
                                         {
-                                            ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                                            if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
+                                            {
+                                                ClassRemoteNodeSave.SaveTransaction(true);
+                                            }
                                             ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
 
                                         }

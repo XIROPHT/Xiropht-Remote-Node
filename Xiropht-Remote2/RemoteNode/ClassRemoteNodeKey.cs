@@ -64,15 +64,13 @@ namespace Xiropht_RemoteNode.RemoteNode
 
             _threadUpdateHashTransactionList = new Thread(delegate ()
             {
-               
+                while (!Program.Closed)
+                {
                     try
                     {
-                        if (LastTransactionIdRead != ClassRemoteNodeSync.ListOfTransaction.Count)
-                        {
-                            LastTransactionIdRead = ClassRemoteNodeSync.ListOfTransaction.Count;
-                            ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
 
-                        }
+                        ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringtoMD5(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
+
                     }
                     catch
                     {
@@ -80,6 +78,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                     }
                     ClassLog.Log(
                         "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
+                    Thread.Sleep(1000);
+                }
             });
             _threadUpdateHashTransactionList.Start();
         }
