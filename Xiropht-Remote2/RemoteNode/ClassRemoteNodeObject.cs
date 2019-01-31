@@ -269,7 +269,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                                         if (!RemoteNodeObjectConnectionStatus) break;
 
-                                                        await Task.Delay(00);
+                                                        await Task.Delay(10);
                                                     }
 
                                                     if (cancelBlock)
@@ -838,7 +838,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         var transactionSubString = splitTransaction[i].Substring(0, splitTransaction[i].Length - 1);
 
 
-                                        if (!ClassRemoteNodeSortingTransactionPerWallet.CheckTransactionSyntax(transactionSubString))
+                                        if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
                                         {
                                             ClassLog.Log("Connection ID: " + IdConnection + " - Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
 
@@ -851,11 +851,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             try
                                             {
                                                 ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
-                                                ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString);
-
                                                 //ClassRemoteNodeSync.ListCollectionTransaction.Add(transactionSubString);
                                                 if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
                                                 {
+                                                    ClassRemoteNodeKey.StartUpdateHashTransactionList();
                                                     if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
                                                     {
                                                         ClassRemoteNodeSave.SaveTransaction(true);
@@ -867,7 +866,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 {
                                                     ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
                                                 }
-                                                
+
                                             }
                                             catch
                                             {
@@ -885,7 +884,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             var transactionSubString = decompressTransaction.Substring(0, decompressTransaction.Length - 1);
                             if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
                             {
-                                if (!ClassRemoteNodeSortingTransactionPerWallet.CheckTransactionSyntax(transactionSubString))
+                                if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
                                 {
                                     ClassLog.Log("Connection ID: " + IdConnection + " - Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
 
@@ -900,9 +899,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     try
                                     {
                                         ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
-                                        ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString);
                                         if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
                                         {
+                                            ClassRemoteNodeKey.StartUpdateHashTransactionList();
                                             if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
                                             {
                                                 ClassRemoteNodeSave.SaveTransaction(true);

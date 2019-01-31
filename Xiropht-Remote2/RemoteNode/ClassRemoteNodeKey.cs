@@ -56,7 +56,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         public static void StartUpdateHashTransactionList()
         {
 
-            if (_threadUpdateHashTransactionList != null &&(_threadUpdateHashTransactionList.IsAlive || _threadUpdateHashTransactionList != null))
+            if (_threadUpdateHashTransactionList != null && (_threadUpdateHashTransactionList.IsAlive || _threadUpdateHashTransactionList != null))
             {
                 _threadUpdateHashTransactionList.Abort();
                 GC.SuppressFinalize(_threadUpdateHashTransactionList);
@@ -64,22 +64,20 @@ namespace Xiropht_RemoteNode.RemoteNode
 
             _threadUpdateHashTransactionList = new Thread(delegate ()
             {
-                while (!Program.Closed)
+
+                try
                 {
-                    try
-                    {
 
-                        ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
+                    ClassRemoteNodeSync.HashTransactionList = Utils.Utils.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
 
-                    }
-                    catch
-                    {
-
-                    }
-                    ClassLog.Log(
-                        "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
-                    Thread.Sleep(1000);
                 }
+                catch
+                {
+
+                }
+                ClassLog.Log(
+                    "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
+
             });
             _threadUpdateHashTransactionList.Start();
         }
