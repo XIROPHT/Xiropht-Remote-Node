@@ -9,9 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.Remote;
 using Xiropht_Connector_All.Setting;
-using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
+using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode.Api
 {
@@ -60,7 +60,7 @@ namespace Xiropht_RemoteNode.Api
             // Async
             _threadApiReceiveConnection = new Thread(async delegate ()
             {
-                await MainAsync().ConfigureAwait(false);
+                await MainAsync();
             });
             _threadApiReceiveConnection.Start();
 
@@ -87,7 +87,7 @@ namespace Xiropht_RemoteNode.Api
                 try
                 {
 
-                    var client = await _tcpListenerApiReceiveConnection.AcceptTcpClientAsync();
+                    var client = await _tcpListenerApiReceiveConnection.AcceptTcpClientAsync().ConfigureAwait(false);
                     string ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
 
 
@@ -308,7 +308,7 @@ namespace Xiropht_RemoteNode.Api
 
             while (_incomingConnectionStatus)
             {
- 
+
                 try
                 {
                     if (!_incomingConnectionStatus)
@@ -316,7 +316,7 @@ namespace Xiropht_RemoteNode.Api
                         _incomingConnectionStatus = false;
                         break;
                     }
-                    if (!ClassUtils.SocketIsConnected(_client))
+                    if (!Utils.ClassUtilsNode.SocketIsConnected(_client))
                     {
                         _incomingConnectionStatus = false;
                         break;
@@ -346,7 +346,7 @@ namespace Xiropht_RemoteNode.Api
             else
             {
                 _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
-                await HandleIncomingConnectionAsync().ConfigureAwait(false);
+                await HandleIncomingConnectionAsync();
             }
 
         }
@@ -371,7 +371,7 @@ namespace Xiropht_RemoteNode.Api
                         _incomingConnectionStatus = false;
                         break;
                     }
-                    if (!ClassUtils.SocketIsConnected(_client))
+                    if (!Utils.ClassUtilsNode.SocketIsConnected(_client))
                     {
                         _incomingConnectionStatus = false;
                         break;
@@ -385,11 +385,10 @@ namespace Xiropht_RemoteNode.Api
 
                         try
                         {
-                            var bufferPacket = new ApiObjectConnectionPacket();
-                            int received = 0;
-
-                            while ((received = await _clientApiStreamReader.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length).ConfigureAwait(false)) > 0)
+                            using (var bufferPacket = new ApiObjectConnectionPacket())
                             {
+                                int received = await _clientApiStreamReader.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length);
+
                                 if (received > 0)
                                 {
                                     bufferPacket.packet = new string(bufferPacket.buffer, 0, received);
@@ -398,81 +397,79 @@ namespace Xiropht_RemoteNode.Api
                                     _totalPacketPerSecond++;
                                     _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-                                    ThreadPool.QueueUserWorkItem(async delegate
+
+                                    if (bufferPacket.packet.Contains("*"))
                                     {
-                                        if (bufferPacket.packet.Contains("*"))
+                                        var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
+                                        if (splitPacket.Length > 1)
                                         {
-                                            var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
-                                            if (splitPacket.Length > 1)
+                                            foreach (var packetMerged in splitPacket)
                                             {
-                                                foreach (var packetMerged in splitPacket)
+                                                if (_incomingConnectionStatus)
                                                 {
-                                                    if (_incomingConnectionStatus)
+                                                    if (packetMerged != null)
                                                     {
-                                                        if (packetMerged != null)
+                                                        if (!string.IsNullOrEmpty(packetMerged))
                                                         {
-                                                            if (!string.IsNullOrEmpty(packetMerged))
+                                                            if (packetMerged.Length > 1)
                                                             {
-                                                                if (packetMerged.Length > 1)
+
+                                                                var packetReplace = packetMerged.Replace("*", "");
+                                                                ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
+
+                                                                await Task.Run(async delegate
                                                                 {
-
-                                                                    var packetReplace = packetMerged.Replace("*", "");
-                                                                    ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
-
-                                                                    await Task.Run(async delegate
+                                                                    if (_incomingConnectionStatus)
                                                                     {
-                                                                        if (_incomingConnectionStatus)
+                                                                        if (!await HandleIncomingPacketAsync(packetReplace))
                                                                         {
-                                                                            if (!await HandleIncomingPacketAsync(packetReplace).ConfigureAwait(false))
-                                                                            {
-                                                                                ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                                                _incomingConnectionStatus = false;
-                                                                            }
+                                                                            ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
+                                                                            _incomingConnectionStatus = false;
                                                                         }
-                                                                    }).ConfigureAwait(false);
-                                                                }
+                                                                    }
+                                                                });
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
-                                            else
-                                            {
-                                                if (_incomingConnectionStatus)
-                                                {
-                                                    var packetReplace = bufferPacket.packet.Replace("*", "");
-                                                    ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
-
-                                                    await Task.Run(async delegate
-                                                    {
-                                                        if (!await HandleIncomingPacketAsync(packetReplace).ConfigureAwait(false))
-                                                        {
-                                                            ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                            _incomingConnectionStatus = false;
-                                                        }
-                                                    }).ConfigureAwait(false);
-                                                }
-                                            }
                                         }
                                         else
                                         {
-
-                                            ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
-
                                             if (_incomingConnectionStatus)
                                             {
+                                                var packetReplace = bufferPacket.packet.Replace("*", "");
+                                                ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
 
-                                                if (!await HandleIncomingPacketAsync(bufferPacket.packet).ConfigureAwait(false))
+                                                await Task.Run(async delegate
                                                 {
-                                                    ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                    _incomingConnectionStatus = false;
-                                                }
+                                                    if (!await HandleIncomingPacketAsync(packetReplace))
+                                                    {
+                                                        ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
+                                                        _incomingConnectionStatus = false;
+                                                    }
+                                                });
                                             }
                                         }
-                                    });
+                                    }
+                                    else
+                                    {
 
+                                        ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
+
+                                        if (_incomingConnectionStatus)
+                                        {
+
+                                            if (!await HandleIncomingPacketAsync(bufferPacket.packet))
+                                            {
+                                                ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
+                                                _incomingConnectionStatus = false;
+                                            }
+                                        }
+                                    }
                                 }
                             }
+
 
                             if (!_incomingConnectionStatus)
                             {
@@ -547,7 +544,7 @@ namespace Xiropht_RemoteNode.Api
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.WalletAskHisNumberTransaction:
                                         if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId))
                                         {
-                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourNumberTransaction + "|" + ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count))
+                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourNumberTransaction + "|" + ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count).ConfigureAwait(false))
                                             {
                                                 _incomingConnectionStatus = false;
                                                 return false;
@@ -555,7 +552,7 @@ namespace Xiropht_RemoteNode.Api
                                         }
                                         else
                                         {
-                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourNumberTransaction + "|0"))
+                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourNumberTransaction + "|0").ConfigureAwait(false))
                                             {
                                                 _incomingConnectionStatus = false;
                                                 return false;
@@ -565,7 +562,7 @@ namespace Xiropht_RemoteNode.Api
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.WalletAskHisAnonymityNumberTransaction:
                                         if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId))
                                         {
-                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourAnonymityNumberTransaction + "|" + ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count))
+                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourAnonymityNumberTransaction + "|" + ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count).ConfigureAwait(false))
                                             {
                                                 _incomingConnectionStatus = false;
                                                 return false;
@@ -573,7 +570,7 @@ namespace Xiropht_RemoteNode.Api
                                         }
                                         else
                                         {
-                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourAnonymityNumberTransaction + "|0"))
+                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourAnonymityNumberTransaction + "|0").ConfigureAwait(false))
                                             {
                                                 _incomingConnectionStatus = false;
                                                 return false;
@@ -686,7 +683,7 @@ namespace Xiropht_RemoteNode.Api
                                         {
                                             if (idTransactionAskFromWallet < 0)
                                             {
-                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                 {
                                                     _incomingConnectionStatus = false;
                                                     return false;
@@ -698,7 +695,7 @@ namespace Xiropht_RemoteNode.Api
                                                 {
                                                     if (ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count <= idTransactionAskFromWallet)
                                                     {
-                                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                         {
                                                             _incomingConnectionStatus = false;
                                                             return false;
@@ -709,7 +706,7 @@ namespace Xiropht_RemoteNode.Api
                                                         string transaction = ClassRemoteNodeSync.ListTransactionPerWallet[walletId][idTransactionAskFromWallet];
                                                         if (transaction == "WRONG")
                                                         {
-                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                             {
                                                                 _incomingConnectionStatus = false;
                                                                 return false;
@@ -717,7 +714,7 @@ namespace Xiropht_RemoteNode.Api
                                                         }
                                                         else
                                                         {
-                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletTransactionPerId + "|" + transaction))
+                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletTransactionPerId + "|" + transaction).ConfigureAwait(false))
                                                             {
                                                                 _incomingConnectionStatus = false;
                                                                 return false;
@@ -727,7 +724,7 @@ namespace Xiropht_RemoteNode.Api
                                                 }
                                                 else
                                                 {
-                                                    if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                    if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                     {
                                                         _incomingConnectionStatus = false;
                                                         return false;
@@ -746,7 +743,7 @@ namespace Xiropht_RemoteNode.Api
                                         {
                                             if (idAnonymityTransactionAskFromWallet < 0)
                                             {
-                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                 {
                                                     _incomingConnectionStatus = false;
                                                     return false;
@@ -758,7 +755,7 @@ namespace Xiropht_RemoteNode.Api
                                                 {
                                                     if (ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count <= idAnonymityTransactionAskFromWallet)
                                                     {
-                                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                         {
                                                             _incomingConnectionStatus = false;
                                                             return false;
@@ -769,7 +766,7 @@ namespace Xiropht_RemoteNode.Api
                                                         string transaction = ClassRemoteNodeSync.ListTransactionPerWallet[walletId][idAnonymityTransactionAskFromWallet];
                                                         if (transaction == "WRONG")
                                                         {
-                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                             {
                                                                 _incomingConnectionStatus = false;
                                                                 return false;
@@ -777,7 +774,7 @@ namespace Xiropht_RemoteNode.Api
                                                         }
                                                         else
                                                         {
-                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletAnonymityTransactionPerId + "|" + transaction))
+                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletAnonymityTransactionPerId + "|" + transaction).ConfigureAwait(false))
                                                             {
                                                                 _incomingConnectionStatus = false;
                                                                 return false;
@@ -787,7 +784,7 @@ namespace Xiropht_RemoteNode.Api
                                                 }
                                                 else
                                                 {
-                                                    if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                    if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                     {
                                                         _incomingConnectionStatus = false;
                                                         return false;
@@ -829,7 +826,7 @@ namespace Xiropht_RemoteNode.Api
                                         {
                                             if (idTransactionAskTmp >= 0 && idTransactionAskTmp < ClassRemoteNodeSync.ListOfTransaction.Count)
                                             {
-                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeAskTransactionHashPerId + "|" + Utils.Utils.ConvertStringToSha512(ClassRemoteNodeSync.ListOfTransaction[idTransactionAskTmp])).ConfigureAwait(false))
+                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeAskTransactionHashPerId + "|" + ClassUtilsNode.ConvertStringToSha512(ClassRemoteNodeSync.ListOfTransaction[idTransactionAskTmp])).ConfigureAwait(false))
                                                 {
                                                     _incomingConnectionStatus = false;
                                                     return false;
@@ -852,7 +849,7 @@ namespace Xiropht_RemoteNode.Api
                                         {
                                             if (idBlockAskTmp >= 0 && idBlockAskTmp < ClassRemoteNodeSync.ListOfTransaction.Count)
                                             {
-                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeAskBlockHashPerId + "|" + Utils.Utils.ConvertStringToSha512(ClassRemoteNodeSync.ListOfBlock[idBlockAskTmp])).ConfigureAwait(false))
+                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeAskBlockHashPerId + "|" + ClassUtilsNode.ConvertStringToSha512(ClassRemoteNodeSync.ListOfBlock[idBlockAskTmp])).ConfigureAwait(false))
                                                 {
                                                     _incomingConnectionStatus = false;
                                                     return false;
@@ -919,7 +916,7 @@ namespace Xiropht_RemoteNode.Api
                                         break;
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.KeepAlive:
 
-                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeKeepAlive))
+                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeKeepAlive).ConfigureAwait(false))
                                         {
                                             _incomingConnectionStatus = false;
                                             return false;

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Xiropht_RemoteNode.Utils
 {
-    public class Utils
+    public class ClassUtilsNode
     {
         public static bool SocketIsConnected(TcpClient socket)
         {
