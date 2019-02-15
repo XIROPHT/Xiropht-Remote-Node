@@ -288,14 +288,16 @@ namespace Xiropht_RemoteNode.Api
                             if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(selectedIndex))
                             {
                                 var splitBlock = ClassRemoteNodeSync.ListOfBlock[selectedIndex].Split(new[] { "#" }, StringSplitOptions.None);
-                                Dictionary<string, string> blockContent = new Dictionary<string, string>();
-                                blockContent.Add("block_id", splitBlock[0]);
-                                blockContent.Add("block_hash", splitBlock[1]);
-                                blockContent.Add("block_transaction_hash", splitBlock[2]);
-                                blockContent.Add("block_timestamp_create", splitBlock[3]);
-                                blockContent.Add("block_timestamp_found", splitBlock[4]);
-                                blockContent.Add("block_difficulty", splitBlock[5]);
-                                blockContent.Add("block_reward", splitBlock[6]);
+                                Dictionary<string, string> blockContent = new Dictionary<string, string>
+                                {
+                                    { "block_id", splitBlock[0] },
+                                    { "block_hash", splitBlock[1] },
+                                    { "block_transaction_hash", splitBlock[2] },
+                                    { "block_timestamp_create", splitBlock[3] },
+                                    { "block_timestamp_found", splitBlock[4] },
+                                    { "block_difficulty", splitBlock[5] },
+                                    { "block_reward", splitBlock[6] }
+                                };
 
                                 await BuildAndSendHttpPacketAsync(null, true, blockContent);
                             }
@@ -326,15 +328,17 @@ namespace Xiropht_RemoteNode.Api
                             if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(selectedIndex))
                             {
                                 var splitTransaction = ClassRemoteNodeSync.ListOfTransaction[selectedIndex].Split(new[] { "-" }, StringSplitOptions.None);
-                                Dictionary<string, string> transactionContent = new Dictionary<string, string>();
-                                transactionContent.Add("transaction_id", "" + (selectedIndex+1));
-                                transactionContent.Add("transaction_id_sender", splitTransaction[0]);
-                                transactionContent.Add("transaction_fake_amount", splitTransaction[1]);
-                                transactionContent.Add("transaction_fake_fee", splitTransaction[2]);
-                                transactionContent.Add("transaction_id_receiver", splitTransaction[3]);
-                                transactionContent.Add("transaction_timestamp_sended", splitTransaction[4]);
-                                transactionContent.Add("transaction_hash", splitTransaction[5]);
-                                transactionContent.Add("transaction_timestamp_received", splitTransaction[6]);
+                                Dictionary<string, string> transactionContent = new Dictionary<string, string>
+                                {
+                                    { "transaction_id", "" + (selectedIndex + 1) },
+                                    { "transaction_id_sender", splitTransaction[0] },
+                                    { "transaction_fake_amount", splitTransaction[1] },
+                                    { "transaction_fake_fee", splitTransaction[2] },
+                                    { "transaction_id_receiver", splitTransaction[3] },
+                                    { "transaction_timestamp_sended", splitTransaction[4] },
+                                    { "transaction_hash", splitTransaction[5] },
+                                    { "transaction_timestamp_received", splitTransaction[6] }
+                                };
 
                                 await BuildAndSendHttpPacketAsync(null, true, transactionContent);
                             }
@@ -355,6 +359,26 @@ namespace Xiropht_RemoteNode.Api
                         ClassApiBan.InsertInvalidPacket(_ip);
                         await BuildAndSendHttpPacketAsync("not_exist");
                     }
+                    break;
+                case ClassApiHttpRequestEnumeration.GetCoinNetworkFullStats:
+                    Dictionary<string, string> networkStatsContent = new Dictionary<string, string>
+                    {
+                        { "coin_name", ClassConnectorSetting.CoinName },
+                        { "coin_min_name", ClassConnectorSetting.CoinNameMin },
+                        { "coin_max_supply", ClassRemoteNodeSync.CoinMaxSupply },
+                        { "coin_circulating", ClassRemoteNodeSync.CoinCirculating },
+                        { "coin_total_fee", ClassRemoteNodeSync.CurrentTotalFee },
+                        { "coin_total_mined", "" + (ClassRemoteNodeSync.ListOfBlock.Count * 10) },
+                        { "coin_blockchain_height", "" + (ClassRemoteNodeSync.ListOfBlock.Count + 1) },
+                        { "coin_total_block_mined", "" + ClassRemoteNodeSync.ListOfBlock.Count },
+                        { "coin_total_block_left", ClassRemoteNodeSync.CurrentBlockLeft },
+                        { "coin_network_difficulty", ClassRemoteNodeSync.CurrentDifficulty },
+                        { "coin_network_hashrate", ClassRemoteNodeSync.CurrentHashrate }
+                    };
+
+                    await BuildAndSendHttpPacketAsync(null, true, networkStatsContent);
+
+
                     break;
                 default:
                     ClassApiBan.InsertInvalidPacket(_ip);

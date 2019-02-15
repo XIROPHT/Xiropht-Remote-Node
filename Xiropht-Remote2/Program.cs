@@ -119,6 +119,18 @@ namespace Xiropht_RemoteNode
                 if (answer == "Y" || answer == "y")
                 {
                     EnableApiHttp = true;
+                    Console.WriteLine("Do you want to select another port for your HTTP API? [Y/N]");
+                    answer = Console.ReadLine();
+                    if (answer == "Y" || answer == "y")
+                    {
+                        Console.WriteLine("Enter your port selected for your HTTP API: (By default: " + ClassConnectorSetting.RemoteNodeHttpPort + ")");
+                        string portChoosed = Console.ReadLine();
+                        while(!int.TryParse(portChoosed, out ClassApiHttp.PersonalRemoteNodeHttpPort))
+                        {
+                            Console.WriteLine("Invalid port, please try another one:");
+                            portChoosed = Console.ReadLine();
+                        }
+                    }
                     Console.WriteLine("Do you want to enable HTTPS mode ? [Y/N]");
                     answer = Console.ReadLine();
                     if (answer == "Y" || answer == "y")
@@ -355,6 +367,7 @@ namespace Xiropht_RemoteNode
                 {
                     writer.WriteLine("HTTPS_CERTIFICATE_PATH=");
                 }
+                writer.WriteLine("API_HTTP_PORT=" + ClassApiHttp.PersonalRemoteNodeHttpPort);
                 writer.WriteLine("LOG_LEVEL=" + LogLevel);
             }
             Console.WriteLine("Config file saved.");
@@ -406,6 +419,10 @@ namespace Xiropht_RemoteNode
                 if (line.Contains("LOG_LEVEL="))
                 {
                     int.TryParse(line.Replace("LOG_LEVEL=", ""), out LogLevel);
+                }
+                if (line.Contains("API_HTTP_PORT="))
+                {
+                    int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
                 }
             }
         }
