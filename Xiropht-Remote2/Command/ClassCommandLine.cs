@@ -47,7 +47,7 @@ namespace Xiropht_RemoteNode.Command
                             Console.WriteLine("Current Mining Hashrate: " + ClassUtils.GetTranslateHashrate(ClassRemoteNodeSync.CurrentHashrate.Replace(".", ","), 2).Replace(",", "."), Program.GlobalCultureInfo);
                         }
 
-                        //var tmp = Decimal.Parse(ClassUtils.GetTranslateBigNumber(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ",")), NumberStyles.Any, Program.GlobalCultureInfo);
+                        //var tmp = decimal.Parse(ClassUtils.GetTranslateBigNumber(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ",")), NumberStyles.Any, Program.GlobalCultureInfo);
                         Console.WriteLine("Total Coin Max Supply: " + ClassRemoteNodeSync.CoinMaxSupply, Program.GlobalCultureInfo);
 
                         Console.WriteLine("Total Coin Circulating: " + ClassRemoteNodeSync.CoinCirculating, Program.GlobalCultureInfo);
@@ -93,9 +93,9 @@ namespace Xiropht_RemoteNode.Command
                                 {
                                     logLevel = 0;
                                 }
-                                if (logLevel > 5)
+                                if (logLevel > 6)
                                 {
-                                    logLevel = 5;
+                                    logLevel = 6;
                                 }
                                 Console.WriteLine("Log Level " + Program.LogLevel + " -> " + logLevel);
                                 Program.LogLevel = logLevel;

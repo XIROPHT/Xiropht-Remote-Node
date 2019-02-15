@@ -186,10 +186,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                         try
                         {
 
-                            if (!File.Exists(GetCurrentPath() + GetBlockchainBlockPath() +
+                            if (!File.Exists(GetCurrentPath() + GetBlockchainTransactionPath() +
                                             BlockchainTransactonDatabase))
                             {
-                                File.Create(GetCurrentPath() + GetBlockchainBlockPath() +
+                                File.Create(GetCurrentPath() + GetBlockchainTransactionPath() +
                                             BlockchainTransactonDatabase).Close();
                             }
 
@@ -246,7 +246,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
 
 
-                        File.Create(GetCurrentPath() + GetBlockchainBlockPath() +
+                        File.Create(GetCurrentPath() + GetBlockchainTransactionPath() +
                                     BlockchainTransactonDatabase).Close();
 
 

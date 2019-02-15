@@ -621,8 +621,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                 switch (packetSplit[0])
                 {
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteAcceptedLogin: // if login is accepted, the remote node can start to sync informations.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         RemoteNodeObjectLoginStatus = true;
                         switch (RemoteNodeObjectType)
                         {
@@ -674,10 +673,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                         }
 
                         break;
-                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendBlockPerId
-                        : // Receive a block information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendBlockPerId: // Receive a block information.
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         var splitBlock = packetSplit[1].Split(new[] { "END" }, StringSplitOptions.None);
 
 
@@ -742,38 +739,28 @@ namespace Xiropht_RemoteNode.RemoteNode
                         RemoteNodeObjectInReceiveBlock = false;
 
                         break;
-                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCoinCirculating
-                        : // Receive coin circulating information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCoinCirculating: // Receive coin circulating information.
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.CoinCirculating = packetSplit[1];
                         ClassLog.Log("Total Coin Circulating: " + packetSplit[1], 2, 2);
                         break;
-                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCoinMaxSupply
-                        : // Receive coin max supply information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCoinMaxSupply: // Receive coin max supply information.
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.CoinMaxSupply = packetSplit[1];
                         ClassLog.Log("Coin Max Supply: " + packetSplit[1], 2, 2);
                         break;
-                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCurrentDifficulty
-                        : // Receive current mining difficulty information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCurrentDifficulty: // Receive current mining difficulty information.
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.CurrentDifficulty = packetSplit[1];
                         ClassLog.Log("Current Mining Difficulty: " + packetSplit[1], 2, 2);
                         break;
-                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCurrentRate
-                        : // Receive current mining hashrate information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCurrentRate: // Receive current mining hashrate information.
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.CurrentHashrate = packetSplit[1];
                         ClassLog.Log("Current Mining Hashrate: " + packetSplit[1], 2, 2);
                         break;
-                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendNumberOfTransaction
-                        : // Receive total number of transaction information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendNumberOfTransaction: // Receive total number of transaction information.
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.TotalTransaction = packetSplit[1].Replace("SEND-NUMBER-OF-TRANSACTION", "");
                         if (int.Parse(ClassRemoteNodeSync.TotalTransaction) <
                             ClassRemoteNodeSync.ListOfTransaction.Count)
@@ -786,8 +773,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             2, 2);
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendTotalBlockMined: // Receive total block mined information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.TotalBlockMined = packetSplit[1];
                         if (int.TryParse(packetSplit[1], out var totalBlockMined))
                         {
@@ -796,7 +782,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                             var totalBlockLeft =
                                 Math.Round(
-                                    (Decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ","), System.Globalization.NumberStyles.Any,
+                                    (decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ","), System.Globalization.NumberStyles.Any,
                                          Program.GlobalCultureInfo) / 10) - totalBlockMined, 0);
                             ClassRemoteNodeSync.CurrentBlockLeft = "" + totalBlockLeft;
                             ClassLog.Log("Total Block Left: " + ClassRemoteNodeSync.CurrentBlockLeft, 2, 2);
@@ -805,21 +791,17 @@ namespace Xiropht_RemoteNode.RemoteNode
                         ClassLog.Log("Total Block Mined: " + packetSplit[1], 2, 2);
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendTotalFee: // Receive current total fee information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.CurrentTotalFee = packetSplit[1];
                         ClassLog.Log("Current Total Fee: " + packetSplit[1], 2, 2);
                         break;
-                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendTotalPendingTransaction
-                        : // Receive total number of pending transaction information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendTotalPendingTransaction : // Receive total number of pending transaction information.
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.TotalPendingTransaction = packetSplit[1];
                         ClassLog.Log("Total Pending Transaction: " + packetSplit[1], 2, 2);
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendTransactionPerId: // Receive a transaction information.
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
 
                         ClassLog.Log("Transaction Received: " + packetSplit[1], 2, 2);
 
@@ -851,7 +833,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             try
                                             {
                                                 ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
-                                                //ClassRemoteNodeSync.ListCollectionTransaction.Add(transactionSubString);
                                                 if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
                                                 {
                                                     ClassRemoteNodeKey.StartUpdateHashTransactionList();
@@ -895,7 +876,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 else
                                 {
-                                    //ClassRemoteNodeSync.ListCollectionTransaction.Add(transactionSubString);
                                     try
                                     {
                                         ClassRemoteNodeSync.ListOfTransaction.Add(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
@@ -929,8 +909,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         }
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCheckBlockPerId:
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         if (int.TryParse(packetSplit[1], out var blockId))
                             if (ClassRemoteNodeSync.ListOfBlock.Count > blockId)
                                 if (!await RemoteNodeObjectTcpClient
@@ -952,8 +931,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCheckTransactionPerId:
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         if (int.TryParse(packetSplit[1], out var transactionId))
                             if (ClassRemoteNodeSync.ListOfTransaction.Count > transactionId)
                                 if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(
@@ -975,8 +953,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCheckBlockHash:
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         if (!await RemoteNodeObjectTcpClient
                             .SendPacketToSeedNodeAsync(
                                 ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteCheckBlockHash + "|" +
@@ -995,8 +972,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCheckTransactionHash:
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         if (!await RemoteNodeObjectTcpClient
                             .SendPacketToSeedNodeAsync(
                                 ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteCheckTransactionHash +
@@ -1015,8 +991,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendCheckTrustedKey:
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         if (!await RemoteNodeObjectTcpClient
                             .SendPacketToSeedNodeAsync(
                                 ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteCheckTrustedKey +
@@ -1035,8 +1010,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         break;
                     case ClassSeedNodeCommand.ClassReceiveSeedEnumeration.WalletSendRemoteNode:
-                        RemoteNodeObjectLastPacketReceived =
-                            DateTimeOffset.Now.ToUnixTimeSeconds();
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         if (!string.IsNullOrEmpty(ClassRemoteNodeSync.MyOwnIP))
                         {
                             var splitRemoteNodeList = packet.Split(new[] { "|" }, StringSplitOptions.None);
@@ -1114,7 +1088,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                     ClassRemoteNodeSync.ListOfPublicNodes.Clear();
                 }
                 Console.WriteLine("Remote Node Object sync disconnected. Restart connection in a minute.");
-                //Console.WriteLine("Remote Node Object sync disconnected. Exception error: " + error.Message);
             }
         }
 

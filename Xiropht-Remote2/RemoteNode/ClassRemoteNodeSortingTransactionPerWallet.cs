@@ -40,8 +40,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                         idWalletSender = -1; // Blockchain.
                     }
                 }
-                Decimal amount = 0; // Amount.
-                Decimal fee = 0; // Fee.
+                decimal amount = 0; // Amount.
+                decimal fee = 0; // Fee.
                 float idWalletReceiver;
                 if (dataTransactionSplit[3] == "")
                 {
@@ -53,7 +53,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     idWalletReceiver = float.Parse(dataTransactionSplit[3].Replace(".", ","), NumberStyles.Any, Program.GlobalCultureInfo); // Receiver ID.
 
 
-                    Decimal timestamp = Decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
+                    decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
                     string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
                     string timestampRecv = dataTransactionSplit[6];
 
@@ -138,8 +138,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                         idWalletSender = -1; // Blockchain.
                     }
                 }
-                Decimal amount = 0; // Amount.
-                Decimal fee = 0; // Fee.
+                decimal amount = 0; // Amount.
+                decimal fee = 0; // Fee.
                 float idWalletReceiver;
                 if (dataTransactionSplit[3] == "")
                 {
@@ -151,7 +151,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     idWalletReceiver = float.Parse(dataTransactionSplit[3].Replace(".", ","), NumberStyles.Any, Program.GlobalCultureInfo); // Receiver ID.
 
 
-                    Decimal timestamp = Decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
+                    decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
                     string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
                     string timestampRecv = dataTransactionSplit[6];
 

@@ -35,6 +35,36 @@ namespace Xiropht_RemoteNode.Api
         public const int MaxInvalidPacket = 10;
         public const int BanTimeInSecond = 60;
         public static Dictionary<string, ClassApiBanObject> ListBanApiIp = new Dictionary<string, ClassApiBanObject>();
+
+        /// <summary>
+        /// Increment total invalid packet.
+        /// </summary>
+        /// <param name="ip"></param>
+        public static void InsertInvalidPacket(string ip)
+        {
+            if (ListBanApiIp.ContainsKey(ip)) // Anti flood.
+            {
+                ListBanApiIp[ip].TotalInvalidPacket++;
+                if (ListBanApiIp[ip].TotalInvalidPacket >= MaxInvalidPacket)
+                {
+                    ListBanApiIp[ip].BanDate = DateTimeOffset.Now.ToUnixTimeSeconds() + BanTimeInSecond;
+                    ListBanApiIp[ip].Banned = true;
+                }
+            }
+            else
+            {
+                ListBanApiIp.Add(ip, new ClassApiBanObject(ip));
+                if (ListBanApiIp.ContainsKey(ip)) // Anti flood.
+                {
+                    ListBanApiIp[ip].TotalInvalidPacket++;
+                    if (ListBanApiIp[ip].TotalInvalidPacket >= MaxInvalidPacket)
+                    {
+                        ListBanApiIp[ip].BanDate = DateTimeOffset.Now.ToUnixTimeSeconds() + BanTimeInSecond;
+                        ListBanApiIp[ip].Banned = true;
+                    }
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -316,7 +346,7 @@ namespace Xiropht_RemoteNode.Api
                         _incomingConnectionStatus = false;
                         break;
                     }
-                    if (!Utils.ClassUtilsNode.SocketIsConnected(_client))
+                    if (!ClassUtilsNode.SocketIsConnected(_client))
                     {
                         _incomingConnectionStatus = false;
                         break;
@@ -371,7 +401,7 @@ namespace Xiropht_RemoteNode.Api
                         _incomingConnectionStatus = false;
                         break;
                     }
-                    if (!Utils.ClassUtilsNode.SocketIsConnected(_client))
+                    if (!ClassUtilsNode.SocketIsConnected(_client))
                     {
                         _incomingConnectionStatus = false;
                         break;

@@ -10,8 +10,8 @@ using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Api;
 using Xiropht_RemoteNode.Command;
 using Xiropht_RemoteNode.Data;
-using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.RemoteNode;
+using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode
 {
@@ -57,42 +57,13 @@ namespace Xiropht_RemoteNode
         public static bool Closed;
         public static int TotalConnectionSync;
 
+        private static string ConfigFilePath = "\\config.ini";
+        private static bool EnableApiHttp;
+
+
         public static void Main(string[] args)
         {
             Thread.CurrentThread.Name = Path.GetFileName(Environment.GetCommandLineArgs()[0]);
-            var isMakeHisChoose = false;
-            if (args.Length > 0)
-            {
-                if (!string.IsNullOrEmpty(args[0])) // Argument id 0 = Wallet Address.
-                {
-                    RemoteNodeWalletAddress = args[0];
-                    ClassLog.Log("Wallet Address: " + RemoteNodeWalletAddress, 0, 1);
-                }
-
-                if (!string.IsNullOrEmpty(args[1])) // Argument id 1 = Choose to be public.
-                {
-                    if (args[1] == "Y" || args[1] == "y")
-                    {
-                        ClassRemoteNodeSync.WantToBePublicNode = true;
-                        ClassLog.Log("Want to be public: enabled", 0, 1);
-                    }
-                    else
-                    {
-                        ClassLog.Log("Want to be public: disabled", 0, 1);
-                    }
-
-                    isMakeHisChoose = true;
-                }
-
-                if (!string.IsNullOrEmpty(args[2])) // Argument id 2 = Log Level.
-                {
-                    if (int.TryParse(args[2], out var tmpLogLevel))
-                    {
-                        LogLevel = tmpLogLevel;
-                        ClassLog.Log("Log Level Used: " + LogLevel, 0, 1);
-                    }
-                }
-            }
 
             ClassRemoteNodeSave.InitializePath();
             if (ClassRemoteNodeSave.LoadBlockchainTransaction())
@@ -107,16 +78,19 @@ namespace Xiropht_RemoteNode
                 ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
                 Thread.Sleep(2000);
             }
-            Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version+"b");
-            if (string.IsNullOrEmpty(RemoteNodeWalletAddress))
+            Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "b");
+
+
+            if (File.Exists(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath)))
+            {
+                ReadConfigFile();
+            }
+            else
             {
                 Console.WriteLine(
                     "Welcome, please write your wallet address, in a near future public remote nodes will get reward: ");
                 RemoteNodeWalletAddress = Console.ReadLine();
-            }
 
-            if (!isMakeHisChoose)
-            {
                 Console.WriteLine("Do you want load your node as a Public Remote Node? [Y/N]");
                 var answer = Console.ReadLine();
                 if (answer == "Y" || answer == "y")
@@ -139,18 +113,26 @@ namespace Xiropht_RemoteNode
                         ClassRemoteNodeSync.WantToBePublicNode = true;
                     }
                 }
+
+                Console.WriteLine("Do you to enable the HTTP API ? [Y/N]");
+                answer = Console.ReadLine();
+                if (answer == "Y" || answer == "y")
+                {
+                    EnableApiHttp = true;
+                    Console.WriteLine("Do you want to enable HTTPS mode ? [Y/N]");
+                    answer = Console.ReadLine();
+                    if (answer == "Y" || answer == "y")
+                    {
+                        ClassApiHttp.UseSSL = true;
+                        Console.WriteLine("Write your ssl certificate path, including the file name: ");
+                        ClassApiHttp.SSLPath = Console.ReadLine();
+                    }
+                }
+                SaveConfigFile();
+
             }
+
             TotalConnectionSync = 1;
-            /*Console.WriteLine("How many connections do you want to open for sync? (By default 1): ");
-            string choose = Console.ReadLine();
-            if (int.TryParse(choose, out var numberOfConnection))
-            {
-                TotalConnectionSync = numberOfConnection;
-            }
-            else
-            {
-                TotalConnectionSync = 1;
-            }*/
 
 
             Certificate = ClassUtils.GenerateCertificate();
@@ -286,7 +268,7 @@ namespace Xiropht_RemoteNode
                         }
                         await Task.Delay(10000);
                     }
-                
+
 
 
                     Console.WriteLine("Enable Check Remote Node Objects connection..");
@@ -298,13 +280,17 @@ namespace Xiropht_RemoteNode
 
                     Console.WriteLine("Enable API..");
                     ClassApi.StartApiRemoteNode();
-
+                    if (EnableApiHttp)
+                    {
+                        Console.WriteLine("Enable API HTTP..");
+                        ClassApiHttp.StartApiHttpServer();
+                    }
                 }).ConfigureAwait(true);
 
 
             _threadCommandLine = new Thread(delegate ()
             {
-                while(!ClassApi.ApiReceiveConnectionStatus)
+                while (!ClassApi.ApiReceiveConnectionStatus)
                 {
                     Thread.Sleep(100);
                 }
@@ -328,6 +314,100 @@ namespace Xiropht_RemoteNode
             });
             _threadCommandLine.Start();
 
+        }
+
+        private static void SaveConfigFile()
+        {
+            Console.WriteLine("Save config file..");
+            File.Create(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath)).Close();
+            using (StreamWriter writer = new StreamWriter(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath)) { AutoFlush = true })
+            {
+                writer.WriteLine("WALLET_ADDRESS=" + RemoteNodeWalletAddress);
+                if (ClassRemoteNodeSync.WantToBePublicNode)
+                {
+                    writer.WriteLine("ENABLE_PUBLIC_MODE=Y");
+                }
+                else
+                {
+                    writer.WriteLine("ENABLE_PUBLIC_MODE=N");
+                }
+                if (EnableApiHttp)
+                {
+                    writer.WriteLine("ENABLE_API_HTTP=Y");
+                }
+                else
+                {
+                    writer.WriteLine("ENABLE_API_HTTP=N");
+                }
+                if (ClassApiHttp.UseSSL)
+                {
+                    writer.WriteLine("ENABLE_HTTPS_API_MODE=Y");
+                }
+                else
+                {
+                    writer.WriteLine("ENABLE_HTTPS_API_MODE=N");
+                }
+                if (!string.IsNullOrEmpty(ClassApiHttp.SSLPath))
+                {
+                    writer.WriteLine("HTTPS_CERTIFICATE_PATH=" + ClassApiHttp.SSLPath);
+                }
+                else
+                {
+                    writer.WriteLine("HTTPS_CERTIFICATE_PATH=");
+                }
+                writer.WriteLine("LOG_LEVEL=" + LogLevel);
+            }
+            Console.WriteLine("Config file saved.");
+        }
+
+        /// <summary>
+        /// Read config file.
+        /// </summary>
+        private static void ReadConfigFile()
+        {
+            StreamReader reader = new StreamReader(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath));
+
+            string line = string.Empty;
+
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (line.Contains("WALLET_ADDRESS="))
+                {
+                    RemoteNodeWalletAddress = line.Replace("WALLET_ADDRESS=", "");
+                }
+                if (line.Contains("ENABLE_PUBLIC_MODE="))
+                {
+                    string option = line.Replace("ENABLE_PUBLIC_MODE=", "");
+                    if (option.ToLower() == "y")
+                    {
+                        ClassRemoteNodeSync.WantToBePublicNode = true;
+                    }
+                }
+                if (line.Contains("ENABLE_API_HTTP="))
+                {
+                    string option = line.Replace("ENABLE_API_HTTP=", "");
+                    if (option.ToLower() == "y")
+                    {
+                        EnableApiHttp = true;
+                    }
+                }
+                if (line.Contains("ENABLE_HTTPS_API_MODE="))
+                {
+                    string option = line.Replace("ENABLE_HTTPS_API_MODE=", "");
+                    if (option.ToLower() == "y")
+                    {
+                        ClassApiHttp.UseSSL = true;
+                    }
+                }
+                if (line.Contains("HTTPS_CERTIFICATE_PATH="))
+                {
+                    ClassApiHttp.SSLPath = line.Replace("HTTPS_CERTIFICATE_PATH=", "");
+                }
+                if (line.Contains("LOG_LEVEL="))
+                {
+                    int.TryParse(line.Replace("LOG_LEVEL=", ""), out LogLevel);
+                }
+            }
         }
     }
 }
