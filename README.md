@@ -87,4 +87,4 @@ get_coin_transaction_per_id -> return a transaction information per id example: 
 
 example for use a command line: http://remote_node_ip/get_coin_name
 
-**Newtonsoft.Json.net is used since version 0.2.2.8b for the API HTTP/HTTPS system: https://github.com/JamesNK/Newtonsoft.Json**
+**Newtonsoft.Json library is used since version 0.2.2.8b for the API HTTP/HTTPS system: https://github.com/JamesNK/Newtonsoft.Json**
