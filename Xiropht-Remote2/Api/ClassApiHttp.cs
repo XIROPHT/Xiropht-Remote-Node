@@ -403,6 +403,7 @@ namespace Xiropht_RemoteNode.Api
             };
             clientResponse.Headers.Add("Server", ClassConnectorSetting.CoinName + " Remote Node");
             clientResponse.Headers.Add("Date", DateTime.Now.ToString("r"));
+            clientResponse.Headers.Add("Access-Control-Allow-Origin", "*");
 
             string HeadersString = clientResponse.Version + " " + "OK\n";
             foreach (DictionaryEntry Header in clientResponse.Headers)
