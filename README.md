@@ -49,12 +49,13 @@ Then you will get Xiropht-Remote2 binary file if you follow this command line.
 
 3. A better performance.
 
-Default port: 
+**Default port:**
 
-API TCP - 18002 (Used by seed nodes if you want to be listed on the public, and by wallets).
-API HTTP/HTTPS - 18001 (Can be used by website).
+-> API TCP - 18002 (Used by seed nodes if you want to be listed on the public, and by wallets).
 
-API HTTP Command line:
+-> API HTTP/HTTPS - 18001 (Can be used by website).
+
+**API HTTP Command line:**
 
 get_coin_name ->  return Xiropht
 
