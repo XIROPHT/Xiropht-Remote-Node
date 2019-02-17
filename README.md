@@ -81,10 +81,10 @@ get_coin_network_hashrate -> return current network hashrate
 
 get_coin_network_full_stats -> return all stats of the network
 
-get_coin_block_per_id -> return a block information per id example: http://remote_node_ip:api_http_port_selected/get_coin_block_per_id=1
+get_coin_block_per_id -> return a block information per id example: http://remote_node_ip:18001/get_coin_block_per_id=1
 
-get_coin_transaction_per_id -> return a transaction information per id example: http://remote_node_ip:api_http_port_selected/get_coin_transaction_per_id=1
+get_coin_transaction_per_id -> return a transaction information per id example: http://remote_node_ip:18001/get_coin_transaction_per_id=1
 
-example for use a command line: http://remote_node_ip:api_http_port_selected/get_coin_name
+example for use a command line: http://remote_node_ip:18001/get_coin_name
 
 **Newtonsoft.Json library is used since version 0.2.2.8b for the API HTTP/HTTPS system: https://github.com/JamesNK/Newtonsoft.Json**
