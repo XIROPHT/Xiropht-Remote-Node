@@ -27,7 +27,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                 {
                     Thread.Sleep(ThreadLoopCheckRemoteNodeInterval); // Make a pause for the next check.
 
-                    if (!Program.RemoteNodeObjectBlock.RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectBlock.RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                    if (!Program.RemoteNodeObjectBlock.RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectBlock.RemoteNodeObjectTcpClient.ReturnStatus())
                     {
                         while (!BlockchainNetworkStatus)
                         {
@@ -73,7 +73,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         if (i < Program.RemoteNodeObjectCoinCirculating.Count)
                         {
-                            if (!Program.RemoteNodeObjectCoinCirculating[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectCoinCirculating[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                            if (!Program.RemoteNodeObjectCoinCirculating[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectCoinCirculating[i].RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -123,7 +123,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     }
                     for (int i = 0; i < Program.RemoteNodeObjectCoinMaxSupply.Count; i++)
                     {
-                        if (!Program.RemoteNodeObjectCoinMaxSupply[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectCoinMaxSupply[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                        if (!Program.RemoteNodeObjectCoinMaxSupply[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectCoinMaxSupply[i].RemoteNodeObjectTcpClient.ReturnStatus())
                         {
                             while (!BlockchainNetworkStatus)
                             {
@@ -173,7 +173,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         if (i < Program.RemoteNodeObjectCurrentDifficulty.Count)
                         {
-                            if (!Program.RemoteNodeObjectCurrentDifficulty[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectCurrentDifficulty[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                            if (!Program.RemoteNodeObjectCurrentDifficulty[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectCurrentDifficulty[i].RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -225,7 +225,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         if (i < Program.RemoteNodeObjectCurrentRate.Count)
                         {
-                            if (!Program.RemoteNodeObjectCurrentRate[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectCurrentDifficulty[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                            if (!Program.RemoteNodeObjectCurrentRate[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectCurrentDifficulty[i].RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -249,7 +249,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     }
                     if (ClassRemoteNodeSync.WantToBePublicNode)
                     {
-                        if (!Program.RemoteNodeObjectToBePublic.RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectToBePublic.RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                        if (!Program.RemoteNodeObjectToBePublic.RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectToBePublic.RemoteNodeObjectTcpClient.ReturnStatus())
                         {
                             while (!BlockchainNetworkStatus)
                             {
@@ -275,7 +275,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         if (i < Program.RemoteNodeObjectTotalBlockMined.Count)
                         {
-                            if (!Program.RemoteNodeObjectTotalBlockMined[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTotalBlockMined[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                            if (!Program.RemoteNodeObjectTotalBlockMined[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTotalBlockMined[i].RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -301,7 +301,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         if (i < Program.RemoteNodeObjectTotalFee.Count)
                         {
-                            if (!Program.RemoteNodeObjectTotalFee[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTotalFee[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                            if (!Program.RemoteNodeObjectTotalFee[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTotalFee[i].RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -327,7 +327,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         if (i < Program.RemoteNodeObjectTotalPendingTransaction.Count)
                         {
-                            if (!Program.RemoteNodeObjectTotalPendingTransaction[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTotalPendingTransaction[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                            if (!Program.RemoteNodeObjectTotalPendingTransaction[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTotalPendingTransaction[i].RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -351,7 +351,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     }
 
 
-                    if (!Program.RemoteNodeObjectTransaction.RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTransaction.RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                    if (!Program.RemoteNodeObjectTransaction.RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTransaction.RemoteNodeObjectTcpClient.ReturnStatus())
                     {
                         while (!BlockchainNetworkStatus)
                         {
@@ -403,7 +403,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         if (i < Program.RemoteNodeObjectTotalPendingTransaction.Count)
                         {
-                            if (!Program.RemoteNodeObjectTotalTransaction[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTotalTransaction[i].RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                            if (!Program.RemoteNodeObjectTotalTransaction[i].RemoteNodeObjectConnectionStatus || !Program.RemoteNodeObjectTotalTransaction[i].RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {

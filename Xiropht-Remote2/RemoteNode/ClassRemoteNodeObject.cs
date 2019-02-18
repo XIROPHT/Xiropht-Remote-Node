@@ -70,7 +70,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// </summary>
         public void StopConnection()
         {
-            Console.WriteLine("Object sync disconnected. Reconnect in a minute.");
+            ClassLog.Log("Object sync "+ RemoteNodeObjectType+" disconnected. Reconnect in a bit of time..", 0, 2);
             RemoteNodeObjectLoginStatus = false;
             RemoteNodeObjectConnectionStatus = false;
             RemoteNodeObjectInReceiveBlock = false;
@@ -113,7 +113,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                 {
                     try
                     {
-                        if (!RemoteNodeObjectTcpClient.GetStatusConnectToSeed())
+                        if (!RemoteNodeObjectTcpClient.ReturnStatus())
                         {
                             RemoteNodeObjectConnectionStatus = false;
                             break;
