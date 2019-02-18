@@ -1,5 +1,5 @@
 # Xiropht-Remote-Node
-Xiropht Remote Node version 0.2.2.8b compatible with Windows with Netframework 4.6 and other OS who use Mono.
+Xiropht Remote Node version 0.2.2.9b compatible with Windows with Netframework 4.6 or higher and other OS who use Mono.
 
 
 **In production, we suggest to compile in Release Mode for disable log files.**
@@ -49,12 +49,13 @@ Then you will get Xiropht-Remote2 binary file if you follow this command line.
 
 3. A better performance.
 
-Default port: 
+**Default port:**
 
-API TCP - 18002 (Used by seed nodes if you want to be listed on the public, and by wallets).
-API HTTP/HTTPS - 18001 (Can be used by website).
+-> API TCP - 18002 (Used by seed nodes if you want to be listed on the public, and by wallets).
 
-API HTTP Command line:
+-> API HTTP/HTTPS - 18001 (Can be used by website).
+
+**API HTTP Command line:**
 
 get_coin_name ->  return Xiropht
 
@@ -80,10 +81,10 @@ get_coin_network_hashrate -> return current network hashrate
 
 get_coin_network_full_stats -> return all stats of the network
 
-get_coin_block_per_id -> return a block information per id example: http://remote_node_ip/get_coin_block_per_id=1
+get_coin_block_per_id -> return a block information per id example: http://remote_node_ip:18001/get_coin_block_per_id=1
 
-get_coin_transaction_per_id -> return a transaction information per id example: http://remote_node_ip/get_coin_transaction_per_id=1
+get_coin_transaction_per_id -> return a transaction information per id example: http://remote_node_ip:18001/get_coin_transaction_per_id=1
 
-example for use a command line: http://remote_node_ip/get_coin_name
+example for use a command line: http://remote_node_ip:18001/get_coin_name
 
-Newtonsoft.Json is used since version 0.2.2.8b for the API HTTP/HTTPS system:
+**Newtonsoft.Json library is used since version 0.2.2.8b for the API HTTP/HTTPS system: https://github.com/JamesNK/Newtonsoft.Json**
