@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -10,6 +9,8 @@ using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Api;
 using Xiropht_RemoteNode.Command;
 using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.Filter;
+using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.RemoteNode;
 using Xiropht_RemoteNode.Utils;
 
@@ -17,49 +18,66 @@ namespace Xiropht_RemoteNode
 {
     public class Program
     {
-        public static List<ClassRemoteNodeObject>
-            RemoteNodeObjectCoinMaxSupply; // Sync the node for get coin max supply information.
-
-        public static List<ClassRemoteNodeObject>
-            RemoteNodeObjectCoinCirculating; // Sync the node for get coin circulating information.
-
-        public static List<ClassRemoteNodeObject>
-            RemoteNodeObjectTotalBlockMined; // Sync the node for get total block mined information.
-
-        public static List<ClassRemoteNodeObject>
-            RemoteNodeObjectTotalPendingTransaction; // Sync the node for get total pending transaction information.
-
-        public static List<ClassRemoteNodeObject>
-            RemoteNodeObjectCurrentDifficulty; // Sync the node for get current mining difficulty information.
-
-        public static List<ClassRemoteNodeObject>
-            RemoteNodeObjectCurrentRate; // Sync the node for get current mining hashrate information.
-
-        public static ClassRemoteNodeObject
-            RemoteNodeObjectToBePublic; // Sync the node for get the public node list information and ask to be public if not.
-
-        public static ClassRemoteNodeObject
-            RemoteNodeObjectTransaction; // Sync the node for get each transaction data information.
-
-        public static List<ClassRemoteNodeObject>
-            RemoteNodeObjectTotalFee; // Sync the node for get current amount of fee information.
-
+        /// <summary>
+        /// Remote node object of sync.
+        /// </summary>
+        public static ClassRemoteNodeObject RemoteNodeObjectCoinMaxSupply; // Sync the node for get coin max supply information.
+        public static ClassRemoteNodeObject RemoteNodeObjectCoinCirculating; // Sync the node for get coin circulating information.
+        public static ClassRemoteNodeObject RemoteNodeObjectTotalBlockMined; // Sync the node for get total block mined information.
+        public static ClassRemoteNodeObject RemoteNodeObjectTotalPendingTransaction; // Sync the node for get total pending transaction information.
+        public static ClassRemoteNodeObject RemoteNodeObjectCurrentDifficulty; // Sync the node for get current mining difficulty information.
+        public static ClassRemoteNodeObject RemoteNodeObjectCurrentRate; // Sync the node for get current mining hashrate information.
+        public static ClassRemoteNodeObject RemoteNodeObjectToBePublic; // Sync the node for get the public node list information and ask to be public if not.
+        public static ClassRemoteNodeObject RemoteNodeObjectTransaction; // Sync the node for get each transaction data information.
+        public static ClassRemoteNodeObject RemoteNodeObjectTotalFee; // Sync the node for get current amount of fee information.
         public static ClassRemoteNodeObject RemoteNodeObjectBlock; // Sync the node for get each block data information.
+        public static ClassRemoteNodeObject RemoteNodeObjectTotalTransaction; // Sync the node for get total number of transaction information.
 
-        public static List<ClassRemoteNodeObject>
-            RemoteNodeObjectTotalTransaction; // Sync the node for get total number of transaction information.
+        /// <summary>
+        /// Current wallet address used by the remote node.
+        /// </summary>
+        public static string RemoteNodeWalletAddress; 
 
-        public static string RemoteNodeWalletAddress; // Wallet Address of the owner.
+        /// <summary>
+        /// Threading.
+        /// </summary>
         private static Thread _threadCommandLine;
-        public static int LogLevel;
-        public static string Certificate;
-        public static CultureInfo GlobalCultureInfo = new CultureInfo("fr-FR");
-        public static bool Closed;
-        public static int TotalConnectionSync;
 
+        /// <summary>
+        /// About log settings.
+        /// </summary>
+        public static int LogLevel;
+        public static bool EnableWriteLog;
+
+        /// <summary>
+        /// Certificate generated for communicate with the network.
+        /// </summary>
+        public static string Certificate;
+
+        /// <summary>
+        /// Force to convert every users to the same cultureinfo.
+        /// </summary>
+        public static CultureInfo GlobalCultureInfo = new CultureInfo("fr-FR");
+
+        /// <summary>
+        /// Return the program status.
+        /// </summary>
+        public static bool Closed;
+
+        /// <summary>
+        /// About setting file.
+        /// </summary>
         private static string ConfigFilePath = "\\config.ini";
+
+        /// <summary>
+        /// About api http setting.
+        /// </summary>
         private static bool EnableApiHttp;
 
+        /// <summary>
+        /// About filtering system.
+        /// </summary>
+        public static bool EnableFilteringSystem;
 
         public static void Main(string[] args)
         {
@@ -84,6 +102,14 @@ namespace Xiropht_RemoteNode
             if (File.Exists(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath)))
             {
                 ReadConfigFile();
+                if (EnableWriteLog)
+                {
+                    ClassLog.EnableWriteLog();
+                }
+                if (EnableFilteringSystem)
+                {
+                    ClassFilter.EnableFilterSystem();
+                }
             }
             else
             {
@@ -125,7 +151,7 @@ namespace Xiropht_RemoteNode
                     {
                         Console.WriteLine("Enter your port selected for your HTTP API: (By default: " + ClassConnectorSetting.RemoteNodeHttpPort + ")");
                         string portChoosed = Console.ReadLine();
-                        while(!int.TryParse(portChoosed, out ClassApiHttp.PersonalRemoteNodeHttpPort))
+                        while (!int.TryParse(portChoosed, out ClassApiHttp.PersonalRemoteNodeHttpPort))
                         {
                             Console.WriteLine("Invalid port, please try another one:");
                             portChoosed = Console.ReadLine();
@@ -144,160 +170,139 @@ namespace Xiropht_RemoteNode
 
             }
 
-            TotalConnectionSync = 1;
 
 
             Certificate = ClassUtils.GenerateCertificate();
             Console.WriteLine("Initialize Remote Node Sync Objects..");
 
             RemoteNodeObjectToBePublic = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectToBePublic);
-            RemoteNodeObjectCoinMaxSupply = new List<ClassRemoteNodeObject>();
-            RemoteNodeObjectCoinCirculating = new List<ClassRemoteNodeObject>();
-            RemoteNodeObjectTotalBlockMined = new List<ClassRemoteNodeObject>();
-            RemoteNodeObjectTotalPendingTransaction = new List<ClassRemoteNodeObject>();
-            RemoteNodeObjectCurrentDifficulty = new List<ClassRemoteNodeObject>();
-            RemoteNodeObjectCurrentRate = new List<ClassRemoteNodeObject>();
-            RemoteNodeObjectTotalFee = new List<ClassRemoteNodeObject>();
-            RemoteNodeObjectTotalTransaction = new List<ClassRemoteNodeObject>();
-            RemoteNodeObjectTransaction = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTransaction, 0);
-            for (int i = 0; i < TotalConnectionSync; i++)
-            {
-                RemoteNodeObjectCoinMaxSupply.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinSupply, i));
-                RemoteNodeObjectCoinCirculating.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinCirculating, i));
-                RemoteNodeObjectTotalBlockMined.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlockMined, i));
-                RemoteNodeObjectTotalPendingTransaction.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectPendingTransaction, i));
-                RemoteNodeObjectCurrentDifficulty.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentDifficulty, i));
-                RemoteNodeObjectCurrentRate.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentRate, i));
-                RemoteNodeObjectTotalFee.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalFee, i));
-                RemoteNodeObjectTotalTransaction.Add(new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalTransaction, i));
-            }
+            RemoteNodeObjectCoinMaxSupply = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinSupply);
+            RemoteNodeObjectTransaction = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTransaction);
+            RemoteNodeObjectCoinMaxSupply = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinSupply);
+            RemoteNodeObjectCoinCirculating = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCoinCirculating);
+            RemoteNodeObjectTotalBlockMined = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlockMined);
+            RemoteNodeObjectTotalPendingTransaction = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectPendingTransaction);
+            RemoteNodeObjectCurrentDifficulty = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentDifficulty);
+            RemoteNodeObjectCurrentRate = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectCurrentRate);
+            RemoteNodeObjectTotalFee = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalFee);
+            RemoteNodeObjectTotalTransaction = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalTransaction);
             RemoteNodeObjectBlock = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlock);
+
             ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
 
             Task.Run(async delegate ()
-                {
-                    ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
-                    if (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
-                    {
-                        while (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
-                        {
-                            Console.WriteLine("Blockchain network is not available. Check again after 1 seconds.");
-                            await Task.Delay(1000);
-                        }
-                    }
-                    var initializeConnection = false;
-                    while (!initializeConnection)
-                    {
-                        Console.WriteLine("Start Remote Node Sync Objects Connection..");
+             {
+                 ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
+                 if (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
+                 {
+                     while (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
+                     {
+                         Console.WriteLine("Blockchain network is not available. Check again after 1 seconds.");
+                         await Task.Delay(1000);
+                     }
+                 }
+                 var initializeConnection = false;
+                 while (!initializeConnection)
+                 {
+                     Console.WriteLine("Start Remote Node Sync Objects Connection..");
 
-                        for (int i = 0; i < RemoteNodeObjectCoinMaxSupply.Count; i++)
-                        {
+                     if (await RemoteNodeObjectCoinMaxSupply.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
+                     }
+                     if (await RemoteNodeObjectCoinCirculating.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
+                     }
+                     if (await RemoteNodeObjectTotalBlockMined.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
+                     }
+                     if (await RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
+                     }
+                     if (await RemoteNodeObjectCurrentDifficulty.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
+                     }
+                     if (await RemoteNodeObjectCurrentRate.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
+                     }
 
-                            if (await RemoteNodeObjectCoinMaxSupply[i].StartConnectionAsync())
-                            {
-                                await Task.Delay(10);
-                            }
-                            if (await RemoteNodeObjectCoinCirculating[i].StartConnectionAsync())
-                            {
-                                await Task.Delay(10);
-                            }
-                            if (await RemoteNodeObjectTotalBlockMined[i].StartConnectionAsync())
-                            {
-                                await Task.Delay(10);
-                            }
-                            if (await RemoteNodeObjectTotalPendingTransaction[i].StartConnectionAsync())
-                            {
-                                await Task.Delay(10);
-                            }
-                            if (await RemoteNodeObjectCurrentDifficulty[i].StartConnectionAsync())
-                            {
-                                await Task.Delay(10);
-                            }
-                            if (await RemoteNodeObjectCurrentRate[i].StartConnectionAsync())
-                            {
-                                await Task.Delay(10);
-                            }
-
-                            if (await RemoteNodeObjectTotalFee[i].StartConnectionAsync())
-                            {
-                                await Task.Delay(10);
-                            }
-                            if (await RemoteNodeObjectTotalTransaction[i].StartConnectionAsync())
-                            {
-                                await Task.Delay(10);
-                            }
-
-                        }
-
-                        await Task.Delay(100);
-                        if (await RemoteNodeObjectTransaction.StartConnectionAsync())
-                        {
-                            await Task.Delay(10);
-
-                            if (await RemoteNodeObjectBlock.StartConnectionAsync())
-                            {
-                                if (ClassRemoteNodeSync.WantToBePublicNode)
-                                {
-                                    if (await RemoteNodeObjectToBePublic.StartConnectionAsync())
-                                    {
-                                        initializeConnection = true;
-                                    }
-                                }
-                                else
-                                {
-                                    initializeConnection = true;
-                                }
-                            }
-                        }
-
-                    }
-
-                    if (initializeConnection)
-                    {
-                        Console.WriteLine("Remote node objects successfully connected.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Remote node objects can't connect to the network, retry in 10 seconds..");
-                        ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
-                        RemoteNodeObjectBlock.StopConnection();
-                        RemoteNodeObjectToBePublic.StopConnection();
-                        RemoteNodeObjectTransaction.StopConnection();
-                        for (int i = 0; i < TotalConnectionSync; i++)
-                        {
-                            if (i < TotalConnectionSync)
-                            {
-                                RemoteNodeObjectCoinCirculating[i].StopConnection();
-                                RemoteNodeObjectCoinMaxSupply[i].StopConnection();
-                                RemoteNodeObjectCurrentDifficulty[i].StopConnection();
-                                RemoteNodeObjectCurrentRate[i].StopConnection();
-                                RemoteNodeObjectTotalBlockMined[i].StopConnection();
-                                RemoteNodeObjectTotalFee[i].StopConnection();
-                                RemoteNodeObjectTotalPendingTransaction[i].StopConnection();
-                                RemoteNodeObjectTotalTransaction[i].StopConnection();
-
-                            }
-                        }
-                        await Task.Delay(10000);
-                    }
+                     if (await RemoteNodeObjectTotalFee.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
+                     }
+                     if (await RemoteNodeObjectTotalTransaction.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
+                     }
 
 
 
-                    Console.WriteLine("Enable Check Remote Node Objects connection..");
-                    ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();
-                    Console.WriteLine("Enable System of Generating Trusted Key's of Remote Node..");
-                    ClassRemoteNodeKey.StartUpdateHashTransactionList();
-                    ClassRemoteNodeKey.StartUpdateHashBlockList();
-                    ClassRemoteNodeKey.StartUpdateTrustedKey();
+                     await Task.Delay(100);
+                     if (await RemoteNodeObjectTransaction.StartConnectionAsync())
+                     {
+                         await Task.Delay(10);
 
-                    Console.WriteLine("Enable API..");
-                    ClassApi.StartApiRemoteNode();
-                    if (EnableApiHttp)
-                    {
-                        Console.WriteLine("Enable API HTTP..");
-                        ClassApiHttp.StartApiHttpServer();
-                    }
-                }).ConfigureAwait(true);
+                         if (await RemoteNodeObjectBlock.StartConnectionAsync())
+                         {
+                             if (ClassRemoteNodeSync.WantToBePublicNode)
+                             {
+                                 if (await RemoteNodeObjectToBePublic.StartConnectionAsync())
+                                 {
+                                     initializeConnection = true;
+                                 }
+                             }
+                             else
+                             {
+                                 initializeConnection = true;
+                             }
+                         }
+                     }
+                 }
+
+                 if (initializeConnection)
+                 {
+                     Console.WriteLine("Remote node objects successfully connected.");
+                 }
+                 else
+                 {
+                     Console.WriteLine("Remote node objects can't connect to the network, retry in 10 seconds..");
+                     ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
+                     RemoteNodeObjectBlock.StopConnection();
+                     RemoteNodeObjectToBePublic.StopConnection();
+                     RemoteNodeObjectTransaction.StopConnection();
+                     RemoteNodeObjectCoinCirculating.StopConnection();
+                     RemoteNodeObjectCoinMaxSupply.StopConnection();
+                     RemoteNodeObjectCurrentDifficulty.StopConnection();
+                     RemoteNodeObjectCurrentRate.StopConnection();
+                     RemoteNodeObjectTotalBlockMined.StopConnection();
+                     RemoteNodeObjectTotalFee.StopConnection();
+                     RemoteNodeObjectTotalPendingTransaction.StopConnection();
+                     RemoteNodeObjectTotalTransaction.StopConnection();
+                     await Task.Delay(10000);
+                 }
+
+
+
+                 Console.WriteLine("Enable Check Remote Node Objects connection..");
+                 ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();
+                 Console.WriteLine("Enable System of Generating Trusted Key's of Remote Node..");
+                 ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                 ClassRemoteNodeKey.StartUpdateHashBlockList();
+                 ClassRemoteNodeKey.StartUpdateTrustedKey();
+
+                 Console.WriteLine("Enable API..");
+                 ClassApi.StartApiRemoteNode();
+                 if (EnableApiHttp)
+                 {
+                     Console.WriteLine("Enable API HTTP..");
+                     ClassApiHttp.StartApiHttpServer();
+                 }
+             }).ConfigureAwait(true);
 
 
             _threadCommandLine = new Thread(delegate ()
@@ -369,6 +374,10 @@ namespace Xiropht_RemoteNode
                 }
                 writer.WriteLine("API_HTTP_PORT=" + ClassApiHttp.PersonalRemoteNodeHttpPort);
                 writer.WriteLine("LOG_LEVEL=" + LogLevel);
+                writer.WriteLine("WRITE_LOG=Y");
+                writer.WriteLine("ENABLE_FILTERING_SYSTEM=N");
+                writer.WriteLine("CHAIN_FILTERING_SYSTEM=");
+                writer.WriteLine("NAME_FILTERING_SYSTEM=");
             }
             Console.WriteLine("Config file saved.");
         }
@@ -404,6 +413,10 @@ namespace Xiropht_RemoteNode
                         EnableApiHttp = true;
                     }
                 }
+                if (line.Contains("API_HTTP_PORT="))
+                {
+                    int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
+                }
                 if (line.Contains("ENABLE_HTTPS_API_MODE="))
                 {
                     string option = line.Replace("ENABLE_HTTPS_API_MODE=", "");
@@ -420,10 +433,31 @@ namespace Xiropht_RemoteNode
                 {
                     int.TryParse(line.Replace("LOG_LEVEL=", ""), out LogLevel);
                 }
-                if (line.Contains("API_HTTP_PORT="))
+                if (line.Contains("WRITE_LOG="))
                 {
-                    int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
+                    string option = line.Replace("WRITE_LOG=", "");
+                    if (option.ToLower() == "y")
+                    {
+                        EnableWriteLog = true;
+                    }
                 }
+                if (line.Contains("ENABLE_FILTERING_SYSTEM="))
+                {
+                    string option = line.Replace("ENABLE_FILTERING_SYSTEM=", "");
+                    if (option.ToLower() == "y")
+                    {
+                        EnableFilteringSystem = true;
+                    }
+                }
+                if (line.Contains("CHAIN_FILTERING_SYSTEM="))
+                {
+                    ClassFilter.FilterChainName = line.Replace("CHAIN_FILTERING_SYSTEM=", "").ToLower();
+                }
+                if (line.Contains("NAME_FILTERING_SYSTEM="))
+                {
+                    ClassFilter.FilterSystem = line.Replace("NAME_FILTERING_SYSTEM=", "").ToLower();
+                }
+
             }
         }
     }

@@ -7,7 +7,7 @@
         public const string ObjectBlockMined = "ASK-BLOCK-MINED";
         public const string ObjectPendingTransaction = "ASK-PENDING-TRANSACTION";
         public const string ObjectCurrentDifficulty = "ASK-CURRENT-DIFFICULTY";
-        public const string ObjectCurrentRate = "ASK-CURRENT-RATE";
+        public const string ObjectCurrentRate = "ASK-CURRENT-HASHRATE";
         public const string ObjectToBePublic = "ASK-TO-BE-PUBLIC";
         public const string ObjectTransaction = "ASK-TRANSACTION";
         public const string ObjectTotalFee = "ASK-TOTAL-FEE";

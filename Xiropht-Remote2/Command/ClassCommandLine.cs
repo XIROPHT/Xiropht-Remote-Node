@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Globalization;
+using System.Collections.Generic;
 using System.Threading;
 using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Api;
@@ -95,9 +95,9 @@ namespace Xiropht_RemoteNode.Command
                                 {
                                     logLevel = 0;
                                 }
-                                if (logLevel > 6)
+                                if (logLevel > 7)
                                 {
-                                    logLevel = 6;
+                                    logLevel = 7;
                                 }
                                 Console.WriteLine("Log Level " + Program.LogLevel + " -> " + logLevel);
                                 Program.LogLevel = logLevel;
@@ -132,16 +132,16 @@ namespace Xiropht_RemoteNode.Command
                     case "filterlist":
                         if (ClassApiBan.ListBanApiIp.Count > 0)
                         {
-                            foreach (var objectBan in ClassApiBan.ListBanApiIp)
+                            foreach (KeyValuePair<string, ClassApiBanObject> objectBan in ClassApiBan.ListBanApiIp)
                             {
                                 if (objectBan.Value.Banned)
                                 {
                                     long banDelay = objectBan.Value.BanDate - DateTimeOffset.Now.ToUnixTimeSeconds();
-                                    Console.WriteLine("IP: " + objectBan.Key + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " banned pending: " + banDelay + " second(s).");
+                                    Console.WriteLine("IP: " + objectBan.Value.Ip + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " banned pending: " + banDelay + " second(s).");
                                 }
                                 else
                                 {
-                                    Console.WriteLine("IP: " + objectBan.Key + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " not banned.");
+                                    Console.WriteLine("IP: " + objectBan.Value.Ip + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " not banned.");
                                 }
                             }
                         }
@@ -153,12 +153,12 @@ namespace Xiropht_RemoteNode.Command
                     case "banlist":
                         if (ClassApiBan.ListBanApiIp.Count > 0)
                         {
-                            foreach (var objectBan in ClassApiBan.ListBanApiIp)
+                            foreach(KeyValuePair<string, ClassApiBanObject> objectBan in ClassApiBan.ListBanApiIp)
                             {
                                 if (objectBan.Value.Banned)
                                 {
                                     long banDelay = objectBan.Value.BanDate - DateTimeOffset.Now.ToUnixTimeSeconds();
-                                    Console.WriteLine("IP: " + objectBan.Key + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " banned pending: " + banDelay + " second(s).");
+                                    Console.WriteLine("IP: " + objectBan.Value.Ip + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " banned pending: " + banDelay + " second(s).");
                                 }
                             }
                         }
@@ -193,27 +193,22 @@ namespace Xiropht_RemoteNode.Command
                         Console.WriteLine("Stop each connection of the remote node.");
                         Program.RemoteNodeObjectBlock.StopConnection();
                         Program.RemoteNodeObjectTransaction.StopConnection();
-                        for (int i = 0; i < Program.TotalConnectionSync; i++)
-                        {
-                            if (i < Program.TotalConnectionSync)
-                            {
-                                Program.RemoteNodeObjectTotalTransaction[i].StopConnection();
-                                Program.RemoteNodeObjectCoinCirculating[i].StopConnection();
-                                Program.RemoteNodeObjectCoinMaxSupply[i].StopConnection();
-                                Program.RemoteNodeObjectCurrentDifficulty[i].StopConnection();
-                                Program.RemoteNodeObjectCurrentRate[i].StopConnection();
-                                Program.RemoteNodeObjectTotalBlockMined[i].StopConnection();
-                                Program.RemoteNodeObjectTotalFee[i].StopConnection();
-                                Program.RemoteNodeObjectTotalPendingTransaction[i].StopConnection();
-                            }
-                        }
+                        Program.RemoteNodeObjectTotalTransaction.StopConnection();
+                        Program.RemoteNodeObjectCoinCirculating.StopConnection();
+                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection();
+                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection();
+                        Program.RemoteNodeObjectCurrentRate.StopConnection();
+                        Program.RemoteNodeObjectTotalBlockMined.StopConnection();
+                        Program.RemoteNodeObjectTotalFee.StopConnection();
+                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
+
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop api..");
                         ClassApi.StopApi();
                         ClassRemoteNodeSave.TotalBlockSaved = 0;
                         ClassRemoteNodeSave.DataBlockSaved = string.Empty;
                         Console.WriteLine("Waiting end of save block database..");
-                        while(ClassRemoteNodeSave.InSaveBlockDatabase)
+                        while (ClassRemoteNodeSave.InSaveBlockDatabase)
                         {
                             Thread.Sleep(100);
                         }

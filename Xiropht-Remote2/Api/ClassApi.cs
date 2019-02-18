@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Xiropht_Connector_All.Remote;
 using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.Utils;
 
@@ -42,12 +43,21 @@ namespace Xiropht_RemoteNode.Api
         /// <param name="ip"></param>
         public static void InsertInvalidPacket(string ip)
         {
+            ip = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(ip));
+            ClassLog.Log("Insert Invalid Packet for IP: " + ip, 7, 3);
             if (ListBanApiIp.ContainsKey(ip)) // Anti flood.
             {
                 ListBanApiIp[ip].TotalInvalidPacket++;
                 if (ListBanApiIp[ip].TotalInvalidPacket >= MaxInvalidPacket)
                 {
                     ListBanApiIp[ip].BanDate = DateTimeOffset.Now.ToUnixTimeSeconds() + BanTimeInSecond;
+                    if (Program.EnableFilteringSystem)
+                    {
+                        if (!ListBanApiIp[ip].Banned)
+                        {
+                            ClassFilter.InsertFilterBan(ip);
+                        }
+                    }
                     ListBanApiIp[ip].Banned = true;
                 }
             }
@@ -60,10 +70,63 @@ namespace Xiropht_RemoteNode.Api
                     if (ListBanApiIp[ip].TotalInvalidPacket >= MaxInvalidPacket)
                     {
                         ListBanApiIp[ip].BanDate = DateTimeOffset.Now.ToUnixTimeSeconds() + BanTimeInSecond;
+                        if (Program.EnableFilteringSystem)
+                        {
+                            if (!ListBanApiIp[ip].Banned)
+                            {
+                                ClassFilter.InsertFilterBan(ip);
+                            }
+                        }
                         ListBanApiIp[ip].Banned = true;
                     }
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Check if ip is banned, return ban object id if the ip is not banned.
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <returns></returns>
+        public static bool CheckBanIp(string ip)
+        {
+            ip = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(ip));
+
+            if (ip == "127.0.0.1")
+            {
+                return false;
+            }
+            ClassLog.Log("Check Ban IP: " + ip + "", 7, 2);
+            try
+            {
+                if (ListBanApiIp.ContainsKey(ip))
+                {
+                    if (ListBanApiIp[ip].BanDate > DateTimeOffset.Now.ToUnixTimeSeconds())
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        if (ListBanApiIp[ip].Banned)
+                        {
+                            ListBanApiIp[ip].Banned = false;
+                            ListBanApiIp[ip].TotalInvalidPacket = 0;
+                        }
+                        return false;
+                    }
+                }
+                else
+                {
+                    ClassLog.Log("Check Ban IP insert new object for IP: " + ip + "", 6, 2);
+                    ListBanApiIp.Add(ip, new ClassApiBanObject(ip));
+                }
+            }
+            catch
+            {
+
+            }
+            return false;
         }
     }
 
@@ -120,8 +183,6 @@ namespace Xiropht_RemoteNode.Api
                     var client = await _tcpListenerApiReceiveConnection.AcceptTcpClientAsync().ConfigureAwait(false);
                     string ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
 
-
-
                     ClassLog.Log("API Receive incoming connection from IP: " + ip, 5, 2);
 
                     await Task.Factory.StartNew(new ClassApiObjectConnection(client, ip).StartHandleIncomingConnectionAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
@@ -134,44 +195,6 @@ namespace Xiropht_RemoteNode.Api
             }
             ApiReceiveConnectionStatus = false;
         }
-
-        /// <summary>
-        /// Check if ip is banned, return ban object id if the ip is not banned.
-        /// </summary>
-        /// <param name="ip"></param>
-        /// <returns></returns>
-        public static bool CheckBanIp(string ip)
-        {
-            try
-            {
-                if (ClassApiBan.ListBanApiIp.ContainsKey(ip))
-                {
-                    if (ClassApiBan.ListBanApiIp[ip].BanDate > DateTimeOffset.Now.ToUnixTimeSeconds())
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (ClassApiBan.ListBanApiIp[ip].Banned)
-                        {
-                            ClassApiBan.ListBanApiIp[ip].Banned = false;
-                            ClassApiBan.ListBanApiIp[ip].TotalInvalidPacket = 0;
-                        }
-                        return false;
-                    }
-                }
-                else
-                {
-                    ClassApiBan.ListBanApiIp.Add(ip, new ClassApiBanObject(ip));
-                }
-            }
-            catch
-            {
-
-            }
-            return false;
-        }
-
     }
 
 
@@ -366,7 +389,7 @@ namespace Xiropht_RemoteNode.Api
         public async Task StartHandleIncomingConnectionAsync()
         {
 
-            var checkBanResult = ClassApi.CheckBanIp(_ip);
+            var checkBanResult = ClassApiBan.CheckBanIp(_ip);
 
             if (checkBanResult)
             {

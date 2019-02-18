@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -118,21 +117,6 @@ namespace Xiropht_RemoteNode.Api
     }
 
 
-    public enum ClassApiHttpResponseStatus
-    {
-        OK = 200,
-    }
-
-
-    public struct ClassClientApiHttpResponseStructure
-    {
-        public int Status;
-        public string Version;
-        public Hashtable Headers;
-        public int BodySize;
-        public byte[] BodyData;
-    }
-
     public class ClassClientApiHttpObject
     {
         private bool _clientStatus;
@@ -158,8 +142,13 @@ namespace Xiropht_RemoteNode.Api
         /// <returns></returns>
         public async Task StartHandleClientHttpAsync()
         {
-            var checkBanResult = ClassApi.CheckBanIp(_ip);
 
+            var checkBanResult = false;
+
+            if (_ip != "127.0.0.1") // Do not check localhost ip.
+            {
+                checkBanResult = ClassApiBan.CheckBanIp(_ip);
+            }
             if (!checkBanResult)
             {
                 try
@@ -211,7 +200,7 @@ namespace Xiropht_RemoteNode.Api
                     else
                     {
                         _clientSslStream = new SslStream(_client.GetStream(), false);
-                        _clientSslStream.AuthenticateAsServer(ClassApiHttp.ApiCertificateSSL, false, SslProtocols.Tls12, false);
+                        _clientSslStream.AuthenticateAsServer(ClassApiHttp.ApiCertificateSSL, false, SslProtocols.Tls12, true);
                         ClassLog.Log("HTTPS API -  SSL Authentification succeed for client IP: "+_ip, 6, 2);
 
                         while (_clientStatus)
@@ -219,7 +208,7 @@ namespace Xiropht_RemoteNode.Api
                             try
                             {
                                 byte[] buffer = new byte[8192];
-                                int received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                                int received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length);
                                 if (received > 0)
                                 {
                                     string packet = Encoding.UTF8.GetString(buffer);
@@ -268,7 +257,7 @@ namespace Xiropht_RemoteNode.Api
         private bool GetAndCheckForwardedIp(string packet)
         {
             var splitPacket = packet.Split(new[] { "\n" }, StringSplitOptions.None);
-            foreach(var packetEach in splitPacket)
+            foreach (var packetEach in splitPacket)
             {
                 if (packetEach != null)
                 {
@@ -277,17 +266,23 @@ namespace Xiropht_RemoteNode.Api
                         if (packetEach.ToLower().Contains("x-forwarded-for: "))
                         {
                             _ip = packetEach.ToLower().Replace("x-forwarded-for: ", "");
-                            ClassLog.Log("HTTP/HTTPS API - X-Forwarded-For ip of the client is: "+_ip, 6, 2);
-                            var checkBanResult = ClassApi.CheckBanIp(_ip);
+                            ClassLog.Log("HTTP/HTTPS API - X-Forwarded-For ip of the client is: " + _ip, 7, 2);
+                            var checkBanResult = ClassApiBan.CheckBanIp(_ip);
                             if (checkBanResult) // Is Banned
                             {
                                 return false;
                             }
+                            else
+                            {
+                                return true;
+                            }
                         }
+
                     }
                 }
             }
-            return true; // Not banned
+
+            return true;
         }
 
         /// <summary>
@@ -479,8 +474,10 @@ namespace Xiropht_RemoteNode.Api
                contentToSend = BuildFullJsonString(dictionaryContent);
             }
             StringBuilder builder = new StringBuilder();
+
             builder.AppendLine(@"HTTP/1.1 200 OK");
             builder.AppendLine(@"Content-Type: text/html");
+            builder.AppendLine(@"Content-Length: " + contentToSend.Length);
             builder.AppendLine(@"Access-Control-Allow-Origin: *");
             builder.AppendLine(@"");
             builder.AppendLine(@"" + contentToSend);
