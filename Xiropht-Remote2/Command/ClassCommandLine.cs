@@ -24,6 +24,8 @@ namespace Xiropht_RemoteNode.Command
                         Console.WriteLine("block -> Get the number of block(s) sync.");
                         Console.WriteLine("log -> Can set level of log to show: (default) log 0 max level 4");
                         Console.WriteLine("clearsync -> Clear the sync of the remote node.");
+                        Console.WriteLine("filterlist -> show every incoming connections ip's and their status.");
+                        Console.WriteLine("banlist -> show every incoming connections ip's banned.");
                         Console.WriteLine("save -> Save sync.");
                         Console.WriteLine("exit -> Save sync and Exit the node.");
                         break;
@@ -126,6 +128,44 @@ namespace Xiropht_RemoteNode.Command
                         Console.WriteLine("Clear finish, restart sync..");
                         ClassRemoteNodeKey.StartUpdateHashTransactionList();
                         ClassRemoteNodeKey.StartUpdateTrustedKey();
+                        break;
+                    case "filterlist":
+                        if (ClassApiBan.ListBanApiIp.Count > 0)
+                        {
+                            foreach (var objectBan in ClassApiBan.ListBanApiIp)
+                            {
+                                if (objectBan.Value.Banned)
+                                {
+                                    long banDelay = objectBan.Value.BanDate - DateTimeOffset.Now.ToUnixTimeSeconds();
+                                    Console.WriteLine("IP: " + objectBan.Key + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " banned pending: " + banDelay + " second(s).");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("IP: " + objectBan.Key + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " not banned.");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Their is any incoming ip on the list.");
+                        }
+                        break;
+                    case "banlist":
+                        if (ClassApiBan.ListBanApiIp.Count > 0)
+                        {
+                            foreach (var objectBan in ClassApiBan.ListBanApiIp)
+                            {
+                                if (objectBan.Value.Banned)
+                                {
+                                    long banDelay = objectBan.Value.BanDate - DateTimeOffset.Now.ToUnixTimeSeconds();
+                                    Console.WriteLine("IP: " + objectBan.Key + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " banned pending: " + banDelay + " second(s).");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Their is any incoming ip on the list.");
+                        }
                         break;
                     case "save":
                         Console.WriteLine("Starting save sync..");
