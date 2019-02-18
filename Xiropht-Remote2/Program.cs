@@ -136,7 +136,7 @@ namespace Xiropht_RemoteNode
                     if (answer == "Y" || answer == "y")
                     {
                         ClassApiHttp.UseSSL = true;
-                        Console.WriteLine("Write your ssl certificate path, including the file name: ");
+                        Console.WriteLine("Write your ssl certificate path, including the file name [Only PFX certificate file is compatible]: ");
                         ClassApiHttp.SSLPath = Console.ReadLine();
                     }
                 }

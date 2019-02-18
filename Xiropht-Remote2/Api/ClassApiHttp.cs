@@ -7,6 +7,8 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -34,12 +36,15 @@ namespace Xiropht_RemoteNode.Api
         public const string GetCoinNetworkFullStats = "get_coin_network_full_stats";
         public const string GetCoinBlockPerId = "get_coin_block_per_id";
         public const string GetCoinTransactionPerId = "get_coin_transaction_per_id";
+        public const string PacketFavicon = "favicon.ico";
+        public const string PacketNotExist = "not_exist";
     }
 
     public class ClassApiHttp
     {
         public static int PersonalRemoteNodeHttpPort;
         public static bool UseSSL;
+        public static bool IsBehindProxy;
         public static string SSLPath;
         public static X509Certificate ApiCertificateSSL;
         private static Thread ThreadListenApiHttpConnection;
@@ -53,7 +58,18 @@ namespace Xiropht_RemoteNode.Api
         {
             if (UseSSL)
             {
-                ApiCertificateSSL = X509Certificate.CreateFromCertFile(SSLPath);
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                try
+                {
+                    ApiCertificateSSL = X509Certificate.CreateFromCertFile(SSLPath);
+
+
+                }
+                catch(Exception error)
+                {
+                    Console.WriteLine("Cannot open certificate: " + SSLPath + " exception error: " + error.Message);
+                }
             }
             ListenApiHttpConnectionStatus = true;
             if (PersonalRemoteNodeHttpPort <= 0) // Not selected or invalid
@@ -71,20 +87,11 @@ namespace Xiropht_RemoteNode.Api
                 {
                     try
                     {
-                        var client = await ListenerApiHttpConnection.AcceptTcpClientAsync().ConfigureAwait(false);
+                        var client = await ListenerApiHttpConnection.AcceptTcpClientAsync();
                         var ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
-                        var checkBanResult = ClassApi.CheckBanIp(ip);
 
-                        if (checkBanResult)
-                        {
-                            client?.Close();
-                            client?.Dispose();
-                        }
-                        else
-                        {
-                            await Task.Factory.StartNew(new ClassClientApiHttpObject(client, ip).StartHandleClientHttpAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
+                        await Task.Factory.StartNew(new ClassClientApiHttpObject(client, ip).StartHandleClientHttpAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
 
-                        }
                     }
                     catch
                     {
@@ -115,6 +122,7 @@ namespace Xiropht_RemoteNode.Api
     {
         OK = 200,
     }
+
 
     public struct ClassClientApiHttpResponseStructure
     {
@@ -150,75 +158,136 @@ namespace Xiropht_RemoteNode.Api
         /// <returns></returns>
         public async Task StartHandleClientHttpAsync()
         {
-            try
-            {
-                if (!ClassApiHttp.UseSSL)
-                {
-                    StreamReader clientHttpReader = new StreamReader(_client.GetStream());
-                    while (_clientStatus)
-                    {
-                        try
-                        {
-                            char[] buffer = new char[8192];
-                            int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length);
-                            if (received > 0)
-                            {
-                                string packet = new string(buffer, 0, received);
-                                packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
-                                packet = packet.Replace("/", "");
-                                packet = packet.Replace(" ", "");
-                                ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - " + packet, 6, 2);
-                                await HandlePacketHttpAsync(packet);
-                                break;
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                        catch
-                        {
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    _clientSslStream = new SslStream(_client.GetStream());
-                    await _clientSslStream.AuthenticateAsServerAsync(ClassApiHttp.ApiCertificateSSL, false, System.Security.Authentication.SslProtocols.Tls, true);
-                    while (_clientStatus)
-                    {
-                        try
-                        {
-                            byte[] buffer = new byte[8192];
-                            int received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length);
-                            if (received > 0)
-                            {
-                                string packet = Encoding.UTF8.GetString(buffer);
-                                packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
-                                packet = packet.Replace("/", "");
-                                packet = packet.Replace(" ", "");
-                                ClassLog.Log("HTTPS API - packet received from IP: " + _ip + " - " + packet, 6, 2);
-                                await HandlePacketHttpAsync(packet);
-                                break;
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                        catch
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-            catch
-            {
+            var checkBanResult = ClassApi.CheckBanIp(_ip);
 
+            if (!checkBanResult)
+            {
+                try
+                {
+                    if (!ClassApiHttp.UseSSL)
+                    {
+                        StreamReader clientHttpReader = new StreamReader(_client.GetStream());
+                        while (_clientStatus)
+                        {
+                            try
+                            {
+                                char[] buffer = new char[8192];
+                                int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length);
+                                if (received > 0)
+                                {
+                                    string packet = new string(buffer, 0, received);
+                                    try
+                                    {
+                                        if (!GetAndCheckForwardedIp(packet))
+                                        {
+                                            break;
+                                        }
+                                    }
+                                    catch
+                                    {
+
+                                    }
+                                    
+                                    packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
+
+                                    packet = packet.Replace("/", "");
+                                    packet = packet.Replace(" ", "");
+                                    ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - " + packet, 6, 2);
+                                    await HandlePacketHttpAsync(packet);
+                                    break;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            catch (Exception error)
+                            {
+                                Console.WriteLine("HTTP API - exception error: " + error.Message);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _clientSslStream = new SslStream(_client.GetStream(), false);
+                        _clientSslStream.AuthenticateAsServer(ClassApiHttp.ApiCertificateSSL, false, SslProtocols.Tls12, false);
+                        ClassLog.Log("HTTPS API -  SSL Authentification succeed for client IP: "+_ip, 6, 2);
+
+                        while (_clientStatus)
+                        {
+                            try
+                            {
+                                byte[] buffer = new byte[8192];
+                                int received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                                if (received > 0)
+                                {
+                                    string packet = Encoding.UTF8.GetString(buffer);
+                                    try
+                                    {
+                                        if (!GetAndCheckForwardedIp(packet))
+                                        {
+                                            break;
+                                        }
+                                    }
+                                    catch
+                                    {
+
+                                    }
+                                    packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
+                                    packet = packet.Replace("/", "");
+                                    packet = packet.Replace(" ", "");
+                                    ClassLog.Log("HTTPS API - packet received from IP: " + _ip + " - " + packet, 6, 2);
+                                    await HandlePacketHttpAsync(packet);
+                                    break;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            catch (Exception error)
+                            {
+                                Console.WriteLine("HTTPS API - exception error: " + error.Message);
+                                break;
+                            }
+                        }
+                    }
+                }
+                catch 
+                {
+                }
+
+                CloseClientConnection();
             }
-            CloseClientConnection();
+        }
+
+        /// <summary>
+        /// This method permit to get back the real ip behind a proxy and check the list of banned IP.
+        /// </summary>
+        private bool GetAndCheckForwardedIp(string packet)
+        {
+            var splitPacket = packet.Split(new[] { "\n" }, StringSplitOptions.None);
+            foreach(var packetEach in splitPacket)
+            {
+                if (packetEach != null)
+                {
+                    if (!string.IsNullOrEmpty(packetEach))
+                    {
+                        if (packetEach.ToLower().Contains("x-forwarded-for: "))
+                        {
+                            _ip = packetEach.ToLower().Replace("x-forwarded-for: ", "");
+                            ClassLog.Log("HTTP/HTTPS API - X-Forwarded-For ip of the client is: "+_ip, 6, 2);
+                            var checkBanResult = ClassApi.CheckBanIp(_ip);
+                            if (checkBanResult) // Is Banned
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            return true; // Not banned
         }
 
         /// <summary>
@@ -300,23 +369,24 @@ namespace Xiropht_RemoteNode.Api
                                 };
 
                                 await BuildAndSendHttpPacketAsync(null, true, blockContent);
+                                blockContent.Clear();
                             }
                             else
                             {
                                 ClassApiBan.InsertInvalidPacket(_ip);
-                                await BuildAndSendHttpPacketAsync("not_exist");
+                                await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                             }
                         }
                         else
                         {
                             ClassApiBan.InsertInvalidPacket(_ip);
-                            await BuildAndSendHttpPacketAsync("not_exist");
+                            await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
                     }
                     else
                     {
                         ClassApiBan.InsertInvalidPacket(_ip);
-                        await BuildAndSendHttpPacketAsync("not_exist");
+                        await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     }
                     break;
                 case ClassApiHttpRequestEnumeration.GetCoinTransactionPerId:
@@ -341,23 +411,24 @@ namespace Xiropht_RemoteNode.Api
                                 };
 
                                 await BuildAndSendHttpPacketAsync(null, true, transactionContent);
+                                transactionContent.Clear();
                             }
                             else
                             {
                                 ClassApiBan.InsertInvalidPacket(_ip);
-                                await BuildAndSendHttpPacketAsync("not_exist");
+                                await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                             }
                         }
                         else
                         {
                             ClassApiBan.InsertInvalidPacket(_ip);
-                            await BuildAndSendHttpPacketAsync("not_exist");
+                            await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
                     }
                     else
                     {
                         ClassApiBan.InsertInvalidPacket(_ip);
-                        await BuildAndSendHttpPacketAsync("not_exist");
+                        await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     }
                     break;
                 case ClassApiHttpRequestEnumeration.GetCoinNetworkFullStats:
@@ -377,12 +448,16 @@ namespace Xiropht_RemoteNode.Api
                     };
 
                     await BuildAndSendHttpPacketAsync(null, true, networkStatsContent);
+                    networkStatsContent.Clear();
 
-
+                    break;
+                case ClassApiHttpRequestEnumeration.PacketFavicon:
+                    ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - favicon request detected and ignored.", 6, 2);
+                    await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     break;
                 default:
                     ClassApiBan.InsertInvalidPacket(_ip);
-                    await BuildAndSendHttpPacketAsync("not_exist");
+                    await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     break;
             }
         }
@@ -394,33 +469,22 @@ namespace Xiropht_RemoteNode.Api
         /// <returns></returns>
         private async Task BuildAndSendHttpPacketAsync(string content, bool multiResult = false, Dictionary<string, string> dictionaryContent = null)
         {
-            ClassClientApiHttpResponseStructure clientResponse = new ClassClientApiHttpResponseStructure
-            {
-                BodySize = 0,
-                Version = "HTTP/1.1",
-                Status = (int)ClassApiHttpResponseStatus.OK,
-                Headers = new Hashtable(),
-            };
-            clientResponse.Headers.Add("Server", ClassConnectorSetting.CoinName + " Remote Node");
-            clientResponse.Headers.Add("Date", DateTime.Now.ToString("r"));
-            clientResponse.Headers.Add("Access-Control-Allow-Origin", "*");
-
-            string HeadersString = clientResponse.Version + " " + "OK\n";
-            foreach (DictionaryEntry Header in clientResponse.Headers)
-            {
-                HeadersString += Header.Key + ": " + Header.Value + "\n";
-            }
-            HeadersString += "\n";
-            
-            await SendPacketAsync(HeadersString);
+            string contentToSend = string.Empty;
             if (!multiResult)
             {
-                await SendPacketAsync(BuildJsonString(content));
+                contentToSend = BuildJsonString(content);
             }
             else
             {
-                await SendPacketAsync(BuildFullJsonString(dictionaryContent));
+               contentToSend = BuildFullJsonString(dictionaryContent);
             }
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(@"HTTP/1.1 200 OK");
+            builder.AppendLine(@"Content-Type: text/html");
+            builder.AppendLine(@"Access-Control-Allow-Origin: *");
+            builder.AppendLine(@"");
+            builder.AppendLine(@"" + contentToSend);
+            await SendPacketAsync(builder.ToString());
         }
 
         /// <summary>
@@ -432,7 +496,8 @@ namespace Xiropht_RemoteNode.Api
         {
             JObject jsonContent = new JObject
             {
-                { "result", content }
+                { "result", content },
+                { "version", Assembly.GetExecutingAssembly().GetName().Version.ToString() }
             };
             return JsonConvert.SerializeObject(jsonContent);
         }
@@ -449,6 +514,7 @@ namespace Xiropht_RemoteNode.Api
             {
                 jsonContent.Add(content.Key, content.Value);
             }
+            jsonContent.Add("version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
             return JsonConvert.SerializeObject(jsonContent);
         }
 
@@ -461,7 +527,7 @@ namespace Xiropht_RemoteNode.Api
         {
             try
             {
-                var bytePacket = Encoding.UTF8.GetBytes(packet);
+                var bytePacket = Encoding.ASCII.GetBytes(packet);
                 if (!ClassApiHttp.UseSSL)
                 {
                     await _client.GetStream().WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
