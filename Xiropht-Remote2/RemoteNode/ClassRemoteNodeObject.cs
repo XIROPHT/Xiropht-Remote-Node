@@ -753,26 +753,30 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     if (splitBlock[i].Length > 0)
                                     {
                                         var blockSubString = splitBlock[i].Substring(0, splitBlock[i].Length - 1);
-                                        if (!ClassRemoteNodeSync.ListOfBlock.ContainsValue(blockSubString))
+                                        var blockIdTmp = int.Parse(blockSubString.Split(new[] { "#" }, StringSplitOptions.None)[0]);
+                                        if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp - 1))
                                         {
-                                            ClassRemoteNodeSync.ListOfBlock.Add(ClassRemoteNodeSync.ListOfBlock.Count, blockSubString);
-                                            if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
-                                                ClassRemoteNodeSync.TotalBlockMined)
+                                            if (!ClassRemoteNodeSync.ListOfBlock.ContainsValue(blockSubString))
                                             {
-                                                ClassLog.Log(
-                                                    "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count +
-                                                    "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 1);
-                                                ClassRemoteNodeKey.StartUpdateHashBlockList();
-                                                if (!ClassRemoteNodeSave.InSaveBlockDatabase)
+                                                ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
+                                                if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
+                                                    ClassRemoteNodeSync.TotalBlockMined)
                                                 {
-                                                    ClassRemoteNodeSave.SaveBlock(true);
+                                                    ClassLog.Log(
+                                                        "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count +
+                                                        "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 1);
+                                                    ClassRemoteNodeKey.StartUpdateHashBlockList();
+                                                    if (!ClassRemoteNodeSave.InSaveBlockDatabase)
+                                                    {
+                                                        ClassRemoteNodeSave.SaveBlock(true);
+                                                    }
                                                 }
-                                            }
-                                            else
-                                            {
-                                                ClassLog.Log(
-                                                    "Block mined synced at: " + ClassRemoteNodeSync.ListOfBlock.Count +
-                                                    "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 2);
+                                                else
+                                                {
+                                                    ClassLog.Log(
+                                                        "Block mined synced at: " + ClassRemoteNodeSync.ListOfBlock.Count +
+                                                        "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 2);
+                                                }
                                             }
                                         }
                                     }
@@ -780,26 +784,31 @@ namespace Xiropht_RemoteNode.RemoteNode
                         else
                         {
                             var blockSubString = packetSplit[1].Substring(0, packetSplit[1].Length - 1);
-                            if (!ClassRemoteNodeSync.ListOfBlock.ContainsValue(blockSubString))
+                            var blockIdTmp = int.Parse(blockSubString.Split(new[] { "#" }, StringSplitOptions.None)[0]);
+
+                            if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp - 1))
                             {
-                                ClassRemoteNodeSync.ListOfBlock.Add(ClassRemoteNodeSync.ListOfBlock.Count, blockSubString);
-                                if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
-                                    ClassRemoteNodeSync.TotalBlockMined)
+                                if (!ClassRemoteNodeSync.ListOfBlock.ContainsValue(blockSubString))
                                 {
-                                    ClassLog.Log(
-                                        "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
-                                        ClassRemoteNodeSync.TotalBlockMined, 0, 1);
-                                    ClassRemoteNodeKey.StartUpdateHashBlockList();
-                                    if (!ClassRemoteNodeSave.InSaveBlockDatabase)
+                                    ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
+                                    if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
+                                        ClassRemoteNodeSync.TotalBlockMined)
                                     {
-                                        ClassRemoteNodeSave.SaveBlock(true);
+                                        ClassLog.Log(
+                                            "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
+                                            ClassRemoteNodeSync.TotalBlockMined, 0, 1);
+                                        ClassRemoteNodeKey.StartUpdateHashBlockList();
+                                        if (!ClassRemoteNodeSave.InSaveBlockDatabase)
+                                        {
+                                            ClassRemoteNodeSave.SaveBlock(true);
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    ClassLog.Log(
-                                        "Block mined synced at: " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
-                                        ClassRemoteNodeSync.TotalBlockMined, 0, 2);
+                                    else
+                                    {
+                                        ClassLog.Log(
+                                            "Block mined synced at: " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
+                                            ClassRemoteNodeSync.TotalBlockMined, 0, 2);
+                                    }
                                 }
                             }
                         }

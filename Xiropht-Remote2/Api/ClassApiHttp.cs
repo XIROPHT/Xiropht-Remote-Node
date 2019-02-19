@@ -477,12 +477,14 @@ namespace Xiropht_RemoteNode.Api
             StringBuilder builder = new StringBuilder();
 
             builder.AppendLine(@"HTTP/1.1 200 OK");
-            builder.AppendLine(@"Content-Type: text/html");
+            builder.AppendLine(@"Content-Type: text/plain");
             builder.AppendLine(@"Content-Length: " + contentToSend.Length);
             builder.AppendLine(@"Access-Control-Allow-Origin: *");
             builder.AppendLine(@"");
             builder.AppendLine(@"" + contentToSend);
             await SendPacketAsync(builder.ToString());
+            builder.Clear();
+            contentToSend = string.Empty;
         }
 
         /// <summary>
