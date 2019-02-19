@@ -1,5 +1,5 @@
 # Xiropht-Remote-Node
-Xiropht Remote Node version 0.2.3.1b compatible with Windows with Netframework 4.6 or higher and other OS who use Mono.
+Xiropht Remote Node version 0.2.3.2b compatible with Windows with Netframework 4.6 or higher and other OS who use Mono.
 
 
 **In production, we suggest to compile in Release Mode for disable log files.**
