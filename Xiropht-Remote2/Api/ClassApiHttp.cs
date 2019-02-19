@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.Utils;
 

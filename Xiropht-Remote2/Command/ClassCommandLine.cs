@@ -4,6 +4,7 @@ using System.Threading;
 using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Api;
 using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.RemoteNode;
 
 namespace Xiropht_RemoteNode.Command

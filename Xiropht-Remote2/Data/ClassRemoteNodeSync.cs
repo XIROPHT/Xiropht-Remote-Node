@@ -3,7 +3,7 @@
 
 namespace Xiropht_RemoteNode.Data
 {
-    public class ClassRemoteNodeSync
+    public static class ClassRemoteNodeSync
     {
         /// <summary>
         /// Object of sync.

@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Api\ClassApi.cs" />
     <Compile Include="Api\ClassApiHttp.cs" />
+    <Compile Include="Filter\ClassApiBan.cs" />
     <Compile Include="Filter\ClassFilter.cs" />
     <Compile Include="RemoteNode\ClassCheckRemoteNodeSync.cs" />
     <Compile Include="Command\ClassCommandLine.cs" />

@@ -13,16 +13,68 @@ namespace Xiropht_RemoteNode.RemoteNode
 {
     public class ClassRemoteNodeObject
     {
-        private int IdConnection;
+        #region Variable/Object
+
+        /// <summary>
+        ///     Type
+        /// </summary>
+        public string RemoteNodeObjectType;
+
+        /// <summary>
+        ///     Status
+        /// </summary>
+        public bool RemoteNodeObjectConnectionStatus;
+
+        public bool RemoteNodeObjectLoginStatus;
+
+        public long RemoteNodeObjectLastPacketReceived;
+
+        /// <summary>
+        ///     Network object
+        /// </summary>
+        public ClassSeedNodeConnector RemoteNodeObjectTcpClient;
+
+        /// <summary>
+        ///     MultiThreading.
+        /// </summary>
+        private Thread _remoteNodeObjectLoopSendRequest;
+
+        private Thread _remoteNodeObjectLoopListenNetwork;
+
+        /// <summary>
+        ///     sSetting
+        /// </summary>
+        private const int RemoteNodeObjectLoopSendRequestInterval = 100;
+        private long LastKeepAlivePacketSent; // Last keep alive packet sent.
+        private const int KeepAlivePacketDelay = 1; // Send keep alive packet every 1 second.
+
+        /// <summary>
+        ///     Reserved to type of transaction sync.
+        /// </summary>
+        public bool RemoteNodeObjectInSyncTransaction;
+
+        public bool RemoteNodeObjectInReceiveTransaction;
+
+        /// <summary>
+        ///     Reserved to type of block sync.
+        /// </summary>
+        public bool RemoteNodeObjectInSyncBlock;
+
+        public bool RemoteNodeObjectInReceiveBlock;
+
+
+
+        #endregion
+
+
 
         /// <summary>
         ///     Constructor, initialize remote node object of sync.
         /// </summary>
         /// <param name="type"></param>
-        public ClassRemoteNodeObject(string type, int idConnection = 0)
+        public ClassRemoteNodeObject(string type)
         {
             RemoteNodeObjectType = type;
-            IdConnection = idConnection;
         }
 
         /// <summary>
@@ -207,6 +259,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                 while (RemoteNodeObjectConnectionStatus)
                 {
                     if (RemoteNodeObjectLoginStatus)
+                    {
                         switch (RemoteNodeObjectType)
                         {
                             #region Sync Block
@@ -256,7 +309,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                         var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectBlock
                                                             .RemoteNodeObjectLastPacketReceived;
                                                         var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                                                        if (lastPacketReceivedTimeStamp + 10 < currentTimestamp)
+                                                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeSyncResponse < currentTimestamp)
                                                         {
                                                             ClassLog.Log(
                                                                 "Sync object block mined, take too much time to receive a block, cancel and retry now.",
@@ -367,7 +420,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                             var lastPacketReceivedTimeStamp = RemoteNodeObjectLastPacketReceived;
                                                                             var currentTimestamp =
                                                                                 DateTimeOffset.Now.ToUnixTimeSeconds();
-                                                                            if (lastPacketReceivedTimeStamp + 10 < currentTimestamp)
+                                                                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeSyncResponse < currentTimestamp)
                                                                             {
                                                                                 ClassLog.Log(
                                                                                     "Sync object transaction, take too much time to receive a transaction, cancel and retry now.",
@@ -568,7 +621,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                 #endregion
                         }
-
+                    }
                     if (RemoteNodeObjectType != SyncEnumerationObject.ObjectTransaction && RemoteNodeObjectType != SyncEnumerationObject.ObjectBlock)
                     {
                         Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next request.
@@ -593,6 +646,18 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 {
                                     Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval); // Make a pause for the next sync of transaction.
                                 }
+                            }
+                        }
+                    }
+                    if (RemoteNodeObjectLoginStatus)
+                    {
+                        if (LastKeepAlivePacketSent + KeepAlivePacketDelay < DateTimeOffset.Now.ToUnixTimeSeconds())
+                        {
+                            LastKeepAlivePacketSent = DateTimeOffset.Now.ToUnixTimeSeconds();
+                            if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteKeepAlive, Program.Certificate, false, true).ConfigureAwait(false))
+                            {
+                                RemoteNodeObjectConnectionStatus = false;
+                                break;
                             }
                         }
                     }
@@ -672,6 +737,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 break;
                         }
 
+                        break;
+                    case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteKeepAlive: // Receive a keep alive packet.
+                        RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendBlockPerId: // Receive a block information.
                         RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -822,7 +890,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                         if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
                                         {
-                                            ClassLog.Log("Connection ID: " + IdConnection + " - Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
+                                            ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
 
                                             RemoteNodeObjectConnectionStatus = false;
                                             RemoteNodeObjectLoginStatus = false;
@@ -840,12 +908,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     {
                                                         ClassRemoteNodeSave.SaveTransaction(true);
                                                     }
-                                                    ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
+                                                    ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
 
                                                 }
                                                 else
                                                 {
-                                                    ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+                                                    ClassLog.Log("Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
                                                 }
 
                                             }
@@ -867,7 +935,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             {
                                 if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
                                 {
-                                    ClassLog.Log("Connection ID: " + IdConnection + " - Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
+                                    ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
 
                                     RemoteNodeObjectConnectionStatus = false;
                                     RemoteNodeObjectLoginStatus = false;
@@ -886,12 +954,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             {
                                                 ClassRemoteNodeSave.SaveTransaction(true);
                                             }
-                                            ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
+                                            ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
 
                                         }
                                         else
                                         {
-                                            ClassLog.Log("Connection ID: " + IdConnection + " - Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+                                            ClassLog.Log("Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
 
                                         }
                                     }
@@ -1091,53 +1159,5 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
         }
 
-        #region Variable/Object
-
-        /// <summary>
-        ///     Type
-        /// </summary>
-        public string RemoteNodeObjectType;
-
-        /// <summary>
-        ///     Status
-        /// </summary>
-        public bool RemoteNodeObjectConnectionStatus;
-
-        public bool RemoteNodeObjectLoginStatus;
-
-        public long RemoteNodeObjectLastPacketReceived;
-
-        /// <summary>
-        ///     Network object
-        /// </summary>
-        public ClassSeedNodeConnector RemoteNodeObjectTcpClient;
-
-        /// <summary>
-        ///     MultiThreading.
-        /// </summary>
-        private Thread _remoteNodeObjectLoopSendRequest;
-
-        private Thread _remoteNodeObjectLoopListenNetwork;
-
-        /// <summary>
-        ///     Setting
-        /// </summary>
-        private const int RemoteNodeObjectLoopSendRequestInterval = 100;
-
-        /// <summary>
-        ///     Reserved to type of transaction sync.
-        /// </summary>
-        public bool RemoteNodeObjectInSyncTransaction;
-
-        public bool RemoteNodeObjectInReceiveTransaction;
-
-        /// <summary>
-        ///     Reserved to type of block sync.
-        /// </summary>
-        public bool RemoteNodeObjectInSyncBlock;
-
-        public bool RemoteNodeObjectInReceiveBlock;
-
-        #endregion
     }
 }
