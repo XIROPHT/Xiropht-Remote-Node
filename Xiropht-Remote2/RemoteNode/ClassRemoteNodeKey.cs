@@ -68,7 +68,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                 try
                 {
 
-                    ClassRemoteNodeSync.HashTransactionList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfTransaction.Values));
+                    ClassRemoteNodeSync.HashTransactionList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(string.Empty, ClassRemoteNodeSync.ListOfTransaction.Values()));
 
                 }
                 catch

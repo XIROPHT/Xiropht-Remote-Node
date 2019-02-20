@@ -31,7 +31,7 @@ namespace Xiropht_RemoteNode.Command
                         Console.WriteLine("exit -> Save sync and Exit the node.");
                         break;
                     case "status":
-                        Console.WriteLine("Total Transaction Sync: " + (ClassRemoteNodeSync.ListOfTransaction.Count));
+                        Console.WriteLine("Total Transaction Sync: " + (ClassRemoteNodeSync.ListOfTransaction.Count()));
                         Console.WriteLine("Total Transaction in the Blockchain: " + ClassRemoteNodeSync.TotalTransaction);
                         int totalTransactionSortedPerWallet = 0;
                         foreach (var transactionSortedEntry in ClassRemoteNodeSync.ListTransactionPerWallet)
@@ -79,7 +79,7 @@ namespace Xiropht_RemoteNode.Command
                         Console.WriteLine("Hash Block Key: " + ClassRemoteNodeSync.HashBlockList);
                         break;
                     case "transaction":
-                        Console.WriteLine("Total Transaction Sync: " + (ClassRemoteNodeSync.ListOfTransaction.Count));
+                        Console.WriteLine("Total Transaction Sync: " + (ClassRemoteNodeSync.ListOfTransaction.Count()));
                         Console.WriteLine("Total Transaction in the Blockchain: " + ClassRemoteNodeSync.TotalTransaction);
                         break;
                     case "block":

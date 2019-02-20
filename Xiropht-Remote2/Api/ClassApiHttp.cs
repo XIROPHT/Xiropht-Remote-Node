@@ -302,11 +302,11 @@ namespace Xiropht_RemoteNode.Api
         /// <returns></returns>
         private async Task HandlePacketHttpAsync(string packet)
         {
-            int selectedIndex = 0;
+            long selectedIndex = 0;
             if (packet.Contains("="))
             {
                 var splitPacket = packet.Split(new[] { "=" }, StringSplitOptions.None);
-                int.TryParse(splitPacket[1], out selectedIndex);
+                long.TryParse(splitPacket[1], out selectedIndex);
                 packet = splitPacket[0];
             }
             switch (packet)
@@ -350,9 +350,9 @@ namespace Xiropht_RemoteNode.Api
                         selectedIndex -= 1;
                         if (ClassRemoteNodeSync.ListOfBlock.Count-1 >= selectedIndex)
                         {
-                            if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(selectedIndex))
+                            if (ClassRemoteNodeSync.ListOfBlock.ContainsKey((int)selectedIndex))
                             {
-                                var splitBlock = ClassRemoteNodeSync.ListOfBlock[selectedIndex].Split(new[] { "#" }, StringSplitOptions.None);
+                                var splitBlock = ClassRemoteNodeSync.ListOfBlock[(int)selectedIndex].Split(new[] { "#" }, StringSplitOptions.None);
                                 Dictionary<string, string> blockContent = new Dictionary<string, string>
                                 {
                                     { "block_id", splitBlock[0] },
@@ -389,11 +389,11 @@ namespace Xiropht_RemoteNode.Api
                     if (selectedIndex > 0)
                     {
                         selectedIndex -= 1;
-                        if (ClassRemoteNodeSync.ListOfTransaction.Count - 1 >= selectedIndex)
+                        if (ClassRemoteNodeSync.ListOfTransaction.Count() - 1 >= selectedIndex)
                         {
                             if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(selectedIndex))
                             {
-                                var splitTransaction = ClassRemoteNodeSync.ListOfTransaction[selectedIndex].Split(new[] { "-" }, StringSplitOptions.None);
+                                var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(selectedIndex).Split(new[] { "-" }, StringSplitOptions.None);
                                 Dictionary<string, string> transactionContent = new Dictionary<string, string>
                                 {
                                     { "transaction_id", "" + (selectedIndex + 1) },

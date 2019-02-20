@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using Xiropht_RemoteNode.Object;
 
 namespace Xiropht_RemoteNode.Data
 {
@@ -8,7 +8,7 @@ namespace Xiropht_RemoteNode.Data
         /// <summary>
         /// Object of sync.
         /// </summary>
-        public static Dictionary<int, string> ListOfTransaction = new Dictionary<int, string>(); // List of transaction of the blockchain.
+        public static BigDictionaryTransaction ListOfTransaction = new BigDictionaryTransaction(); // List of transaction of the blockchain.
         public static Dictionary<int, string> ListOfBlock = new Dictionary<int, string>(); // List of block mined of the blockchain.
         public static string CoinMaxSupply; // Max Supply of the coin in the blockchain.
         public static string CoinCirculating; // Current amount of coin circulating in the blockchain.

@@ -54,6 +54,7 @@
     <Compile Include="Api\ClassApiHttp.cs" />
     <Compile Include="Filter\ClassApiBan.cs" />
     <Compile Include="Filter\ClassFilter.cs" />
+    <Compile Include="Object\BigDictionaryTransaction.cs" />
     <Compile Include="RemoteNode\ClassCheckRemoteNodeSync.cs" />
     <Compile Include="Command\ClassCommandLine.cs" />
     <Compile Include="Log\ClassLog.cs" />

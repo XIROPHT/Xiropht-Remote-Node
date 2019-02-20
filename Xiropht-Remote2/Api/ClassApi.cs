@@ -519,7 +519,7 @@ namespace Xiropht_RemoteNode.Api
                                         }
                                         break;
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.WalletAskNumberTransaction:
-                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletTotalNumberTransaction + "|" + ClassRemoteNodeSync.ListOfTransaction.Count).ConfigureAwait(false))
+                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletTotalNumberTransaction + "|" + ClassRemoteNodeSync.ListOfTransaction.Count()).ConfigureAwait(false))
                                         {
                                             _incomingConnectionStatus = false;
                                             return false;
@@ -740,11 +740,11 @@ namespace Xiropht_RemoteNode.Api
                                         }
                                         break;
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.AskTransactionPerId:
-                                        if (int.TryParse(splitPacket[2], out var idTransactionAsk))
+                                        if (long.TryParse(splitPacket[2], out var idTransactionAsk))
                                         {
-                                            if (idTransactionAsk >= 0 && idTransactionAsk < ClassRemoteNodeSync.ListOfTransaction.Count)
+                                            if (idTransactionAsk >= 0 && idTransactionAsk < ClassRemoteNodeSync.ListOfTransaction.Count())
                                             {
-                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeTransactionPerId + "|" + ClassRemoteNodeSync.ListOfTransaction[idTransactionAsk]).ConfigureAwait(false))
+                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeTransactionPerId + "|" + ClassRemoteNodeSync.ListOfTransaction.GetTransaction(idTransactionAsk)).ConfigureAwait(false))
                                                 {
                                                     _incomingConnectionStatus = false;
                                                     return false;
@@ -765,9 +765,9 @@ namespace Xiropht_RemoteNode.Api
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.AskTransactionHashPerId:
                                         if (int.TryParse(splitPacket[2], out var idTransactionAskTmp))
                                         {
-                                            if (idTransactionAskTmp >= 0 && idTransactionAskTmp < ClassRemoteNodeSync.ListOfTransaction.Count)
+                                            if (idTransactionAskTmp >= 0 && idTransactionAskTmp < ClassRemoteNodeSync.ListOfTransaction.Count())
                                             {
-                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeAskTransactionHashPerId + "|" + ClassUtilsNode.ConvertStringToSha512(ClassRemoteNodeSync.ListOfTransaction[idTransactionAskTmp])).ConfigureAwait(false))
+                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeAskTransactionHashPerId + "|" + ClassUtilsNode.ConvertStringToSha512(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(idTransactionAskTmp))).ConfigureAwait(false))
                                                 {
                                                     _incomingConnectionStatus = false;
                                                     return false;
@@ -788,7 +788,7 @@ namespace Xiropht_RemoteNode.Api
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.AskBlockHashPerId:
                                         if (int.TryParse(splitPacket[2], out var idBlockAskTmp))
                                         {
-                                            if (idBlockAskTmp >= 0 && idBlockAskTmp < ClassRemoteNodeSync.ListOfTransaction.Count)
+                                            if (idBlockAskTmp >= 0 && idBlockAskTmp < ClassRemoteNodeSync.ListOfTransaction.Count())
                                             {
                                                 if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeAskBlockHashPerId + "|" + ClassUtilsNode.ConvertStringToSha512(ClassRemoteNodeSync.ListOfBlock[idBlockAskTmp])).ConfigureAwait(false))
                                                 {
