@@ -77,6 +77,8 @@ namespace Xiropht_RemoteNode.Object
             }
         }
 
+
+
         /// <summary>
         /// Retrieve transaction information
         /// </summary>

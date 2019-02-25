@@ -90,6 +90,8 @@ namespace Xiropht_RemoteNode.Api
                         var client = await ListenerApiHttpConnection.AcceptTcpClientAsync();
                         var ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
 
+                       
+                         
                         await Task.Factory.StartNew(new ClassClientApiHttpObject(client, ip).StartHandleClientHttpAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
 
                     }
@@ -150,19 +152,20 @@ namespace Xiropht_RemoteNode.Api
             {
                 checkBanResult = ClassApiBan.CheckBanIp(_ip);
             }
+            int totalWhile = 0;
             if (!checkBanResult)
             {
                 try
                 {
                     if (!ClassApiHttp.UseSSL)
                     {
-                        StreamReader clientHttpReader = new StreamReader(_client.GetStream());
+                        StreamReader clientHttpReader = new StreamReader(_client.GetStream(), false);
                         while (_clientStatus)
                         {
                             try
                             {
                                 char[] buffer = new char[8192];
-                                int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length);
+                                int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
                                 if (received > 0)
                                 {
                                     string packet = new string(buffer, 0, received);
@@ -188,6 +191,10 @@ namespace Xiropht_RemoteNode.Api
                                 }
                                 else
                                 {
+                                    totalWhile++;
+                                }
+                                if (totalWhile >= 8)
+                                {
                                     break;
                                 }
                             }
@@ -209,7 +216,7 @@ namespace Xiropht_RemoteNode.Api
                             try
                             {
                                 byte[] buffer = new byte[8192];
-                                int received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length);
+                                int received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
                                 if (received > 0)
                                 {
                                     string packet = Encoding.UTF8.GetString(buffer);
@@ -440,7 +447,8 @@ namespace Xiropht_RemoteNode.Api
                         { "coin_total_block_mined", "" + ClassRemoteNodeSync.ListOfBlock.Count },
                         { "coin_total_block_left", ClassRemoteNodeSync.CurrentBlockLeft },
                         { "coin_network_difficulty", ClassRemoteNodeSync.CurrentDifficulty },
-                        { "coin_network_hashrate", ClassRemoteNodeSync.CurrentHashrate }
+                        { "coin_network_hashrate", ClassRemoteNodeSync.CurrentHashrate },
+                        { "coin_total_transaction", "" + ClassRemoteNodeSync.ListOfTransaction.Count() }
                     };
 
                     await BuildAndSendHttpPacketAsync(null, true, networkStatsContent);
@@ -527,7 +535,7 @@ namespace Xiropht_RemoteNode.Api
         {
             try
             {
-                var bytePacket = Encoding.ASCII.GetBytes(packet);
+                var bytePacket = Encoding.UTF8.GetBytes(packet);
                 if (!ClassApiHttp.UseSSL)
                 {
                     await _client.GetStream().WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
@@ -543,6 +551,8 @@ namespace Xiropht_RemoteNode.Api
             {
             }
         }
+
+       
     }
 
 }
