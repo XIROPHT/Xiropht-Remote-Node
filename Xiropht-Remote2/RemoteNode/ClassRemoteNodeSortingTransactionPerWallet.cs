@@ -24,7 +24,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                 var dataTransactionSplit = transaction.Split(new[] { "-" }, StringSplitOptions.None);
                 float idWalletSender;
 
-                if (dataTransactionSplit[0] != "m")
+                if (dataTransactionSplit[0] != "m" && dataTransactionSplit[0] != "r" && dataTransactionSplit[0] != "f")
                 {
                     idWalletSender = float.Parse(dataTransactionSplit[0].Replace(".", ","), NumberStyles.Any, Program.GlobalCultureInfo);
                 }
