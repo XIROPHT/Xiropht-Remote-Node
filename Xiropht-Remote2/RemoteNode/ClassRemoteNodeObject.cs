@@ -83,7 +83,6 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// <returns></returns>
         public async Task<bool> StartConnectionAsync()
         {
-             
             if (RemoteNodeObjectTcpClient == null)
                 RemoteNodeObjectTcpClient = new ClassSeedNodeConnector();
             else // For be sure.

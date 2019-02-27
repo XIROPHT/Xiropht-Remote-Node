@@ -92,7 +92,7 @@ namespace Xiropht_RemoteNode.Api
 
                        
                          
-                        await Task.Factory.StartNew(new ClassClientApiHttpObject(client, ip).StartHandleClientHttpAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
+                        await Task.Factory.StartNew(async () => await new ClassClientApiHttpObject(client, ip).StartHandleClientHttpAsync().ConfigureAwait(false), CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
 
                     }
                     catch
@@ -159,7 +159,7 @@ namespace Xiropht_RemoteNode.Api
                 {
                     if (!ClassApiHttp.UseSSL)
                     {
-                        StreamReader clientHttpReader = new StreamReader(_client.GetStream(), false);
+                        StreamReader clientHttpReader = new StreamReader(_client.GetStream(), Encoding.UTF8, true, ClassConnectorSetting.MaxNetworkPacketSize, true);
                         while (_clientStatus)
                         {
                             try
@@ -216,31 +216,35 @@ namespace Xiropht_RemoteNode.Api
                             try
                             {
                                 byte[] buffer = new byte[8192];
-                                int received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
-                                if (received > 0)
-                                {
-                                    string packet = Encoding.UTF8.GetString(buffer);
-                                    try
-                                    {
-                                        if (!GetAndCheckForwardedIp(packet))
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    catch
-                                    {
+                                int received = 0;
 
-                                    }
-                                    packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
-                                    packet = packet.Replace("/", "");
-                                    packet = packet.Replace(" ", "");
-                                    ClassLog.Log("HTTPS API - packet received from IP: " + _ip + " - " + packet, 6, 2);
-                                    await HandlePacketHttpAsync(packet);
-                                    break;
-                                }
-                                else
+                                while ((received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
                                 {
-                                    break;
+                                    if (received > 0)
+                                    {
+                                        string packet = Encoding.UTF8.GetString(buffer);
+                                        try
+                                        {
+                                            if (!GetAndCheckForwardedIp(packet))
+                                            {
+                                                break;
+                                            }
+                                        }
+                                        catch
+                                        {
+
+                                        }
+                                        packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
+                                        packet = packet.Replace("/", "");
+                                        packet = packet.Replace(" ", "");
+                                        ClassLog.Log("HTTPS API - packet received from IP: " + _ip + " - " + packet, 6, 2);
+                                        await HandlePacketHttpAsync(packet);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
                                 }
                             }
                             catch (Exception error)

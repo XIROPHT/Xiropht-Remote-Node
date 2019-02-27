@@ -404,6 +404,10 @@ namespace Xiropht_RemoteNode
                     {
                         ClassRemoteNodeSync.WantToBePublicNode = true;
                     }
+                    else
+                    {
+                        ClassRemoteNodeSync.WantToBePublicNode = false;
+                    }
                 }
                 if (line.Contains("ENABLE_API_HTTP="))
                 {

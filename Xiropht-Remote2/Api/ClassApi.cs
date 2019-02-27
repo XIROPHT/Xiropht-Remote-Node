@@ -216,7 +216,7 @@ namespace Xiropht_RemoteNode.Api
         /// <summary>
         /// Check packet speed of the connection opened.
         /// </summary>
-        private async void CheckPacketSpeedAsync()
+        private async Task CheckPacketSpeedAsync()
         {
             while (_incomingConnectionStatus)
             {
@@ -244,7 +244,7 @@ namespace Xiropht_RemoteNode.Api
         /// <summary>
         /// Check the status of the connection opened.
         /// </summary>
-        private async void CheckConnection()
+        private async Task CheckConnection()
         {
 
             while (_incomingConnectionStatus)
@@ -299,9 +299,11 @@ namespace Xiropht_RemoteNode.Api
         {
             _incomingConnectionStatus = true;
             _clientApiNetworkStream = new NetworkStream(_client.Client);
-            _clientApiStreamReader = new StreamReader(_clientApiNetworkStream);
-            await Task.Factory.StartNew(CheckConnection, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
-            await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
+            _clientApiStreamReader = new StreamReader(_clientApiNetworkStream, Encoding.UTF8, true, ClassConnectorSetting.MaxNetworkPacketSize, true);
+            new Task(async () => await CheckConnection().ConfigureAwait(false)).Start();
+            new Task(async () => await CheckPacketSpeedAsync().ConfigureAwait(false)).Start();
+
+            //await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
 
             try
             {
@@ -312,11 +314,11 @@ namespace Xiropht_RemoteNode.Api
                         _incomingConnectionStatus = false;
                         break;
                     }
-                    if (!ClassUtilsNode.SocketIsConnected(_client))
+                    /*if (!ClassUtilsNode.SocketIsConnected(_client))
                     {
                         _incomingConnectionStatus = false;
                         break;
-                    }
+                    }*/
                     if (!_incomingConnectionStatus)
                     {
                         break;

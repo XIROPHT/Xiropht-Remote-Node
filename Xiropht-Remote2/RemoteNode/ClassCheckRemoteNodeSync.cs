@@ -49,7 +49,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectBlock.RemoteNodeObjectLastPacketReceived;
                         var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse< currentTimestamp)
+                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse < currentTimestamp)
                         {
                             while (!BlockchainNetworkStatus)
                             {
@@ -62,7 +62,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             ClassLog.Log("Object Sync block disconnected, reconnect now..", 2, 3);
 
                             Program.RemoteNodeObjectBlock.StopConnection();
-                            await Program.RemoteNodeObjectBlock.StartConnectionAsync();
+                           await Program.RemoteNodeObjectBlock.StartConnectionAsync();
                             if (Program.Closed)
                             {
                                 break;
@@ -95,7 +95,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCoinCirculating.RemoteNodeObjectLastPacketReceived;
                         var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse< currentTimestamp)
+                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse < currentTimestamp)
                         {
                             while (!BlockchainNetworkStatus)
                             {
@@ -108,7 +108,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             ClassLog.Log("Last packet from Object Coin Circulating more than 10 seconds ago, reconnect now..", 2, 3);
 
                             Program.RemoteNodeObjectCoinCirculating.StopConnection();
-                            await Program.RemoteNodeObjectCoinCirculating.StartConnectionAsync();
+                           await Program.RemoteNodeObjectCoinCirculating.StartConnectionAsync();
 
                             if (Program.Closed)
                             {
@@ -141,7 +141,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCoinMaxSupply.RemoteNodeObjectLastPacketReceived;
                         var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse< currentTimestamp)
+                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse < currentTimestamp)
                         {
                             while (!BlockchainNetworkStatus)
                             {
@@ -186,7 +186,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCurrentDifficulty.RemoteNodeObjectLastPacketReceived;
                         var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse< currentTimestamp)
+                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse < currentTimestamp)
                         {
                             while (!BlockchainNetworkStatus)
                             {
@@ -310,7 +310,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
                         await Program.RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync();
-
+                        
                         if (Program.Closed)
                         {
                             break;
@@ -341,7 +341,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTransaction.RemoteNodeObjectLastPacketReceived;
                         var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse< currentTimestamp)
+                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse < currentTimestamp)
                         {
                             while (!BlockchainNetworkStatus)
                             {
@@ -391,7 +391,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTotalTransaction.RemoteNodeObjectLastPacketReceived;
                         var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse< currentTimestamp)
+                        if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse < currentTimestamp)
                         {
                             while (!BlockchainNetworkStatus)
                             {
