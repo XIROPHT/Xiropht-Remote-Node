@@ -96,7 +96,7 @@ namespace Xiropht_RemoteNode
                 ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
                 Thread.Sleep(2000);
             }
-            Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "b");
+            Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "R");
 
 
             if (File.Exists(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath)))

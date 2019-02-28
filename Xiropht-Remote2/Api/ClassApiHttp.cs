@@ -164,39 +164,41 @@ namespace Xiropht_RemoteNode.Api
                             try
                             {
                                 byte[] buffer = new byte[8192];
-                                NetworkStream clientHttpReader = new NetworkStream(_client.Client);
-
-                                int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
-                                if (received > 0)
+                                using (NetworkStream clientHttpReader = new NetworkStream(_client.Client))
                                 {
-                                    string packet = Encoding.UTF8.GetString(buffer, 0, received);
-                                    try
+
+                                    int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                                    if (received > 0)
                                     {
-                                        if (!GetAndCheckForwardedIp(packet))
+                                        string packet = Encoding.UTF8.GetString(buffer, 0, received);
+                                        try
                                         {
-                                            break;
+                                            if (!GetAndCheckForwardedIp(packet))
+                                            {
+                                                break;
+                                            }
                                         }
+                                        catch
+                                        {
+
+                                        }
+
+                                        packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
+
+                                        packet = packet.Replace("/", "");
+                                        packet = packet.Replace(" ", "");
+                                        ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - " + packet, 6, 2);
+                                        await HandlePacketHttpAsync(packet);
+                                        break;
                                     }
-                                    catch
+                                    else
                                     {
-
+                                        totalWhile++;
                                     }
-                                    
-                                    packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
-
-                                    packet = packet.Replace("/", "");
-                                    packet = packet.Replace(" ", "");
-                                    ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - " + packet, 6, 2);
-                                    await HandlePacketHttpAsync(packet);
-                                    break;
-                                }
-                                else
-                                {
-                                    totalWhile++;
-                                }
-                                if (totalWhile >= 8)
-                                {
-                                    break;
+                                    if (totalWhile >= 8)
+                                    {
+                                        break;
+                                    }
                                 }
                             }
                             catch (Exception error)
@@ -543,9 +545,11 @@ namespace Xiropht_RemoteNode.Api
                 var bytePacket = Encoding.UTF8.GetBytes(packet);
                 if (!ClassApiHttp.UseSSL)
                 {
-                    var networkStream = new NetworkStream(_client.Client);
-                    await networkStream.WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
-                    await networkStream.FlushAsync().ConfigureAwait(false);
+                    using (var networkStream = new NetworkStream(_client.Client))
+                    {
+                        await networkStream.WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
+                        await networkStream.FlushAsync().ConfigureAwait(false);
+                    }
                 }
                 else
                 {
