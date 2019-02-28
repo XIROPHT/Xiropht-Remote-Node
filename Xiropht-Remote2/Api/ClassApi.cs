@@ -123,13 +123,13 @@ namespace Xiropht_RemoteNode.Api
     }
     public class ApiObjectConnectionPacket : IDisposable
     {
-        public char[] buffer;
+        public byte[] buffer;
         public string packet;
         private bool disposed;
 
         public ApiObjectConnectionPacket()
         {
-            buffer = new char[8192];
+            buffer = new byte[ClassConnectorSetting.MaxNetworkPacketSize];
             packet = string.Empty;
         }
 
@@ -171,7 +171,6 @@ namespace Xiropht_RemoteNode.Api
         private TcpClient _client;
         private string _ip;
         private NetworkStream _clientApiNetworkStream;
-        private StreamReader _clientApiStreamReader;
         private int _totalPacketPerSecond;
         private bool disposed;
         private long _lastPacketReceived;
@@ -203,8 +202,6 @@ namespace Xiropht_RemoteNode.Api
             {
                 _client = null;
                 _clientApiNetworkStream = null;
-                _clientApiStreamReader = null;
-
             }
 
             _incomingConnectionStatus = false;
@@ -298,8 +295,6 @@ namespace Xiropht_RemoteNode.Api
         public async Task HandleIncomingConnectionAsync()
         {
             _incomingConnectionStatus = true;
-            _clientApiNetworkStream = new NetworkStream(_client.Client);
-            _clientApiStreamReader = new StreamReader(_clientApiNetworkStream, Encoding.UTF8, true, ClassConnectorSetting.MaxNetworkPacketSize, true);
             new Task(async () => await CheckConnection().ConfigureAwait(false)).Start();
             new Task(async () => await CheckPacketSpeedAsync().ConfigureAwait(false)).Start();
 
@@ -314,11 +309,11 @@ namespace Xiropht_RemoteNode.Api
                         _incomingConnectionStatus = false;
                         break;
                     }
-                    /*if (!ClassUtilsNode.SocketIsConnected(_client))
+                    if (!ClassUtilsNode.SocketIsConnected(_client))
                     {
                         _incomingConnectionStatus = false;
                         break;
-                    }*/
+                    }
                     if (!_incomingConnectionStatus)
                     {
                         break;
@@ -328,13 +323,15 @@ namespace Xiropht_RemoteNode.Api
 
                         try
                         {
+                            _clientApiNetworkStream = new NetworkStream(_client.Client);
+
                             using (var bufferPacket = new ApiObjectConnectionPacket())
                             {
-                                int received = await _clientApiStreamReader.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length);
+                                int received = await _clientApiNetworkStream.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length);
 
                                 if (received > 0)
                                 {
-                                    bufferPacket.packet = new string(bufferPacket.buffer, 0, received);
+                                    bufferPacket.packet = Encoding.UTF8.GetString(bufferPacket.buffer, 0, received);
 
 
                                     _totalPacketPerSecond++;
@@ -447,8 +444,6 @@ namespace Xiropht_RemoteNode.Api
         {
             _clientApiNetworkStream?.Close();
             _clientApiNetworkStream?.Dispose();
-            _clientApiStreamReader?.Close();
-            _clientApiStreamReader?.Dispose();
             _client?.Close();
             _client?.Dispose();
         }
@@ -918,8 +913,11 @@ namespace Xiropht_RemoteNode.Api
 
                 using (var packetSend = new ApiObjectConnectionSendPacket(packet + "*"))
                 {
-                    await client.GetStream().WriteAsync(packetSend.packetByte, 0, packetSend.packetByte.Length).ConfigureAwait(false);
-                    await client.GetStream().FlushAsync().ConfigureAwait(false);
+
+                    _clientApiNetworkStream = new NetworkStream(_client.Client);
+
+                    await _clientApiNetworkStream.WriteAsync(packetSend.packetByte, 0, packetSend.packetByte.Length).ConfigureAwait(false);
+                    await _clientApiNetworkStream.FlushAsync().ConfigureAwait(false);
                 }
             }
             catch

@@ -159,16 +159,17 @@ namespace Xiropht_RemoteNode.Api
                 {
                     if (!ClassApiHttp.UseSSL)
                     {
-                        StreamReader clientHttpReader = new StreamReader(_client.GetStream(), Encoding.UTF8, true, ClassConnectorSetting.MaxNetworkPacketSize, true);
                         while (_clientStatus)
                         {
                             try
                             {
-                                char[] buffer = new char[8192];
+                                byte[] buffer = new byte[8192];
+                                NetworkStream clientHttpReader = new NetworkStream(_client.Client);
+
                                 int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
                                 if (received > 0)
                                 {
-                                    string packet = new string(buffer, 0, received);
+                                    string packet = Encoding.UTF8.GetString(buffer, 0, received);
                                     try
                                     {
                                         if (!GetAndCheckForwardedIp(packet))
@@ -542,8 +543,9 @@ namespace Xiropht_RemoteNode.Api
                 var bytePacket = Encoding.UTF8.GetBytes(packet);
                 if (!ClassApiHttp.UseSSL)
                 {
-                    await _client.GetStream().WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
-                    await _client.GetStream().FlushAsync().ConfigureAwait(false);
+                    var networkStream = new NetworkStream(_client.Client);
+                    await networkStream.WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
+                    await networkStream.FlushAsync().ConfigureAwait(false);
                 }
                 else
                 {
