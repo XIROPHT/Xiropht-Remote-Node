@@ -116,7 +116,7 @@ namespace Xiropht_RemoteNode.Object
         private Dictionary<long, string> _bigDictionaryTransaction100; // 999 999 999 - 1 009 999 999 ~39.620 GB
 
 
-        public const int MaxTransactionPerDictionary = 2000000; // 10 millions of transactions per dictionary
+        public const int MaxTransactionPerDictionary = 10000000; // 10 millions of transactions per dictionary
 
 
         public BigDictionaryTransaction()
