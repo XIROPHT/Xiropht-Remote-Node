@@ -104,7 +104,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     while ((line = sr.ReadLine()) != null)
                     {
                         counter++;
-                        ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(ClassRemoteNodeSync.ListOfTransaction.Count(), line);
+                        ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(ClassRemoteNodeSync.ListOfTransaction.Count, line);
                         try
                         {
                             ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(line);
@@ -197,16 +197,16 @@ namespace Xiropht_RemoteNode.RemoteNode
                             InSaveTransactionDatabase = true;
 
                             if (ClassRemoteNodeSync.ListOfTransaction != null)
-                                if (ClassRemoteNodeSync.ListOfTransaction.Count() > 0)
+                                if (ClassRemoteNodeSync.ListOfTransaction.Count > 0)
                                 {
 
-                                    if (TotalTransactionSaved != ClassRemoteNodeSync.ListOfTransaction.Count())
+                                    if (TotalTransactionSaved != ClassRemoteNodeSync.ListOfTransaction.Count)
                                     {
                                         var sw = new StreamWriter(File.OpenWrite(GetCurrentPath() + GetBlockchainTransactionPath() +
                                                                              BlockchainTransactonDatabase));
-                                        for (var i = TotalTransactionSaved; i < ClassRemoteNodeSync.ListOfTransaction.Count(); i++)
+                                        for (var i = TotalTransactionSaved; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++)
                                         {
-                                            if (i < ClassRemoteNodeSync.ListOfTransaction.Count())
+                                            if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
                                             {
                                                 if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i)))
                                                 {
@@ -221,7 +221,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         }
                                         sw.Close();
 
-                                        TotalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count();
+                                        TotalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count;
                                     }
                                 }
 
@@ -255,14 +255,14 @@ namespace Xiropht_RemoteNode.RemoteNode
                             InSaveTransactionDatabase = true;
 
                             if (ClassRemoteNodeSync.ListOfTransaction != null)
-                                if (ClassRemoteNodeSync.ListOfTransaction.Count() > 0)
+                                if (ClassRemoteNodeSync.ListOfTransaction.Count > 0)
                                 {
 
                                     var sw = new StreamWriter(File.OpenWrite(GetCurrentPath() + GetBlockchainTransactionPath() +
                                                                                  BlockchainTransactonDatabase));
-                                    for (var i = 0; i < ClassRemoteNodeSync.ListOfTransaction.Count(); i++)
+                                    for (var i = 0; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++)
                                     {
-                                        if (i < ClassRemoteNodeSync.ListOfTransaction.Count())
+                                        if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
                                         {
                                             if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i)))
                                             {
@@ -277,7 +277,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     }
                                     sw.Close();
 
-                                    TotalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count();
+                                    TotalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count;
 
                                 }
 

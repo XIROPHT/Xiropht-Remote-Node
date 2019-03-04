@@ -2,7 +2,6 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -403,7 +402,7 @@ namespace Xiropht_RemoteNode.Api
                     if (selectedIndex > 0)
                     {
                         selectedIndex -= 1;
-                        if (ClassRemoteNodeSync.ListOfTransaction.Count() - 1 >= selectedIndex)
+                        if (ClassRemoteNodeSync.ListOfTransaction.Count - 1 >= selectedIndex)
                         {
                             if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(selectedIndex))
                             {
@@ -455,7 +454,7 @@ namespace Xiropht_RemoteNode.Api
                         { "coin_total_block_left", ClassRemoteNodeSync.CurrentBlockLeft },
                         { "coin_network_difficulty", ClassRemoteNodeSync.CurrentDifficulty },
                         { "coin_network_hashrate", ClassRemoteNodeSync.CurrentHashrate },
-                        { "coin_total_transaction", "" + ClassRemoteNodeSync.ListOfTransaction.Count() }
+                        { "coin_total_transaction", "" + ClassRemoteNodeSync.ListOfTransaction.Count }
                     };
 
                     await BuildAndSendHttpPacketAsync(null, true, networkStatsContent);
