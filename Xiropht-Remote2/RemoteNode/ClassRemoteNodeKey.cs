@@ -68,8 +68,34 @@ namespace Xiropht_RemoteNode.RemoteNode
                 try
                 {
 
-                    ClassRemoteNodeSync.HashTransactionList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(string.Empty, ClassRemoteNodeSync.ListOfTransaction.Values()));
+                    //  ClassRemoteNodeSync.HashTransactionList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(string.Empty, ClassRemoteNodeSync.ListOfTransaction.Values()));
+                    string transactionBlock = string.Empty;
+                    string schema = ClassRemoteNodeSync.SchemaHashTransaction;
 
+                    if (!string.IsNullOrEmpty(schema))
+                    {
+                        var splitSchema = schema.Split(new[] { ";" }, StringSplitOptions.None);
+                        foreach (var transaction in splitSchema)
+                        {
+                            if (transaction != null)
+                            {
+                                if (!string.IsNullOrEmpty(transaction))
+                                {
+                                    if (long.TryParse(transaction, out var transactionId))
+                                    {
+                                        if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(transactionId))
+                                        {
+                                            transactionBlock += ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionId);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(transactionBlock))
+                        {
+                            ClassRemoteNodeSync.HashTransactionList = Utils.ClassUtilsNode.ConvertStringToSha512(transactionBlock);
+                        }
+                    }
                 }
                 catch
                 {
@@ -99,7 +125,35 @@ namespace Xiropht_RemoteNode.RemoteNode
                     if (LastBlockIdRead != ClassRemoteNodeSync.ListOfBlock.Count)
                     {
                         LastBlockIdRead = ClassRemoteNodeSync.ListOfBlock.Count;
-                        ClassRemoteNodeSync.HashBlockList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
+                        //ClassRemoteNodeSync.HashBlockList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
+
+                        string blockBLock = string.Empty;
+                        string schema = ClassRemoteNodeSync.SchemaHashBlock;
+
+                        if (!string.IsNullOrEmpty(schema))
+                        {
+                            var splitSchema = schema.Split(new[] { ";" }, StringSplitOptions.None);
+                            foreach (var block in splitSchema)
+                            {
+                                if (block != null)
+                                {
+                                    if (!string.IsNullOrEmpty(block))
+                                    {
+                                        if (int.TryParse(block, out var blockId))
+                                        {
+                                            if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockId))
+                                            {
+                                                blockBLock += ClassRemoteNodeSync.ListOfBlock[blockId];
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(blockBLock))
+                            {
+                                ClassRemoteNodeSync.HashBlockList = Utils.ClassUtilsNode.ConvertStringToSha512(blockBLock);
+                            }
+                        }
                     }
                 }
                 catch

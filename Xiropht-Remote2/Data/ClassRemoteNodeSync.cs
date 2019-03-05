@@ -28,6 +28,11 @@ namespace Xiropht_RemoteNode.Data
         public static string HashBlockList; // A key from each block(s).
         public static string TrustedKey; // A key generated from information and hash 
 
+        /// <summary>
+        /// For generate right transaction/block keys
+        /// </summary>
+        public static string SchemaHashTransaction;
+        public static string SchemaHashBlock;
 
         /// <summary>
         /// Status of public system.

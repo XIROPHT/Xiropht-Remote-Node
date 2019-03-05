@@ -2,7 +2,7 @@
 
 namespace Xiropht_RemoteNode.Object
 {
-    public class BigDictionaryTransaction // Limited to 1 009 999 999 transactions around 39GB of ram
+    public class BigDictionaryTransaction // Limited to 1 009 999 999 transactions around 39,2GB of ram
     {
         private Dictionary<long, string> _bigDictionaryTransaction1; // 0 - 9 999 999
         private Dictionary<long, string> _bigDictionaryTransaction2; // 9 999 999 - 19 999 999

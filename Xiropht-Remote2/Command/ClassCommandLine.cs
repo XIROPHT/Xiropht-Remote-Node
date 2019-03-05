@@ -74,9 +74,10 @@ namespace Xiropht_RemoteNode.Command
                             Console.WriteLine("Public Status of the Remote Node: " + status);
 
                         }
-                        Console.WriteLine("Trusted Key: " + ClassRemoteNodeSync.TrustedKey);
-                        Console.WriteLine("Hash Transaction Key: " + ClassRemoteNodeSync.HashTransactionList);
-                        Console.WriteLine("Hash Block Key: " + ClassRemoteNodeSync.HashBlockList);
+                            Console.WriteLine("Trusted Key: " + ClassRemoteNodeSync.TrustedKey);
+                            Console.WriteLine("Hash Transaction Key: " + ClassRemoteNodeSync.HashTransactionList);
+                            Console.WriteLine("Hash Block Key: " + ClassRemoteNodeSync.HashBlockList);
+                        
                         break;
                     case "transaction":
                         Console.WriteLine("Total Transaction Sync: " + (ClassRemoteNodeSync.ListOfTransaction.Count));
