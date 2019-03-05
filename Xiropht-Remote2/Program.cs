@@ -291,8 +291,6 @@ namespace Xiropht_RemoteNode
                  Console.WriteLine("Enable Check Remote Node Objects connection..");
                  ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();
                  Console.WriteLine("Enable System of Generating Trusted Key's of Remote Node..");
-                 ClassRemoteNodeKey.StartUpdateHashTransactionList();
-                 ClassRemoteNodeKey.StartUpdateHashBlockList();
                  ClassRemoteNodeKey.StartUpdateTrustedKey();
 
                  Console.WriteLine("Enable API..");

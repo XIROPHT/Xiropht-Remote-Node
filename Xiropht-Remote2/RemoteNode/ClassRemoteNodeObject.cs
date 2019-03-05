@@ -283,7 +283,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 {
                                                     ClassLog.Log("Too much block, clean sync: ", 2, 3);
                                                     ClassRemoteNodeSync.ListOfBlock.Clear();
-                                                    ClassRemoteNodeKey.LastBlockIdRead = 0;
                                                     ClassRemoteNodeKey.DataBlockRead = string.Empty;
                                                 }
 
@@ -380,7 +379,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 {
                                                     ClassLog.Log("Too much transaction, clean sync: ", 2, 3);
                                                     ClassRemoteNodeSync.ListOfTransaction.Clear();
-                                                    ClassRemoteNodeKey.LastTransactionIdRead = 0;
                                                     ClassRemoteNodeKey.DataTransactionRead = string.Empty;
                                                 }
 
@@ -1241,13 +1239,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendSchemaTransaction:
                         RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.SchemaHashTransaction = packetSplit[1];
-                        Console.WriteLine("Schema transaction received: " + packetSplit[1]);
-                        //ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                        //Console.WriteLine("Schema transaction received: " + packetSplit[1]);
+                        ClassRemoteNodeKey.StartUpdateHashTransactionList();
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendSchemaBlock:
                         RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
-                        //Console.WriteLine("Schema block received: " + packetSplit[1]);
                         ClassRemoteNodeSync.SchemaHashBlock = packetSplit[1];
+                        //Console.WriteLine("Schema block received: " + packetSplit[1]);
                         ClassRemoteNodeKey.StartUpdateHashBlockList();
                         break;
                 }

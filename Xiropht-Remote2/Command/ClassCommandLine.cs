@@ -124,8 +124,7 @@ namespace Xiropht_RemoteNode.Command
                         ClassRemoteNodeSave.TotalTransactionSaved = 0;
                         ClassRemoteNodeSave.DataTransactionSaved = string.Empty;
                         ClassRemoteNodeSave.DataBlockSaved = string.Empty;
-                        ClassRemoteNodeKey.LastBlockIdRead = 0;
-                        ClassRemoteNodeKey.LastTransactionIdRead = 0;
+
 
                         Console.WriteLine("Clear finish, restart sync..");
                         ClassRemoteNodeKey.StartUpdateHashTransactionList();

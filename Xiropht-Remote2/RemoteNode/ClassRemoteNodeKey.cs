@@ -8,15 +8,13 @@ namespace Xiropht_RemoteNode.RemoteNode
     public class ClassRemoteNodeKey
     {
         private static Thread _threadUpdateTrustedKey;
-        private static Thread _threadUpdateHashBlockList;
-        private static Thread _threadUpdateHashTransactionList;
 
         private static readonly int ThreadUpdateTrustedKeyInterval = 500;
 
-        public static int LastTransactionIdRead;
-        public static int LastBlockIdRead;
         public static string DataTransactionRead;
         public static string DataBlockRead;
+        private static bool InGenerateTransactionKey;
+        private static bool InGenerateBlockKey;
 
         public static void StartUpdateTrustedKey()
         {
@@ -56,19 +54,13 @@ namespace Xiropht_RemoteNode.RemoteNode
         public static void StartUpdateHashTransactionList()
         {
 
-            if (_threadUpdateHashTransactionList != null && (_threadUpdateHashTransactionList.IsAlive || _threadUpdateHashTransactionList != null))
+            if (!InGenerateTransactionKey)
             {
-                _threadUpdateHashTransactionList.Abort();
-                GC.SuppressFinalize(_threadUpdateHashTransactionList);
-            }
-
-            _threadUpdateHashTransactionList = new Thread(delegate ()
-            {
+                InGenerateTransactionKey = true;
 
                 try
                 {
-
-                    //  ClassRemoteNodeSync.HashTransactionList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(string.Empty, ClassRemoteNodeSync.ListOfTransaction.Values()));
+                    //ClassRemoteNodeSync.HashTransactionList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(string.Empty, ClassRemoteNodeSync.ListOfTransaction.Values()));
                     string transactionBlock = string.Empty;
                     string schema = ClassRemoteNodeSync.SchemaHashTransaction;
 
@@ -103,56 +95,46 @@ namespace Xiropht_RemoteNode.RemoteNode
                 }
                 ClassLog.Log(
                     "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
+                InGenerateTransactionKey = false;
 
-            });
-            _threadUpdateHashTransactionList.Start();
+            }
         }
 
         public static void StartUpdateHashBlockList()
         {
-            if (_threadUpdateHashBlockList != null &&
-                (_threadUpdateHashBlockList.IsAlive || _threadUpdateHashBlockList != null))
+            if (!InGenerateBlockKey)
             {
-                _threadUpdateHashBlockList.Abort();
-                GC.SuppressFinalize(_threadUpdateHashBlockList);
-            }
-
-            _threadUpdateHashBlockList = new Thread(delegate ()
-            {
+                InGenerateBlockKey = true;
 
                 try
                 {
-                    if (LastBlockIdRead != ClassRemoteNodeSync.ListOfBlock.Count)
+
+                    //ClassRemoteNodeSync.HashBlockList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
+                    string blockBLock = string.Empty;
+                    string schema = ClassRemoteNodeSync.SchemaHashBlock;
+
+                    if (!string.IsNullOrEmpty(schema))
                     {
-                        LastBlockIdRead = ClassRemoteNodeSync.ListOfBlock.Count;
-                        //ClassRemoteNodeSync.HashBlockList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
-
-                        string blockBLock = string.Empty;
-                        string schema = ClassRemoteNodeSync.SchemaHashBlock;
-
-                        if (!string.IsNullOrEmpty(schema))
+                        var splitSchema = schema.Split(new[] { ";" }, StringSplitOptions.None);
+                        foreach (var block in splitSchema)
                         {
-                            var splitSchema = schema.Split(new[] { ";" }, StringSplitOptions.None);
-                            foreach (var block in splitSchema)
+                            if (block != null)
                             {
-                                if (block != null)
+                                if (!string.IsNullOrEmpty(block))
                                 {
-                                    if (!string.IsNullOrEmpty(block))
+                                    if (int.TryParse(block, out var blockId))
                                     {
-                                        if (int.TryParse(block, out var blockId))
+                                        if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockId))
                                         {
-                                            if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockId))
-                                            {
-                                                blockBLock += ClassRemoteNodeSync.ListOfBlock[blockId];
-                                            }
+                                            blockBLock += ClassRemoteNodeSync.ListOfBlock[blockId];
                                         }
                                     }
                                 }
                             }
-                            if (!string.IsNullOrEmpty(blockBLock))
-                            {
-                                ClassRemoteNodeSync.HashBlockList = Utils.ClassUtilsNode.ConvertStringToSha512(blockBLock);
-                            }
+                        }
+                        if (!string.IsNullOrEmpty(blockBLock))
+                        {
+                            ClassRemoteNodeSync.HashBlockList = Utils.ClassUtilsNode.ConvertStringToSha512(blockBLock);
                         }
                     }
                 }
@@ -161,8 +143,9 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                 }
                 ClassLog.Log("Hash key from block list generated: " + ClassRemoteNodeSync.HashBlockList + " ", 1, 1);
-            });
-            _threadUpdateHashBlockList.Start();
+                InGenerateBlockKey = false;
+
+            }
         }
     }
 }
