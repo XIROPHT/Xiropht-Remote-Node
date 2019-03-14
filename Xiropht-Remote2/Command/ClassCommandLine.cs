@@ -206,37 +206,22 @@ namespace Xiropht_RemoteNode.Command
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop api..");
                         ClassApi.StopApi();
-                        ClassRemoteNodeSave.TotalBlockSaved = 0;
-                        ClassRemoteNodeSave.DataBlockSaved = string.Empty;
-                        Console.WriteLine("Waiting end of save block database..");
-                        while (ClassRemoteNodeSave.InSaveBlockDatabase)
+                        Console.WriteLine("Starting save sync..");
+                        while (ClassRemoteNodeSave.InSaveTransactionDatabase)
                         {
-                            Thread.Sleep(100);
-                        }
-                        if (ClassRemoteNodeSave.SaveBlock(false))
-                        {
-                            Console.WriteLine("save block database successfully done.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("save block database error.");
+                            Thread.Sleep(1000);
                         }
                         ClassRemoteNodeSave.TotalTransactionSaved = 0;
                         ClassRemoteNodeSave.DataTransactionSaved = string.Empty;
-                        Console.WriteLine("Waiting end of save transaction database..");
-                        while (ClassRemoteNodeSave.InSaveTransactionDatabase)
+                        ClassRemoteNodeSave.SaveTransaction(false);
+                        while (ClassRemoteNodeSave.InSaveBlockDatabase)
                         {
-                            Thread.Sleep(100);
+                            Thread.Sleep(1000);
                         }
-                        if (ClassRemoteNodeSave.SaveTransaction(false))
-                        {
-                            Console.WriteLine("save transaction database successfully done.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("save transaction database error.");
-                        }
-                        Console.WriteLine("Sync saved and exit.");
+                        ClassRemoteNodeSave.TotalBlockSaved = 0;
+                        ClassRemoteNodeSave.DataBlockSaved = string.Empty;
+                        ClassRemoteNodeSave.SaveBlock(false);
+                        Console.WriteLine("Sync saved.");
                         Environment.Exit(0);
                         return false;
                 }
