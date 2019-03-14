@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using Xiropht_RemoteNode.Data;
 
@@ -12,7 +13,8 @@ namespace Xiropht_RemoteNode.RemoteNode
         private static readonly string BlockchainDirectory = "\\Blockchain\\";
         private static readonly string BlockchainTransactionDirectory = "\\Blockchain\\Transaction\\";
         private static readonly string BlockchainBlockDirectory = "\\Blockchain\\Block\\";
-
+        private static StreamWriter BlockchainTransactionWriter;
+        private static StreamWriter BlockchainBlockWriter;
 
         public static bool InSaveTransactionDatabase;
         public static bool InSaveBlockDatabase;
@@ -192,7 +194,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 File.Create(GetCurrentPath() + GetBlockchainTransactionPath() +
                                             BlockchainTransactonDatabase).Close();
                             }
-
+                            if (BlockchainTransactionWriter == null)
+                            {
+                                BlockchainTransactionWriter = new StreamWriter(GetCurrentPath() + GetBlockchainTransactionPath() +
+                                                                             BlockchainTransactonDatabase, true, Encoding.UTF8, 8192)
+                                { AutoFlush = true };
+                            }
 
                             InSaveTransactionDatabase = true;
 
@@ -202,24 +209,17 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                     if (TotalTransactionSaved != ClassRemoteNodeSync.ListOfTransaction.Count)
                                     {
-                                        var sw = new StreamWriter(File.OpenWrite(GetCurrentPath() + GetBlockchainTransactionPath() +
-                                                                             BlockchainTransactonDatabase));
+
                                         for (var i = TotalTransactionSaved; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++)
                                         {
                                             if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
                                             {
                                                 if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i)))
                                                 {
-
-
-
-                                                    sw.Write(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
-                                                    sw.Flush();
-
+                                                    BlockchainTransactionWriter.Write(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
                                                 }
                                             }
                                         }
-                                        sw.Close();
 
                                         TotalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count;
                                     }
@@ -233,9 +233,14 @@ namespace Xiropht_RemoteNode.RemoteNode
 #if DEBUG
                         Console.WriteLine("Can't save transaction(s) to database file: " + error.Message);
 #endif
-                        InSaveTransactionDatabase = false;
+                            InSaveTransactionDatabase = false;
                             TotalTransactionSaved = 0;
-
+                            if (BlockchainTransactionWriter != null)
+                            {
+                                BlockchainTransactionWriter?.Close();
+                                BlockchainTransactionWriter?.Dispose();
+                                BlockchainTransactionWriter = null;
+                            }
                         }
                     });
                     _threadAutoSaveTransaction.Start();
@@ -245,6 +250,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                     try
                     {
 
+                        if (BlockchainTransactionWriter != null)
+                        {
+                            BlockchainTransactionWriter?.Close();
+                            BlockchainTransactionWriter?.Dispose();
+                            BlockchainTransactionWriter = null;
+                        }
 
                         File.Create(GetCurrentPath() + GetBlockchainTransactionPath() +
                                     BlockchainTransactonDatabase).Close();
@@ -258,24 +269,24 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 if (ClassRemoteNodeSync.ListOfTransaction.Count > 0)
                                 {
 
-                                    var sw = new StreamWriter(File.OpenWrite(GetCurrentPath() + GetBlockchainTransactionPath() +
-                                                                                 BlockchainTransactonDatabase));
-                                    for (var i = 0; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++)
+                                    using (var sw = new StreamWriter(GetCurrentPath() + GetBlockchainTransactionPath() +
+                                                                                 BlockchainTransactonDatabase, true, Encoding.UTF8, 8192) { AutoFlush = true })
                                     {
-                                        if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
+                                        for (var i = 0; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++)
                                         {
-                                            if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i)))
+                                            if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
                                             {
+                                                if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i)))
+                                                {
 
 
 
-                                                sw.Write(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
-                                                sw.Flush();
+                                                    sw.Write(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
 
+                                                }
                                             }
                                         }
                                     }
-                                    sw.Close();
 
                                     TotalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count;
 
@@ -291,6 +302,12 @@ namespace Xiropht_RemoteNode.RemoteNode
 #endif
                         InSaveTransactionDatabase = false;
                         TotalTransactionSaved = 0;
+                        if (BlockchainTransactionWriter != null)
+                        {
+                            BlockchainTransactionWriter?.Close();
+                            BlockchainTransactionWriter?.Dispose();
+                            BlockchainTransactionWriter = null;
+                        }
                     }
                 }
             }
@@ -324,6 +341,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             BlockchainBlockDatabase).Close();
                             }
 
+                            if (BlockchainBlockWriter == null)
+                            {
+                                BlockchainBlockWriter = new StreamWriter(GetCurrentPath() + GetBlockchainBlockPath() + BlockchainBlockDatabase, true, Encoding.UTF8, 8192)
+                                { AutoFlush = true };
+                            }
+
 
                             InSaveBlockDatabase = true;
                             if (ClassRemoteNodeSync.ListOfBlock != null)
@@ -332,24 +355,17 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                     if (TotalBlockSaved != ClassRemoteNodeSync.ListOfBlock.Count)
                                     {
-                                        var sw = new StreamWriter(File.OpenWrite(GetCurrentPath() + GetBlockchainBlockPath() +
-                                                                                 BlockchainBlockDatabase));
+                                      
                                         for (var i = TotalBlockSaved; i < ClassRemoteNodeSync.ListOfBlock.Count; i++)
                                         {
                                             if (i < ClassRemoteNodeSync.ListOfBlock.Count)
                                             {
                                                 if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfBlock[i]))
                                                 {
-
-
-
-                                                    sw.Write(ClassRemoteNodeSync.ListOfBlock[i] + "\n");
-                                                    sw.Flush();
-
+                                                    BlockchainBlockWriter.Write(ClassRemoteNodeSync.ListOfBlock[i] + "\n");
                                                 }
                                             }
                                         }
-                                        sw.Close();
 
                                         TotalBlockSaved = ClassRemoteNodeSync.ListOfBlock.Count;
                                     }
@@ -365,6 +381,12 @@ namespace Xiropht_RemoteNode.RemoteNode
 #endif
                             InSaveBlockDatabase = false;
                             TotalBlockSaved = 0;
+                            if (BlockchainBlockWriter != null)
+                            {
+                                BlockchainBlockWriter?.Close();
+                                BlockchainBlockWriter?.Dispose();
+                                BlockchainBlockWriter = null;
+                            }
                         }
                     });
                     _threadAutoSaveBlock.Start();
@@ -373,6 +395,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                 {
                     try
                     {
+
+                        if (BlockchainBlockWriter != null)
+                        {
+                            BlockchainBlockWriter?.Close();
+                            BlockchainBlockWriter?.Dispose();
+                            BlockchainBlockWriter = null;
+                        }
 
                         File.Create(GetCurrentPath() + GetBlockchainBlockPath() +
                                     BlockchainBlockDatabase).Close();
@@ -386,24 +415,21 @@ namespace Xiropht_RemoteNode.RemoteNode
                             {
 
 
-                                var sw = new StreamWriter(File.OpenWrite(GetCurrentPath() + GetBlockchainBlockPath() +
-                                                                         BlockchainBlockDatabase));
-                                for (var i = 0; i < ClassRemoteNodeSync.ListOfBlock.Count; i++)
+                                using (var sw = new StreamWriter(GetCurrentPath() + GetBlockchainBlockPath() +
+                                                                         BlockchainBlockDatabase, true, Encoding.UTF8, 8192)
+                                { AutoFlush = true })
                                 {
-                                    if (i < ClassRemoteNodeSync.ListOfBlock.Count)
+                                    for (var i = 0; i < ClassRemoteNodeSync.ListOfBlock.Count; i++)
                                     {
-                                        if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfBlock[i]))
+                                        if (i < ClassRemoteNodeSync.ListOfBlock.Count)
                                         {
-
-
-
-                                            sw.Write(ClassRemoteNodeSync.ListOfBlock[i] + "\n");
-                                            sw.Flush();
-
+                                            if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfBlock[i]))
+                                            {
+                                                sw.Write(ClassRemoteNodeSync.ListOfBlock[i] + "\n");
+                                            }
                                         }
                                     }
                                 }
-                                sw.Close();
 
                                 TotalBlockSaved = ClassRemoteNodeSync.ListOfBlock.Count;
 
@@ -418,6 +444,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                         Console.WriteLine("Can't save block(s) to database file: " + error.Message);
 #endif
                         InSaveBlockDatabase = false;
+                        if (BlockchainBlockWriter != null)
+                        {
+                            BlockchainBlockWriter?.Close();
+                            BlockchainBlockWriter?.Dispose();
+                            BlockchainBlockWriter = null;
+                        }
                     }
                 }
             }

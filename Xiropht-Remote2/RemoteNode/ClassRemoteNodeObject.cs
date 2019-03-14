@@ -279,7 +279,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             if (int.TryParse(ClassRemoteNodeSync.TotalBlockMined,
                                                 out var totalBlockMined))
                                             {
-
+                                                if (ClassRemoteNodeSync.ListOfBlock.Count > totalBlockMined)
+                                                {
+                                                    ClassLog.Log("Too much block, clean sync: ", 2, 3);
+                                                    ClassRemoteNodeSync.ListOfBlock.Clear();
+                                                    ClassRemoteNodeKey.DataBlockRead = string.Empty;
+                                                }
 
                                                 askBlock -= ClassRemoteNodeSync.ListOfBlock.Count;
                                                 var totalBlockSaved = ClassRemoteNodeSync.ListOfBlock.Count;
@@ -370,6 +375,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             if (long.TryParse(ClassRemoteNodeSync.TotalTransaction,
                                                 out var totalTransaction))
                                             {
+                                                if (ClassRemoteNodeSync.ListOfTransaction.Count > totalTransaction)
+                                                {
+                                                    ClassLog.Log("Too much transaction, clean sync: ", 2, 3);
+                                                    ClassRemoteNodeSync.ListOfTransaction.Clear();
+                                                    ClassRemoteNodeKey.DataTransactionRead = string.Empty;
+                                                }
 
 
                                                 if (long.TryParse(ClassRemoteNodeSync.TotalTransaction,
