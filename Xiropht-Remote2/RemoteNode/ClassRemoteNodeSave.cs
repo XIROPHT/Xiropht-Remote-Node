@@ -231,16 +231,17 @@ namespace Xiropht_RemoteNode.RemoteNode
                         catch (Exception error)
                         {
 #if DEBUG
-                        Console.WriteLine("Can't save transaction(s) to database file: " + error.Message);
+                            Console.WriteLine("Can't save transaction(s) to database file: " + error.Message);
 #endif
-                            InSaveTransactionDatabase = false;
-                            TotalTransactionSaved = 0;
                             if (BlockchainTransactionWriter != null)
                             {
                                 BlockchainTransactionWriter?.Close();
                                 BlockchainTransactionWriter?.Dispose();
                                 BlockchainTransactionWriter = null;
                             }
+                            TotalTransactionSaved = 0;
+                            File.Create(GetCurrentPath() + GetBlockchainTransactionPath() + BlockchainTransactonDatabase).Close();
+                            InSaveTransactionDatabase = false;
                         }
                     });
                     _threadAutoSaveTransaction.Start();
@@ -300,14 +301,16 @@ namespace Xiropht_RemoteNode.RemoteNode
 #if DEBUG
                         Console.WriteLine("Can't save transaction(s) to database file: " + error.Message);
 #endif
-                        InSaveTransactionDatabase = false;
-                        TotalTransactionSaved = 0;
                         if (BlockchainTransactionWriter != null)
                         {
                             BlockchainTransactionWriter?.Close();
                             BlockchainTransactionWriter?.Dispose();
                             BlockchainTransactionWriter = null;
                         }
+                        TotalTransactionSaved = 0;
+                        File.Create(GetCurrentPath() + GetBlockchainTransactionPath() + BlockchainTransactonDatabase).Close();
+                        InSaveTransactionDatabase = false;
+
                     }
                 }
             }
@@ -379,7 +382,6 @@ namespace Xiropht_RemoteNode.RemoteNode
 #if DEBUG
                             Console.WriteLine("Can't save block(s) to database file: " + error.Message);
 #endif
-                            InSaveBlockDatabase = false;
                             TotalBlockSaved = 0;
                             if (BlockchainBlockWriter != null)
                             {
@@ -387,6 +389,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 BlockchainBlockWriter?.Dispose();
                                 BlockchainBlockWriter = null;
                             }
+                            File.Create(GetCurrentPath() + GetBlockchainBlockPath() + BlockchainBlockDatabase).Close();
+                            InSaveBlockDatabase = false;
+
                         }
                     });
                     _threadAutoSaveBlock.Start();
@@ -443,13 +448,15 @@ namespace Xiropht_RemoteNode.RemoteNode
 #if DEBUG
                         Console.WriteLine("Can't save block(s) to database file: " + error.Message);
 #endif
-                        InSaveBlockDatabase = false;
+                        TotalBlockSaved = 0;
                         if (BlockchainBlockWriter != null)
                         {
                             BlockchainBlockWriter?.Close();
                             BlockchainBlockWriter?.Dispose();
                             BlockchainBlockWriter = null;
                         }
+                        File.Create(GetCurrentPath() + GetBlockchainBlockPath() + BlockchainBlockDatabase).Close();
+                        InSaveBlockDatabase = false;
                     }
                 }
             }
