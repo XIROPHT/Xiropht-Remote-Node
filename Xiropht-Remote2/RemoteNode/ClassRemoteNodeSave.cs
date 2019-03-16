@@ -397,6 +397,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 InSaveBlockDatabase = false;
 
                             }
+                            Thread.Sleep(1000);
                         }
                     });
                     _threadAutoSaveBlock.Start();
