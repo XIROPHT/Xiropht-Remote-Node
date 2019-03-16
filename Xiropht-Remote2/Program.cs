@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -81,6 +82,27 @@ namespace Xiropht_RemoteNode
 
         public static void Main(string[] args)
         {
+
+            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args2)
+            {
+                var filePath = ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + "\\error_remotenode.txt");
+                var exception = (Exception)args2.ExceptionObject;
+                using (var writer = new StreamWriter(filePath, true))
+                {
+                    writer.WriteLine("Message :" + exception.Message + "<br/>" + Environment.NewLine +
+                                     "StackTrace :" +
+                                     exception.StackTrace +
+                                     "" + Environment.NewLine + "Date :" + DateTime.Now);
+                    writer.WriteLine(Environment.NewLine +
+                                     "-----------------------------------------------------------------------------" +
+                                     Environment.NewLine);
+                }
+
+                Trace.TraceError(exception.StackTrace);
+
+                Environment.Exit(1);
+
+            };
             Thread.CurrentThread.Name = Path.GetFileName(Environment.GetCommandLineArgs()[0]);
 
             ClassRemoteNodeSave.InitializePath();
@@ -292,6 +314,10 @@ namespace Xiropht_RemoteNode
                  ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();
                  Console.WriteLine("Enable System of Generating Trusted Key's of Remote Node..");
                  ClassRemoteNodeKey.StartUpdateTrustedKey();
+
+                 Console.WriteLine("Enable Auto save system..");
+                 ClassRemoteNodeSave.SaveTransaction();
+                 ClassRemoteNodeSave.SaveBlock();
 
                  Console.WriteLine("Enable API..");
                  ClassApi.StartApiRemoteNode();

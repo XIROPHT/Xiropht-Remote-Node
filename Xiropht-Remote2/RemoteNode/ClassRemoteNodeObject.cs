@@ -777,10 +777,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                         "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count +
                                                         "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 1);
                                                     //ClassRemoteNodeKey.StartUpdateHashBlockList();
-                                                    if (!ClassRemoteNodeSave.InSaveBlockDatabase)
-                                                    {
-                                                        ClassRemoteNodeSave.SaveBlock(true);
-                                                    }
                                                     if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaBlock, Program.Certificate, false, true))
                                                     {
                                                         RemoteNodeObjectConnectionStatus = false;
@@ -820,10 +816,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
                                             ClassRemoteNodeSync.TotalBlockMined, 0, 1);
                                         //ClassRemoteNodeKey.StartUpdateHashBlockList();
-                                        if (!ClassRemoteNodeSave.InSaveBlockDatabase)
-                                        {
-                                            ClassRemoteNodeSave.SaveBlock(true);
-                                        }
+
                                         if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaBlock, Program.Certificate, false, true))
                                         {
                                             RemoteNodeObjectConnectionStatus = false;
@@ -948,10 +941,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
                                                     {
                                                         //ClassRemoteNodeKey.StartUpdateHashTransactionList();
-                                                        if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
-                                                        {
-                                                            ClassRemoteNodeSave.SaveTransaction(true);
-                                                        }
                                                         ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
                                                         if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
                                                         {
@@ -1008,10 +997,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
                                         {
                                             //ClassRemoteNodeKey.StartUpdateHashTransactionList();
-                                            if (!ClassRemoteNodeSave.InSaveTransactionDatabase)
-                                            {
-                                                ClassRemoteNodeSave.SaveTransaction(true);
-                                            }
                                             ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
                                             if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
                                             {

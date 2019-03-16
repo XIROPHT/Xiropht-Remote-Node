@@ -169,7 +169,7 @@ namespace Xiropht_RemoteNode.Command
                         }
                         break;
                     case "save":
-                        Console.WriteLine("Starting save sync..");
+                        Console.WriteLine("Stop auto save system. Start manual save sync..");
                         while (ClassRemoteNodeSave.InSaveTransactionDatabase)
                         {
                             Thread.Sleep(1000);
@@ -185,6 +185,9 @@ namespace Xiropht_RemoteNode.Command
                         ClassRemoteNodeSave.DataBlockSaved = string.Empty;
                         ClassRemoteNodeSave.SaveBlock(false);
                         Console.WriteLine("Sync saved.");
+                        Console.WriteLine("Restart auto save system.");
+                        ClassRemoteNodeSave.SaveTransaction();
+                        ClassRemoteNodeSave.SaveBlock();
                         break;
                     case "exit":
                         Program.Closed = true;
