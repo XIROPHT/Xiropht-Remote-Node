@@ -118,6 +118,8 @@ namespace Xiropht_RemoteNode.Command
                         ClassRemoteNodeSync.ListOfBlock.Clear();
                         ClassRemoteNodeSync.ListOfTransaction.Clear();
                         ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
+                        ClassRemoteNodeSave.ClearBlockSyncSave();
+                        ClassRemoteNodeSave.ClearTransactionSyncSave();
                         ClassRemoteNodeKey.DataBlockRead = string.Empty;
                         ClassRemoteNodeKey.DataTransactionRead = string.Empty;
                         ClassRemoteNodeSave.TotalBlockSaved = 0;

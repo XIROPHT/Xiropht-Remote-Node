@@ -468,5 +468,52 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
             return true;
         }
+
+        /// <summary>
+        /// Force to clear blocks saved.
+        /// </summary>
+        public static void ClearBlockSyncSave()
+        {
+            try
+            {
+                if (BlockchainBlockWriter != null)
+                {
+                    BlockchainBlockWriter?.Close();
+                    BlockchainBlockWriter?.Dispose();
+                    BlockchainBlockWriter = null;
+                }
+                TotalBlockSaved = 0;
+                File.Create(GetCurrentPath() + GetBlockchainBlockPath() + BlockchainBlockDatabase).Close();
+                InSaveBlockDatabase = false;
+            }
+            catch
+            {
+
+            }
+        }
+
+
+        /// <summary>
+        /// Force to clear transactions saved.
+        /// </summary>
+        public static void ClearTransactionSyncSave()
+        {
+            try
+            {
+                if (BlockchainTransactionWriter != null)
+                {
+                    BlockchainTransactionWriter?.Close();
+                    BlockchainTransactionWriter?.Dispose();
+                    BlockchainTransactionWriter = null;
+                }
+                TotalTransactionSaved = 0;
+                File.Create(GetCurrentPath() + GetBlockchainTransactionPath() + BlockchainTransactonDatabase).Close();
+                InSaveTransactionDatabase = false;
+            }
+            catch
+            {
+
+            }
+        }
     }
 }

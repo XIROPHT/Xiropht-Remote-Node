@@ -870,6 +870,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         {
                             ClassRemoteNodeSync.ListOfTransaction.Clear();
                             ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
+                            ClassRemoteNodeSave.ClearTransactionSyncSave();
                         }
 
                         ClassLog.Log("Total Transaction: " + packetSplit[1].Replace("SEND-NUMBER-OF-TRANSACTION", ""),
@@ -881,8 +882,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                         if (int.TryParse(packetSplit[1], out var totalBlockMined))
                         {
                             if (totalBlockMined < ClassRemoteNodeSync.ListOfBlock.Count && !Program.RemoteNodeObjectCoinCirculating.RemoteNodeObjectInSyncBlock)
+                            {
                                 ClassRemoteNodeSync.ListOfBlock.Clear();
-
+                                ClassRemoteNodeSave.ClearBlockSyncSave();
+                            }
                             var totalBlockLeft =
                                 Math.Round(
                                     (decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ","), System.Globalization.NumberStyles.Any,
