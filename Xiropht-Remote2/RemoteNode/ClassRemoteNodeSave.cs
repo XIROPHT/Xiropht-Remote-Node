@@ -235,15 +235,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 #if DEBUG
                             Console.WriteLine("Can't save transaction(s) to database file: " + error.Message);
 #endif
-                                if (BlockchainTransactionWriter != null)
-                                {
-                                    BlockchainTransactionWriter?.Close();
-                                    BlockchainTransactionWriter?.Dispose();
-                                    BlockchainTransactionWriter = null;
-                                }
-                                TotalTransactionSaved = 0;
-                                File.Create(GetCurrentPath() + GetBlockchainTransactionPath() + BlockchainTransactonDatabase).Close();
-                                InSaveTransactionDatabase = false;
+                                ClearTransactionSyncSave();
                             }
                             Thread.Sleep(1000);
                         }
@@ -257,9 +249,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         if (BlockchainTransactionWriter != null)
                         {
-                            BlockchainTransactionWriter?.Close();
-                            BlockchainTransactionWriter?.Dispose();
-                            BlockchainTransactionWriter = null;
+                            ClearTransactionSyncSave();
                         }
 
                         File.Create(GetCurrentPath() + GetBlockchainTransactionPath() +
@@ -305,15 +295,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 #if DEBUG
                         Console.WriteLine("Can't save transaction(s) to database file: " + error.Message);
 #endif
-                        if (BlockchainTransactionWriter != null)
-                        {
-                            BlockchainTransactionWriter?.Close();
-                            BlockchainTransactionWriter?.Dispose();
-                            BlockchainTransactionWriter = null;
-                        }
-                        TotalTransactionSaved = 0;
-                        File.Create(GetCurrentPath() + GetBlockchainTransactionPath() + BlockchainTransactonDatabase).Close();
-                        InSaveTransactionDatabase = false;
+                        ClearTransactionSyncSave();
 
                     }
                 }
@@ -386,15 +368,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 #if DEBUG
                             Console.WriteLine("Can't save block(s) to database file: " + error.Message);
 #endif
-                                TotalBlockSaved = 0;
-                                if (BlockchainBlockWriter != null)
-                                {
-                                    BlockchainBlockWriter?.Close();
-                                    BlockchainBlockWriter?.Dispose();
-                                    BlockchainBlockWriter = null;
-                                }
-                                File.Create(GetCurrentPath() + GetBlockchainBlockPath() + BlockchainBlockDatabase).Close();
-                                InSaveBlockDatabase = false;
+                                ClearBlockSyncSave();
 
                             }
                             Thread.Sleep(1000);
@@ -407,12 +381,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     try
                     {
 
-                        if (BlockchainBlockWriter != null)
-                        {
-                            BlockchainBlockWriter?.Close();
-                            BlockchainBlockWriter?.Dispose();
-                            BlockchainBlockWriter = null;
-                        }
+                        ClearBlockSyncSave();
 
                         File.Create(GetCurrentPath() + GetBlockchainBlockPath() +
                                     BlockchainBlockDatabase).Close();
@@ -454,15 +423,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 #if DEBUG
                         Console.WriteLine("Can't save block(s) to database file: " + error.Message);
 #endif
-                        TotalBlockSaved = 0;
-                        if (BlockchainBlockWriter != null)
-                        {
-                            BlockchainBlockWriter?.Close();
-                            BlockchainBlockWriter?.Dispose();
-                            BlockchainBlockWriter = null;
-                        }
-                        File.Create(GetCurrentPath() + GetBlockchainBlockPath() + BlockchainBlockDatabase).Close();
-                        InSaveBlockDatabase = false;
+                        ClearBlockSyncSave();
                     }
                 }
             }
