@@ -89,10 +89,13 @@ namespace Xiropht_RemoteNode.Api
                         var client = await ListenerApiHttpConnection.AcceptTcpClientAsync();
                         var ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
 
-                       
-                         
-                        await Task.Factory.StartNew(async () => await new ClassClientApiHttpObject(client, ip).StartHandleClientHttpAsync().ConfigureAwait(false), CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
-
+                        await Task.Factory.StartNew(async () =>
+                        {
+                            using (var clientApiHttpObject = new ClassClientApiHttpObject(client, ip))
+                            {
+                                await clientApiHttpObject.StartHandleClientHttpAsync();
+                            }
+                        }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -119,8 +122,39 @@ namespace Xiropht_RemoteNode.Api
     }
 
 
-    public class ClassClientApiHttpObject
+    public class ClassClientApiHttpObject : IDisposable
     {
+        #region Disposing Part Implementation 
+
+        private bool _disposed;
+
+        ~ClassClientApiHttpObject()
+        {
+            Dispose(false);
+        }
+
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                }
+            }
+
+            _disposed = true;
+        }
+
+        #endregion
+
         private bool _clientStatus;
         private TcpClient _client;
         private string _ip;
