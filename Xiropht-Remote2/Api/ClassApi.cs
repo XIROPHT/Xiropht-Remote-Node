@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -12,6 +10,7 @@ using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
+using Xiropht_RemoteNode.Object;
 using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode.Api
@@ -73,8 +72,13 @@ namespace Xiropht_RemoteNode.Api
 
                     ClassLog.Log("API Receive incoming connection from IP: " + ip, 5, 2);
 
-                    await Task.Factory.StartNew(new ClassApiObjectConnection(client, ip).StartHandleIncomingConnectionAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
-
+                    await Task.Factory.StartNew(async () =>
+                    {
+                        using (var clientApiObjectConnection = new ClassApiObjectConnection(client, ip))
+                        {
+                            await clientApiObjectConnection.StartHandleIncomingConnectionAsync().ConfigureAwait(false);
+                        }
+                    }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
 
                 }
                 catch
@@ -164,7 +168,7 @@ namespace Xiropht_RemoteNode.Api
     /// <summary>
     /// Object allowed for incoming connection.
     /// </summary>
-    public class ClassApiObjectConnection
+    public class ClassApiObjectConnection : IDisposable
     {
         private bool _incomingConnectionStatus;
 
@@ -293,8 +297,10 @@ namespace Xiropht_RemoteNode.Api
         public async Task HandleIncomingConnectionAsync()
         {
             _incomingConnectionStatus = true;
-            new Task(async () => await CheckConnection().ConfigureAwait(false)).Start();
-            new Task(async () => await CheckPacketSpeedAsync().ConfigureAwait(false)).Start();
+            //new Task(async () => await CheckConnection().ConfigureAwait(false)).Start();
+            //new Task(async () => await CheckPacketSpeedAsync().ConfigureAwait(false)).Start();
+            await Task.Factory.StartNew(CheckConnection, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
+            await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
 
             //await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
 

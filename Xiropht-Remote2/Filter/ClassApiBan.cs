@@ -21,7 +21,7 @@ namespace Xiropht_RemoteNode.Filter
 
     public static class ClassApiBan
     {
-        public const int MaxPacketPerSecond = 30;
+        public const int MaxPacketPerSecond = 100;
         public const int MaxInvalidPacket = 10;
         public const int BanTimeInSecond = 60;
         public static Dictionary<string, ClassApiBanObject> ListBanApiIp = new Dictionary<string, ClassApiBanObject>();

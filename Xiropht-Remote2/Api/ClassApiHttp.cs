@@ -15,6 +15,7 @@ using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
+using Xiropht_RemoteNode.Object;
 using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode.Api
@@ -95,7 +96,7 @@ namespace Xiropht_RemoteNode.Api
                             {
                                 await clientApiHttpObject.StartHandleClientHttpAsync();
                             }
-                        }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
+                        }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.BelowNormal).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -200,7 +201,7 @@ namespace Xiropht_RemoteNode.Api
                                 using (NetworkStream clientHttpReader = new NetworkStream(_client.Client))
                                 {
 
-                                    int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                                    int received = await clientHttpReader.ReadAsync(buffer, 0, buffer.Length);
                                     if (received > 0)
                                     {
                                         string packet = Encoding.UTF8.GetString(buffer, 0, received);
@@ -254,7 +255,7 @@ namespace Xiropht_RemoteNode.Api
                                 byte[] buffer = new byte[8192];
                                 int received = 0;
 
-                                while ((received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
+                                while ((received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                                 {
                                     if (received > 0)
                                     {
