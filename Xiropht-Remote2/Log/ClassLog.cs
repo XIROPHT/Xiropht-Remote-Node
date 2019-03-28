@@ -12,7 +12,7 @@ namespace Xiropht_RemoteNode.Log
         private static List<string> ListOfLog = new List<string>();
         private static Thread ThreadWriteLog;
         private const int WriteLogInterval = 10 * 1000; // Every 10 seconds in milliseconds.
-        private const int MinimumLogLine = 100;
+        private const int MinimumLogLine = 1000;
 
         /// <summary>
         /// Show and write logs.
@@ -66,6 +66,22 @@ namespace Xiropht_RemoteNode.Log
             }
         }
 
+        public static void StopWriteLog()
+        {
+            try
+            {
+                if (ThreadWriteLog != null && (ThreadWriteLog.IsAlive || ThreadWriteLog != null))
+                {
+                    ThreadWriteLog.Abort();
+                    GC.SuppressFinalize(ThreadWriteLog);
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
         /// <summary>
         /// Write logs once the list reach the minimum of content required.
         /// </summary>
@@ -85,7 +101,7 @@ namespace Xiropht_RemoteNode.Log
                                 {
                                     if (ListOfLog[i] != null)
                                     {
-                                        writerLog.WriteLine("WriteLog Date: "+ DateTime.Now + " - " + ListOfLog[i]);
+                                        writerLog.WriteLine("WriteLog Date: " + DateTime.Now + " - " + ListOfLog[i]);
                                         ListOfLog[i] = null;
                                     }
                                 }
@@ -99,10 +115,7 @@ namespace Xiropht_RemoteNode.Log
                     }
                     Thread.Sleep(WriteLogInterval);
                 }
-            })
-            {
-                Priority = ThreadPriority.Lowest
-            };
+            });
             ThreadWriteLog.Start();
         }
     }

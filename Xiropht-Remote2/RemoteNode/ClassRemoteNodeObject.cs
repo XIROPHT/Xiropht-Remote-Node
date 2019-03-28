@@ -8,6 +8,7 @@ using Xiropht_Connector_All.Setting;
 using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
+using Xiropht_RemoteNode.Object;
 
 namespace Xiropht_RemoteNode.RemoteNode
 {
@@ -154,6 +155,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                 _remoteNodeObjectLoopSendRequest.Abort();
                 GC.SuppressFinalize(_remoteNodeObjectLoopSendRequest);
             }
+
+           
         }
 
         /// <summary>
@@ -165,9 +168,11 @@ namespace Xiropht_RemoteNode.RemoteNode
             {
                 if (_remoteNodeObjectLoopListenNetwork != null &&
                 (_remoteNodeObjectLoopListenNetwork.IsAlive || _remoteNodeObjectLoopListenNetwork != null))
+                {
                     _remoteNodeObjectLoopListenNetwork.Abort();
+                    GC.SuppressFinalize(_remoteNodeObjectLoopListenNetwork);
+                }
 
-                Thread.Sleep(100);
                 _remoteNodeObjectLoopListenNetwork = new Thread(async () =>
                 {
                     RemoteNodeObjectThreadStatus = true;
@@ -178,14 +183,16 @@ namespace Xiropht_RemoteNode.RemoteNode
                             if (!RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 RemoteNodeObjectConnectionStatus = false;
+                                RemoteNodeObjectThreadStatus = false;
                                 break;
                             }
-                            var packetReceived = await RemoteNodeObjectTcpClient.ReceivePacketFromSeedNodeAsync(Program.Certificate, false, true);
+                            var packetReceived = await RemoteNodeObjectTcpClient.ReceivePacketFromSeedNodeAsync(Program.Certificate, false, true).ConfigureAwait(false);
 
 
                             if (packetReceived == ClassSeedNodeStatus.SeedError)
                             {
                                 RemoteNodeObjectConnectionStatus = false;
+                                RemoteNodeObjectThreadStatus = false;
                                 break;
                             }
 
@@ -206,10 +213,11 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     if (packetRecv == ClassSeedNodeStatus.SeedError)
                                                     {
                                                         RemoteNodeObjectConnectionStatus = false;
+                                                        RemoteNodeObjectThreadStatus = false;
                                                         break;
                                                     }
 
-                                                    new Task(() => RemoteNodeHandlePacketNetworkAsync(packetRecv)).Start();
+                                                    await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetRecv); }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
                                                 }
                                 }
                                 else
@@ -220,11 +228,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     if (packetReceived.Replace("*", "") == ClassSeedNodeStatus.SeedError)
                                     {
                                         RemoteNodeObjectConnectionStatus = false;
+                                        RemoteNodeObjectThreadStatus = false;
                                         break;
                                     }
 
-                                    new Task(() => RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", "")))
-                                        .Start();
+                                    await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", "")); }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
+
                                 }
                             }
                             else
@@ -236,10 +245,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 if (packetReceived == ClassSeedNodeStatus.SeedError)
                                 {
                                     RemoteNodeObjectConnectionStatus = false;
+                                    RemoteNodeObjectThreadStatus = false;
                                     break;
                                 }
 
-                                new Task(() => RemoteNodeHandlePacketNetworkAsync(packetReceived)).Start();
+                                await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetReceived); }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
+
                             }
                         }
                         catch
@@ -249,6 +260,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             break;
                         }
                     }
+                    RemoteNodeObjectThreadStatus = false;
                 });
                 _remoteNodeObjectLoopListenNetwork.Start();
             }
@@ -274,7 +286,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
             _remoteNodeObjectLoopSendRequest = new Thread(async () =>
             {
-                while (RemoteNodeObjectConnectionStatus)
+                while (RemoteNodeObjectConnectionStatus && RemoteNodeObjectThreadStatus)
                 {
                     if (RemoteNodeObjectLoginStatus)
                     {

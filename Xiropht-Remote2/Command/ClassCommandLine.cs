@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Api;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Filter;
+using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.RemoteNode;
 
 namespace Xiropht_RemoteNode.Command
@@ -207,6 +209,7 @@ namespace Xiropht_RemoteNode.Command
                         Program.RemoteNodeObjectTotalBlockMined.StopConnection();
                         Program.RemoteNodeObjectTotalFee.StopConnection();
                         Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
+                        ClassLog.StopWriteLog();
 
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop api..");
@@ -227,7 +230,7 @@ namespace Xiropht_RemoteNode.Command
                         ClassRemoteNodeSave.DataBlockSaved = string.Empty;
                         ClassRemoteNodeSave.SaveBlock(false);
                         Console.WriteLine("Sync saved.");
-                        Environment.Exit(0);
+                        Process.GetCurrentProcess().Kill();
                         return false;
                 }
             }

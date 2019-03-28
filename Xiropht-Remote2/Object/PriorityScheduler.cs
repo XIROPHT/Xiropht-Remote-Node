@@ -57,7 +57,7 @@ namespace Xiropht_RemoteNode.Object
 
         protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
         {
-            return false; // we might not want to execute task that should schedule as high or low priority inline
+            return false; 
         }
     }
 }
