@@ -38,13 +38,6 @@ namespace Xiropht_RemoteNode.RemoteNode
         public ClassSeedNodeConnector RemoteNodeObjectTcpClient;
 
         /// <summary>
-        ///     MultiThreading.
-        /// </summary>
-        private Thread _remoteNodeObjectLoopSendRequest;
-
-        private Thread _remoteNodeObjectLoopListenNetwork;
-
-        /// <summary>
         ///     Setting
         /// </summary>
         private const int RemoteNodeObjectLoopSendRequestInterval = 10;
@@ -103,14 +96,14 @@ namespace Xiropht_RemoteNode.RemoteNode
                 .StartConnectToSeedAsync(string.Empty, ClassConnectorSetting.SeedNodePort))
             {
                 RemoteNodeObjectConnectionStatus = true;
-                RemoteNodeListenNetwork();
+                RemoteNodeListenNetworkAsync();
                 if (await RemoteNodeObjectTcpClient
                     .SendPacketToSeedNodeAsync(Program.Certificate, string.Empty, false, false))
                     if (await RemoteNodeObjectTcpClient
                         .SendPacketToSeedNodeAsync("REMOTE|" + Program.RemoteNodeWalletAddress, Program.Certificate,
                             false, true))
                     {
-                        RemoteNodeSendNetwork();
+                        RemoteNodeSendNetworkAsync();
                         return true;
                     }
 
@@ -142,38 +135,17 @@ namespace Xiropht_RemoteNode.RemoteNode
                 ClassRemoteNodeSync.ListOfPublicNodes.Clear();
                 ClassRemoteNodeSync.MyOwnIP = string.Empty;
             }
-            if (_remoteNodeObjectLoopListenNetwork != null &&
-                (_remoteNodeObjectLoopListenNetwork.IsAlive || _remoteNodeObjectLoopListenNetwork != null))
-            {
-                _remoteNodeObjectLoopListenNetwork.Abort();
-                GC.SuppressFinalize(_remoteNodeObjectLoopListenNetwork);
-            }
-
-            if (_remoteNodeObjectLoopSendRequest != null &&
-                (_remoteNodeObjectLoopSendRequest.IsAlive || _remoteNodeObjectLoopSendRequest != null))
-            {
-                _remoteNodeObjectLoopSendRequest.Abort();
-                GC.SuppressFinalize(_remoteNodeObjectLoopSendRequest);
-            }
-
            
         }
 
         /// <summary>
         ///     Listen packet from the network.
         /// </summary>
-        private void RemoteNodeListenNetwork()
+        private async void RemoteNodeListenNetworkAsync()
         {
             try
             {
-                if (_remoteNodeObjectLoopListenNetwork != null &&
-                (_remoteNodeObjectLoopListenNetwork.IsAlive || _remoteNodeObjectLoopListenNetwork != null))
-                {
-                    _remoteNodeObjectLoopListenNetwork.Abort();
-                    GC.SuppressFinalize(_remoteNodeObjectLoopListenNetwork);
-                }
-
-                _remoteNodeObjectLoopListenNetwork = new Thread(async () =>
+                await Task.Factory.StartNew(async () =>
                 {
                     RemoteNodeObjectThreadStatus = true;
                     while (RemoteNodeObjectConnectionStatus && RemoteNodeObjectThreadStatus)
@@ -261,8 +233,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         }
                     }
                     RemoteNodeObjectThreadStatus = false;
-                });
-                _remoteNodeObjectLoopListenNetwork.Start();
+                }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
             }
             catch (Exception error)
             {
@@ -275,16 +246,10 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// <summary>
         ///     Depending of the type of sync, the remote node will send the right packet to sync the right information.
         /// </summary>
-        private void RemoteNodeSendNetwork()
+        private async void RemoteNodeSendNetworkAsync()
         {
-            if (_remoteNodeObjectLoopSendRequest != null &&
-                (_remoteNodeObjectLoopSendRequest.IsAlive || _remoteNodeObjectLoopSendRequest != null))
-            {
-                _remoteNodeObjectLoopSendRequest.Abort();
-                GC.SuppressFinalize(_remoteNodeObjectLoopSendRequest);
-            }
 
-            _remoteNodeObjectLoopSendRequest = new Thread(async () =>
+            await Task.Factory.StartNew(async () =>
             {
                 while (RemoteNodeObjectConnectionStatus && RemoteNodeObjectThreadStatus)
                 {
@@ -462,16 +427,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                                 break;
                                                                             }
 
-                                                                            Thread.Sleep(10);
+                                                                            await Task.Delay(10);
                                                                         }
                                                                     }
                                                                     if (cancelTransaction)
                                                                     {
                                                                         RemoteNodeObjectConnectionStatus = false;
                                                                     }
-
-                                                                    //Thread.Sleep(100);
-
                                                                 }
                                                             }
                                                         }
@@ -490,7 +452,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 break;
                                             }
 
-                                            Thread.Sleep(100);
+                                            await Task.Delay(100);
                                         }
 
                                         RemoteNodeObjectInSyncTransaction = false;
@@ -652,7 +614,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     }
                     if (RemoteNodeObjectType != SyncEnumerationObject.ObjectTransaction && RemoteNodeObjectType != SyncEnumerationObject.ObjectBlock)
                     {
-                        Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval2); // Make a pause for the next request.
+                       await Task.Delay(RemoteNodeObjectLoopSendRequestInterval2); // Make a pause for the next request.
                     }
                     else
                     {
@@ -662,11 +624,11 @@ namespace Xiropht_RemoteNode.RemoteNode
                             {
                                 if (totalTransactionToSync <= ClassRemoteNodeSync.ListOfTransaction.Count)
                                 {
-                                    Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval2); // Make a pause for the next sync of transaction.
+                                    await Task.Delay(RemoteNodeObjectLoopSendRequestInterval2); // Make a pause for the next sync of transaction.
                                 }
                                 else
                                 {
-                                    Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval);
+                                    await Task.Delay(RemoteNodeObjectLoopSendRequestInterval);
                                 }
                             }
                         }
@@ -676,11 +638,11 @@ namespace Xiropht_RemoteNode.RemoteNode
                             {
                                 if (totalBlockMinedToSync <= ClassRemoteNodeSync.ListOfBlock.Count)
                                 {
-                                    Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval2); // Make a pause for the next sync of transaction.
+                                    await Task.Delay(RemoteNodeObjectLoopSendRequestInterval2); // Make a pause for the next sync of transaction.
                                 }
                                 else
                                 {
-                                    Thread.Sleep(RemoteNodeObjectLoopSendRequestInterval);
+                                    await Task.Delay(RemoteNodeObjectLoopSendRequestInterval);
                                 }
                             }
                         }
@@ -708,8 +670,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                 RemoteNodeObjectInReceiveTransaction = false;
                 RemoteNodeObjectInSyncBlock = false;
                 RemoteNodeObjectInSyncTransaction = false;
-            });
-            _remoteNodeObjectLoopSendRequest.Start();
+            }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
         }
 
         /// <summary>

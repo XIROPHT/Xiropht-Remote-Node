@@ -12,6 +12,7 @@ using Xiropht_RemoteNode.Command;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
+using Xiropht_RemoteNode.Object;
 using Xiropht_RemoteNode.RemoteNode;
 using Xiropht_RemoteNode.Utils;
 
@@ -212,7 +213,7 @@ namespace Xiropht_RemoteNode
 
             ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
 
-            Task.Run(async delegate ()
+            Task.Factory.StartNew(async delegate ()
              {
                  ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
                  if (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
@@ -230,60 +231,87 @@ namespace Xiropht_RemoteNode
 
                      if (await RemoteNodeObjectCoinMaxSupply.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
+                         while (!RemoteNodeObjectCoinMaxSupply.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
                      }
                      if (await RemoteNodeObjectCoinCirculating.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
+                         while (!RemoteNodeObjectCoinCirculating.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
                      }
                      if (await RemoteNodeObjectTotalBlockMined.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
+                         while (!RemoteNodeObjectTotalBlockMined.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
                      }
                      if (await RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
+                         while (!RemoteNodeObjectTotalPendingTransaction.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
                      }
                      if (await RemoteNodeObjectCurrentDifficulty.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
+                         while (!RemoteNodeObjectCurrentDifficulty.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
                      }
                      if (await RemoteNodeObjectCurrentRate.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
+                         while (!RemoteNodeObjectCurrentRate.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
                      }
 
                      if (await RemoteNodeObjectTotalFee.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
+                         while (!RemoteNodeObjectTotalFee.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
                      }
                      if (await RemoteNodeObjectTotalTransaction.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
+                         while (!RemoteNodeObjectTotalTransaction.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
                      }
-
-
-
-                     await Task.Delay(100);
                      if (await RemoteNodeObjectTransaction.StartConnectionAsync())
                      {
-                         await Task.Delay(10);
-
-                         if (await RemoteNodeObjectBlock.StartConnectionAsync())
+                         while (!RemoteNodeObjectTransaction.RemoteNodeObjectLoginStatus)
                          {
-                             if (ClassRemoteNodeSync.WantToBePublicNode)
+                             await Task.Delay(10);
+                         }
+                     }
+                     if (await RemoteNodeObjectBlock.StartConnectionAsync())
+                     {
+                         while (!RemoteNodeObjectBlock.RemoteNodeObjectLoginStatus)
+                         {
+                             await Task.Delay(10);
+                         }
+                     }
+
+                     if (ClassRemoteNodeSync.WantToBePublicNode)
+                     {
+                         if (await RemoteNodeObjectToBePublic.StartConnectionAsync())
+                         {
+                             while (!RemoteNodeObjectToBePublic.RemoteNodeObjectLoginStatus)
                              {
-                                 if (await RemoteNodeObjectToBePublic.StartConnectionAsync())
-                                 {
-                                     initializeConnection = true;
-                                 }
-                             }
-                             else
-                             {
-                                 initializeConnection = true;
+                                 await Task.Delay(10);
                              }
                          }
                      }
+                     initializeConnection = true;
                  }
 
                  if (initializeConnection)
@@ -326,7 +354,7 @@ namespace Xiropht_RemoteNode
                      Console.WriteLine("Enable API HTTP..");
                      ClassApiHttp.StartApiHttpServer();
                  }
-             }).ConfigureAwait(true);
+             }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.BelowNormal).ConfigureAwait(true);
 
 
             _threadCommandLine = new Thread(delegate ()
@@ -337,14 +365,13 @@ namespace Xiropht_RemoteNode
                 }
                 Console.WriteLine(
                     "Remote node successfully started, you can run command: help for get the list of commands.");
-                var exit = false;
-                while (!exit)
+                while (!Closed)
                 {
                     try
                     {
                         if (!ClassCommandLine.CommandLine(Console.ReadLine()))
                         {
-                            exit = true;
+                            break;
                         }
                     }
                     catch
@@ -354,7 +381,6 @@ namespace Xiropht_RemoteNode
                 }
             });
             _threadCommandLine.Start();
-
         }
 
         private static void SaveConfigFile()
