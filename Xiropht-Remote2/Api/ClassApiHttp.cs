@@ -96,7 +96,7 @@ namespace Xiropht_RemoteNode.Api
                             {
                                 await clientApiHttpObject.StartHandleClientHttpAsync();
                             }
-                        }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
                     }
                     catch
                     {
