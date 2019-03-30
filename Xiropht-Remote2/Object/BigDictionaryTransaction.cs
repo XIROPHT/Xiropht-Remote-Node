@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Xiropht_RemoteNode.Object
 {
@@ -248,7 +249,7 @@ namespace Xiropht_RemoteNode.Object
         /// <param name="transaction"></param>
         public void InsertTransaction(long id, string transaction)
         {
-            long idDictionary = id / MaxTransactionPerDictionary;
+            long idDictionary = (long)(Math.Ceiling((double)id / MaxTransactionPerDictionary));
             switch (idDictionary)
             {
                 case 0:
@@ -566,7 +567,7 @@ namespace Xiropht_RemoteNode.Object
                 return "WRONG";
             }
 
-            long idDictionary = id / MaxTransactionPerDictionary;
+            long idDictionary = (long)(Math.Ceiling((double)id / MaxTransactionPerDictionary));
             switch (idDictionary)
             {
                 case 0:
