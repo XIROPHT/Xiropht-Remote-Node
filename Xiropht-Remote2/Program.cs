@@ -86,7 +86,7 @@ namespace Xiropht_RemoteNode
 
             AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args2)
             {
-                var filePath = ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + "\\error_remotenode.txt");
+                var filePath = ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + "\\error_remotenode.txt");
                 var exception = (Exception)args2.ExceptionObject;
                 using (var writer = new StreamWriter(filePath, true))
                 {
@@ -122,7 +122,7 @@ namespace Xiropht_RemoteNode
             Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "R");
 
 
-            if (File.Exists(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath)))
+            if (File.Exists(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
             {
                 ReadConfigFile();
                 if (EnableWriteLog)
@@ -386,8 +386,8 @@ namespace Xiropht_RemoteNode
         private static void SaveConfigFile()
         {
             Console.WriteLine("Save config file..");
-            File.Create(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath)).Close();
-            using (StreamWriter writer = new StreamWriter(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath)) { AutoFlush = true })
+            File.Create(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)).Close();
+            using (StreamWriter writer = new StreamWriter(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)) { AutoFlush = true })
             {
                 writer.WriteLine("WALLET_ADDRESS=" + RemoteNodeWalletAddress);
                 if (ClassRemoteNodeSync.WantToBePublicNode)
@@ -437,7 +437,7 @@ namespace Xiropht_RemoteNode
         /// </summary>
         private static void ReadConfigFile()
         {
-            StreamReader reader = new StreamReader(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + ConfigFilePath));
+            StreamReader reader = new StreamReader(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath));
 
             string line = string.Empty;
 

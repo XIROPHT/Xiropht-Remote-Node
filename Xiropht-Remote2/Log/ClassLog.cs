@@ -8,7 +8,7 @@ namespace Xiropht_RemoteNode.Log
 {
     public class ClassLog
     {
-        private static StreamWriter writerLog = new StreamWriter(ClassUtilsNode.ConvertPath(Directory.GetCurrentDirectory() + "\\remotenode.log")) { AutoFlush = true };
+        private static StreamWriter writerLog = new StreamWriter(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + "\\remotenode.log")) { AutoFlush = true };
         private static List<string> ListOfLog = new List<string>();
         private static Thread ThreadWriteLog;
         private const int WriteLogInterval = 10 * 1000; // Every 10 seconds in milliseconds.

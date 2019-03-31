@@ -49,7 +49,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// <returns></returns>
         private static string GetCurrentPath()
         {
-            var path = Directory.GetCurrentDirectory();
+            var path = System.AppDomain.CurrentDomain.BaseDirectory;
             if (Environment.OSVersion.Platform == PlatformID.Unix) path = path.Replace("\\", "/");
             return path;
         }
