@@ -424,7 +424,8 @@ namespace Xiropht_RemoteNode
                 }
                 writer.WriteLine("API_HTTP_PORT=" + ClassApiHttp.PersonalRemoteNodeHttpPort);
                 writer.WriteLine("LOG_LEVEL=" + LogLevel);
-                writer.WriteLine("WRITE_LOG=Y");
+                writer.WriteLine("//write log option should be used only for analysis, this system can hanging your remote nodes in production mode.");
+                writer.WriteLine("WRITE_LOG=N");
                 writer.WriteLine("ENABLE_FILTERING_SYSTEM=N");
                 writer.WriteLine("CHAIN_FILTERING_SYSTEM=");
                 writer.WriteLine("NAME_FILTERING_SYSTEM=");
@@ -443,75 +444,77 @@ namespace Xiropht_RemoteNode
 
             while ((line = reader.ReadLine()) != null)
             {
-                if (line.Contains("WALLET_ADDRESS="))
+                if (!line.StartsWith("/"))
                 {
-                    RemoteNodeWalletAddress = line.Replace("WALLET_ADDRESS=", "");
-                }
-                if (line.Contains("ENABLE_PUBLIC_MODE="))
-                {
-                    string option = line.Replace("ENABLE_PUBLIC_MODE=", "");
-                    if (option.ToLower() == "y")
+                    if (line.Contains("WALLET_ADDRESS="))
                     {
-                        ClassRemoteNodeSync.WantToBePublicNode = true;
+                        RemoteNodeWalletAddress = line.Replace("WALLET_ADDRESS=", "");
                     }
-                    else
+                    if (line.Contains("ENABLE_PUBLIC_MODE="))
                     {
-                        ClassRemoteNodeSync.WantToBePublicNode = false;
+                        string option = line.Replace("ENABLE_PUBLIC_MODE=", "");
+                        if (option.ToLower() == "y")
+                        {
+                            ClassRemoteNodeSync.WantToBePublicNode = true;
+                        }
+                        else
+                        {
+                            ClassRemoteNodeSync.WantToBePublicNode = false;
+                        }
                     }
-                }
-                if (line.Contains("ENABLE_API_HTTP="))
-                {
-                    string option = line.Replace("ENABLE_API_HTTP=", "");
-                    if (option.ToLower() == "y")
+                    if (line.Contains("ENABLE_API_HTTP="))
                     {
-                        EnableApiHttp = true;
+                        string option = line.Replace("ENABLE_API_HTTP=", "");
+                        if (option.ToLower() == "y")
+                        {
+                            EnableApiHttp = true;
+                        }
                     }
-                }
-                if (line.Contains("API_HTTP_PORT="))
-                {
-                    int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
-                }
-                if (line.Contains("ENABLE_HTTPS_API_MODE="))
-                {
-                    string option = line.Replace("ENABLE_HTTPS_API_MODE=", "");
-                    if (option.ToLower() == "y")
+                    if (line.Contains("API_HTTP_PORT="))
                     {
-                        ClassApiHttp.UseSSL = true;
+                        int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
                     }
-                }
-                if (line.Contains("HTTPS_CERTIFICATE_PATH="))
-                {
-                    ClassApiHttp.SSLPath = line.Replace("HTTPS_CERTIFICATE_PATH=", "");
-                }
-                if (line.Contains("LOG_LEVEL="))
-                {
-                    int.TryParse(line.Replace("LOG_LEVEL=", ""), out LogLevel);
-                }
-                if (line.Contains("WRITE_LOG="))
-                {
-                    string option = line.Replace("WRITE_LOG=", "");
-                    if (option.ToLower() == "y")
+                    if (line.Contains("ENABLE_HTTPS_API_MODE="))
                     {
-                        EnableWriteLog = true;
+                        string option = line.Replace("ENABLE_HTTPS_API_MODE=", "");
+                        if (option.ToLower() == "y")
+                        {
+                            ClassApiHttp.UseSSL = true;
+                        }
                     }
-                }
-                if (line.Contains("ENABLE_FILTERING_SYSTEM="))
-                {
-                    string option = line.Replace("ENABLE_FILTERING_SYSTEM=", "");
-                    if (option.ToLower() == "y")
+                    if (line.Contains("HTTPS_CERTIFICATE_PATH="))
                     {
-                        EnableFilteringSystem = true;
+                        ClassApiHttp.SSLPath = line.Replace("HTTPS_CERTIFICATE_PATH=", "");
+                    }
+                    if (line.Contains("LOG_LEVEL="))
+                    {
+                        int.TryParse(line.Replace("LOG_LEVEL=", ""), out LogLevel);
+                    }
+                    if (line.Contains("WRITE_LOG="))
+                    {
+                        string option = line.Replace("WRITE_LOG=", "");
+                        if (option.ToLower() == "y")
+                        {
+                            EnableWriteLog = true;
+                        }
+                    }
+                    if (line.Contains("ENABLE_FILTERING_SYSTEM="))
+                    {
+                        string option = line.Replace("ENABLE_FILTERING_SYSTEM=", "");
+                        if (option.ToLower() == "y")
+                        {
+                            EnableFilteringSystem = true;
+                        }
+                    }
+                    if (line.Contains("CHAIN_FILTERING_SYSTEM="))
+                    {
+                        ClassFilter.FilterChainName = line.Replace("CHAIN_FILTERING_SYSTEM=", "").ToLower();
+                    }
+                    if (line.Contains("NAME_FILTERING_SYSTEM="))
+                    {
+                        ClassFilter.FilterSystem = line.Replace("NAME_FILTERING_SYSTEM=", "").ToLower();
                     }
                 }
-                if (line.Contains("CHAIN_FILTERING_SYSTEM="))
-                {
-                    ClassFilter.FilterChainName = line.Replace("CHAIN_FILTERING_SYSTEM=", "").ToLower();
-                }
-                if (line.Contains("NAME_FILTERING_SYSTEM="))
-                {
-                    ClassFilter.FilterSystem = line.Replace("NAME_FILTERING_SYSTEM=", "").ToLower();
-                }
-
             }
         }
     }

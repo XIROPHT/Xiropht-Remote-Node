@@ -95,7 +95,7 @@ namespace Xiropht_RemoteNode.Api
                         {
                             using (var clientApiHttpObject = new ClassClientApiHttpObject(client, ip))
                             {
-                                await clientApiHttpObject.StartHandleClientHttpAsync();
+                                await clientApiHttpObject.StartHandleClientHttpAsync().ConfigureAwait(false);
                             }
                         }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
                     }
@@ -180,7 +180,7 @@ namespace Xiropht_RemoteNode.Api
         /// <returns></returns>
         public async Task StartHandleClientHttpAsync()
         {
-
+            await Task.Delay(1);
             var checkBanResult = false;
 
             if (_ip != "127.0.0.1") // Do not check localhost ip.
