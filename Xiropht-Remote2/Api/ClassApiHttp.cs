@@ -36,7 +36,9 @@ namespace Xiropht_RemoteNode.Api
         public const string GetCoinNetworkHashrate = "get_coin_network_hashrate";
         public const string GetCoinNetworkFullStats = "get_coin_network_full_stats";
         public const string GetCoinBlockPerId = "get_coin_block_per_id";
+        public const string GetCoinBlockPerHash = "get_coin_block_per_hash";
         public const string GetCoinTransactionPerId = "get_coin_transaction_per_id";
+        public const string GetCoinTransactionPerHash = "get_coin_transaction_per_hash";
         public const string PacketFavicon = "favicon.ico";
         public const string PacketNotExist = "not_exist";
     }
@@ -356,10 +358,14 @@ namespace Xiropht_RemoteNode.Api
         private async Task HandlePacketHttpAsync(string packet)
         {
             long selectedIndex = 0;
+            string selectedHash = string.Empty;
             if (packet.Contains("="))
             {
                 var splitPacket = packet.Split(new[] { "=" }, StringSplitOptions.None);
-                long.TryParse(splitPacket[1], out selectedIndex);
+                if(!long.TryParse(splitPacket[1], out selectedIndex))
+                {
+                    selectedHash = splitPacket[1]; // Hash
+                }
                 packet = splitPacket[0];
             }
             switch (packet)
@@ -438,6 +444,40 @@ namespace Xiropht_RemoteNode.Api
                         await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     }
                     break;
+                case ClassApiHttpRequestEnumeration.GetCoinBlockPerHash:
+                    if (selectedHash != string.Empty)
+                    {
+                        int selectedBlockIndex = ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(selectedHash);
+                        if (selectedBlockIndex != -1)
+                        {
+
+                            var splitBlock = ClassRemoteNodeSync.ListOfBlock[selectedBlockIndex].Split(new[] { "#" }, StringSplitOptions.None);
+                            Dictionary<string, string> blockContent = new Dictionary<string, string>
+                                {
+                                    { "block_id", splitBlock[0] },
+                                    { "block_hash", splitBlock[1] },
+                                    { "block_transaction_hash", splitBlock[2] },
+                                    { "block_timestamp_create", splitBlock[3] },
+                                    { "block_timestamp_found", splitBlock[4] },
+                                    { "block_difficulty", splitBlock[5] },
+                                    { "block_reward", splitBlock[6] }
+                                };
+
+                            await BuildAndSendHttpPacketAsync(null, true, blockContent);
+                            blockContent.Clear();
+                        }
+                        else
+                        {
+                            ClassApiBan.InsertInvalidPacket(_ip);
+                            await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                        }
+                    }
+                    else
+                    {
+                        ClassApiBan.InsertInvalidPacket(_ip);
+                        await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                    }
+                    break;
                 case ClassApiHttpRequestEnumeration.GetCoinTransactionPerId:
                     if (selectedIndex > 0)
                     {
@@ -467,6 +507,40 @@ namespace Xiropht_RemoteNode.Api
                                 ClassApiBan.InsertInvalidPacket(_ip);
                                 await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                             }
+                        }
+                        else
+                        {
+                            ClassApiBan.InsertInvalidPacket(_ip);
+                            await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                        }
+                    }
+                    else
+                    {
+                        ClassApiBan.InsertInvalidPacket(_ip);
+                        await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                    }
+                    break;
+                case ClassApiHttpRequestEnumeration.GetCoinTransactionPerHash:
+                    if (selectedHash != string.Empty)
+                    {
+                        long transactionIndex = ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(selectedHash);
+                        if (transactionIndex != -1)
+                        {
+                            var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionIndex).Split(new[] { "-" }, StringSplitOptions.None);
+                            Dictionary<string, string> transactionContent = new Dictionary<string, string>
+                                {
+                                    { "transaction_id", "" + (transactionIndex + 1) },
+                                    { "transaction_id_sender", splitTransaction[0] },
+                                    { "transaction_fake_amount", splitTransaction[1] },
+                                    { "transaction_fake_fee", splitTransaction[2] },
+                                    { "transaction_id_receiver", splitTransaction[3] },
+                                    { "transaction_timestamp_sended", splitTransaction[4] },
+                                    { "transaction_hash", splitTransaction[5] },
+                                    { "transaction_timestamp_received", splitTransaction[6] }
+                                };
+
+                            await BuildAndSendHttpPacketAsync(null, true, transactionContent);
+                            transactionContent.Clear();
                         }
                         else
                         {

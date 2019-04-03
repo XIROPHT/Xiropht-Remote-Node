@@ -489,9 +489,9 @@ namespace Xiropht_RemoteNode.Api
                                 switch (splitPacket[0])
                                 {
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.WalletAskHisNumberTransaction:
-                                        if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId))
+                                        if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId) != -1)
                                         {
-                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourNumberTransaction + "|" + ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count).ConfigureAwait(false))
+                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourNumberTransaction + "|" + ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionCount(walletId)).ConfigureAwait(false))
                                             {
                                                 _incomingConnectionStatus = false;
                                                 return false;
@@ -507,9 +507,9 @@ namespace Xiropht_RemoteNode.Api
                                         }
                                         break;
                                     case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.WalletAskHisAnonymityNumberTransaction:
-                                        if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId))
+                                        if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId) != -1)
                                         {
-                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourAnonymityNumberTransaction + "|" + ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count).ConfigureAwait(false))
+                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletYourAnonymityNumberTransaction + "|" + ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionCount(walletId)).ConfigureAwait(false))
                                             {
                                                 _incomingConnectionStatus = false;
                                                 return false;
@@ -638,9 +638,9 @@ namespace Xiropht_RemoteNode.Api
                                             }
                                             else
                                             {
-                                                if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId))
+                                                if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId) != -1)
                                                 {
-                                                    if (ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count <= idTransactionAskFromWallet)
+                                                    if (ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionCount(walletId) <= idTransactionAskFromWallet)
                                                     {
                                                         if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                         {
@@ -650,7 +650,7 @@ namespace Xiropht_RemoteNode.Api
                                                     }
                                                     else
                                                     {
-                                                        string transaction = ClassRemoteNodeSync.ListTransactionPerWallet[walletId][idTransactionAskFromWallet];
+                                                        string transaction = ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, idTransactionAskFromWallet);
                                                         if (transaction == "WRONG")
                                                         {
                                                             if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
@@ -698,9 +698,9 @@ namespace Xiropht_RemoteNode.Api
                                             }
                                             else
                                             {
-                                                if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId))
+                                                if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId) != -1)
                                                 {
-                                                    if (ClassRemoteNodeSync.ListTransactionPerWallet[walletId].Count <= idAnonymityTransactionAskFromWallet)
+                                                    if (ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionCount(walletId) <= idAnonymityTransactionAskFromWallet)
                                                     {
                                                         if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                         {
@@ -710,7 +710,7 @@ namespace Xiropht_RemoteNode.Api
                                                     }
                                                     else
                                                     {
-                                                        string transaction = ClassRemoteNodeSync.ListTransactionPerWallet[walletId][idAnonymityTransactionAskFromWallet];
+                                                        string transaction = ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, idAnonymityTransactionAskFromWallet);
                                                         if (transaction == "WRONG")
                                                         {
                                                             if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))

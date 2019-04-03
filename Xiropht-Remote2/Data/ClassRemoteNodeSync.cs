@@ -9,7 +9,9 @@ namespace Xiropht_RemoteNode.Data
         /// Object of sync.
         /// </summary>
         public static BigDictionaryTransaction ListOfTransaction = new BigDictionaryTransaction(); // List of transaction of the blockchain.
+        public static BigDictionaryTransactionHash ListOfTransactionHash = new BigDictionaryTransactionHash(); // List of transaction hash of the blockchain.
         public static Dictionary<int, string> ListOfBlock = new Dictionary<int, string>(); // List of block mined of the blockchain.
+        public static DictionaryBlockHash ListOfBlockHash = new DictionaryBlockHash(); // List of block mined hash of the blockchain.
         public static string CoinMaxSupply; // Max Supply of the coin in the blockchain.
         public static string CoinCirculating; // Current amount of coin circulating in the blockchain.
         public static string CurrentTotalFee; // Current amount of fee in the blockchain.
@@ -23,7 +25,7 @@ namespace Xiropht_RemoteNode.Data
         /// <summary>
         /// Object for API (Wallet, pools and more).
         /// </summary>
-        public static Dictionary<float, List<string>> ListTransactionPerWallet = new Dictionary<float, List<string>>();
+        public static BigDictionaryTransactionSortedPerWallet ListTransactionPerWallet = new BigDictionaryTransactionSortedPerWallet();
         public static string HashTransactionList; // A key from each transaction(s).
         public static string HashBlockList; // A key from each block(s).
         public static string TrustedKey; // A key generated from information and hash 

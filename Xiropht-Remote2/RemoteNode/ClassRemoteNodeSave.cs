@@ -152,7 +152,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                             while ((line = sr.ReadLine()) != null)
                             {
                                 counter++;
-                                ClassRemoteNodeSync.ListOfBlock.Add(ClassRemoteNodeSync.ListOfBlock.Count, line);
+                                var splitLineBlock = line.Split(new[] { "#" }, StringSplitOptions.None);
+                                var blockId = ClassRemoteNodeSync.ListOfBlock.Count;
+                                ClassRemoteNodeSync.ListOfBlock.Add(blockId, line);
+                                ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(splitLineBlock[1], blockId);
                             }
                         }
                     }

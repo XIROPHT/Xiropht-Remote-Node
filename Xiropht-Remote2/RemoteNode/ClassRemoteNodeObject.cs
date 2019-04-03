@@ -754,12 +754,14 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     if (splitBlock[i].Length > 0)
                                     {
                                         var blockSubString = splitBlock[i].Substring(0, splitBlock[i].Length - 1);
-                                        var blockIdTmp = int.Parse(blockSubString.Split(new[] { "#" }, StringSplitOptions.None)[0]);
+                                        var blockLineSplit = blockSubString.Split(new[] { "#" }, StringSplitOptions.None);
+                                        var blockIdTmp = int.Parse(blockLineSplit[0]);
                                         if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp - 1))
                                         {
                                             if (!ClassRemoteNodeSync.ListOfBlock.ContainsValue(blockSubString))
                                             {
                                                 ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
+                                                ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp-1);
                                                 if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
                                                     ClassRemoteNodeSync.TotalBlockMined)
                                                 {
@@ -792,13 +794,15 @@ namespace Xiropht_RemoteNode.RemoteNode
                         else
                         {
                             var blockSubString = packetSplit[1].Substring(0, packetSplit[1].Length - 1);
-                            var blockIdTmp = int.Parse(blockSubString.Split(new[] { "#" }, StringSplitOptions.None)[0]);
+                            var blockLineSplit = blockSubString.Split(new[] { "#" }, StringSplitOptions.None);
+                            var blockIdTmp = int.Parse(blockLineSplit[0]);
 
                             if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp - 1))
                             {
                                 if (!ClassRemoteNodeSync.ListOfBlock.ContainsValue(blockSubString))
                                 {
                                     ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
+                                    ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp-1);
                                     if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
                                         ClassRemoteNodeSync.TotalBlockMined)
                                     {

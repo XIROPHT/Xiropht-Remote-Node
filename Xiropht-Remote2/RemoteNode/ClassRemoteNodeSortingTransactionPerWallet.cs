@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
+using Xiropht_RemoteNode.Object;
 
 namespace Xiropht_RemoteNode.RemoteNode
 {
@@ -19,7 +20,7 @@ namespace Xiropht_RemoteNode.RemoteNode
             {
                 if (ClassRemoteNodeSync.ListTransactionPerWallet == null)
                 {
-                    ClassRemoteNodeSync.ListTransactionPerWallet = new Dictionary<float, List<string>>();
+                    ClassRemoteNodeSync.ListTransactionPerWallet = new BigDictionaryTransactionSortedPerWallet();
                 }
                 var dataTransactionSplit = transaction.Split(new[] { "-" }, StringSplitOptions.None);
                 float idWalletSender;
@@ -55,6 +56,10 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                     decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
                     string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
+                    if (ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(hashTransaction) == -1)
+                    {
+                        ClassRemoteNodeSync.ListOfTransactionHash.InsertTransactionHash(ClassRemoteNodeSync.ListOfTransactionHash.Count, hashTransaction);
+                    }
                     string timestampRecv = dataTransactionSplit[6];
 
                     var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" },
@@ -78,29 +83,11 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                     if (idWalletSender != -1)
                     {
-                        if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(idWalletSender))
-                        {
-                            ClassRemoteNodeSync.ListTransactionPerWallet[idWalletSender].Add(dataInformationSend);
-                        }
-                        else
-                        {
-                            ClassRemoteNodeSync.ListTransactionPerWallet.Add(idWalletSender, new List<string>());
-                            ClassRemoteNodeSync.ListTransactionPerWallet[idWalletSender].Add(dataInformationSend);
-                        }
-
+                        ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletSender, dataInformationSend);
                     }
                     if (idWalletReceiver != -1)
                     {
-
-                        if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(idWalletReceiver))
-                        {
-                            ClassRemoteNodeSync.ListTransactionPerWallet[idWalletReceiver].Add(dataInformationRecv);
-                        }
-                        else
-                        {
-                            ClassRemoteNodeSync.ListTransactionPerWallet.Add(idWalletReceiver, new List<string>());
-                            ClassRemoteNodeSync.ListTransactionPerWallet[idWalletReceiver].Add(dataInformationRecv);
-                        }
+                        ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletReceiver, dataInformationRecv);
                     }
                 }
             }
@@ -117,7 +104,7 @@ namespace Xiropht_RemoteNode.RemoteNode
             {
                 if (ClassRemoteNodeSync.ListTransactionPerWallet == null)
                 {
-                    ClassRemoteNodeSync.ListTransactionPerWallet = new Dictionary<float, List<string>>();
+                    ClassRemoteNodeSync.ListTransactionPerWallet = new BigDictionaryTransactionSortedPerWallet();
                 }
                 var dataTransactionSplit = transaction.Split(new[] { "-" }, StringSplitOptions.None);
                 float idWalletSender;
