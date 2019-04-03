@@ -26,12 +26,14 @@ namespace Xiropht_RemoteNode.Api
         private static Thread _threadApiReceiveConnection;
         private static TcpListener _tcpListenerApiReceiveConnection;
         public static bool ApiReceiveConnectionStatus;
+        public static PriorityScheduler PrioritySchedulerApi;
 
         /// <summary>
         /// Start to listen incoming connection to API.
         /// </summary>
         public static void StartApiRemoteNode()
         {
+            PrioritySchedulerApi = new PriorityScheduler(ThreadPriority.Lowest);
             ApiReceiveConnectionStatus = true;
             _tcpListenerApiReceiveConnection = new TcpListener(IPAddress.Any, ClassConnectorSetting.RemoteNodePort);
             _tcpListenerApiReceiveConnection.Start();
@@ -79,7 +81,7 @@ namespace Xiropht_RemoteNode.Api
                         {
                             await clientApiObjectConnection.StartHandleIncomingConnectionAsync();
                         }
-                    }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PrioritySchedulerApi).ConfigureAwait(false);
 
                 }
                 catch
@@ -300,8 +302,8 @@ namespace Xiropht_RemoteNode.Api
             _incomingConnectionStatus = true;
             //new Task(async () => await CheckConnection().ConfigureAwait(false)).Start();
             //new Task(async () => await CheckPacketSpeedAsync().ConfigureAwait(false)).Start();
-            await Task.Factory.StartNew(CheckConnection, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
-            await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
+            await Task.Factory.StartNew(CheckConnection, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current).ConfigureAwait(false);
+            await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current).ConfigureAwait(false);
 
             //await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
 
@@ -374,7 +376,7 @@ namespace Xiropht_RemoteNode.Api
                                                                                     _incomingConnectionStatus = false;
                                                                                 }
                                                                             }
-                                                                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest);
+                                                                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
                                                                     }
                                                                 }
                                                             }
@@ -395,7 +397,7 @@ namespace Xiropht_RemoteNode.Api
                                                                 ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
                                                                 _incomingConnectionStatus = false;
                                                             }
-                                                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest);
+                                                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
                                                     }
                                                 }
                                             }
@@ -413,7 +415,7 @@ namespace Xiropht_RemoteNode.Api
                                                             ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
                                                             _incomingConnectionStatus = false;
                                                         }
-                                                    }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest);
+                                                    }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
                                                 }
                                             }
                                         }

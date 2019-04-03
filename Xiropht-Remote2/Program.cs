@@ -81,6 +81,11 @@ namespace Xiropht_RemoteNode
         /// </summary>
         public static bool EnableFilteringSystem;
 
+        /// <summary>
+        /// Store concurrent Tasks.
+        /// </summary>
+        public static PriorityScheduler PrioritySchedulerNode;
+
         public static void Main(string[] args)
         {
 
@@ -105,7 +110,7 @@ namespace Xiropht_RemoteNode
 
             };
             Thread.CurrentThread.Name = Path.GetFileName(Environment.GetCommandLineArgs()[0]);
-
+            PrioritySchedulerNode = new PriorityScheduler(ThreadPriority.Lowest);
             ClassRemoteNodeSave.InitializePath();
             if (ClassRemoteNodeSave.LoadBlockchainTransaction())
             {
@@ -212,6 +217,7 @@ namespace Xiropht_RemoteNode
             RemoteNodeObjectBlock = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlock);
 
             ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
+
 
             Task.Factory.StartNew(async delegate ()
              {
@@ -354,7 +360,7 @@ namespace Xiropht_RemoteNode
                      Console.WriteLine("Enable API HTTP..");
                      ClassApiHttp.StartApiHttpServer();
                  }
-             }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.BelowNormal).ConfigureAwait(true);
+             }, CancellationToken.None, TaskCreationOptions.None, PrioritySchedulerNode).ConfigureAwait(true);
 
 
             _threadCommandLine = new Thread(delegate ()

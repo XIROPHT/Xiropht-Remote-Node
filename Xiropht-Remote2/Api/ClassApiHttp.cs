@@ -51,12 +51,14 @@ namespace Xiropht_RemoteNode.Api
         private static Thread ThreadListenApiHttpConnection;
         private static TcpListener ListenerApiHttpConnection;
         private static bool ListenApiHttpConnectionStatus;
+        public static PriorityScheduler PrioritySchedulerApiHttp;
 
         /// <summary>
         /// Enable http/https api of the remote node, listen incoming connection throught web client.
         /// </summary>
         public static void StartApiHttpServer()
         {
+            PrioritySchedulerApiHttp = new PriorityScheduler(ThreadPriority.Lowest);
             if (UseSSL)
             {
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -97,7 +99,7 @@ namespace Xiropht_RemoteNode.Api
                             {
                                 await clientApiHttpObject.StartHandleClientHttpAsync().ConfigureAwait(false);
                             }
-                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
+                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PrioritySchedulerApiHttp).ConfigureAwait(false);
                     }
                     catch
                     {

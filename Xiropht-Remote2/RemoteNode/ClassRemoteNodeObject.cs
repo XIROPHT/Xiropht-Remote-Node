@@ -60,7 +60,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
         public bool RemoteNodeObjectInReceiveBlock;
 
-
+        public PriorityScheduler RemoteNodeObjectPriorityScheduler;
 
         #endregion
 
@@ -73,6 +73,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         public ClassRemoteNodeObject(string type)
         {
             RemoteNodeObjectType = type;
+            RemoteNodeObjectPriorityScheduler = new PriorityScheduler(ThreadPriority.BelowNormal);
         }
 
         /// <summary>
@@ -189,7 +190,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                         break;
                                                     }
 
-                                                    await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetRecv); }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
+                                                    await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetRecv); }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, RemoteNodeObjectPriorityScheduler).ConfigureAwait(false);
                                                 }
                                 }
                                 else
@@ -204,7 +205,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", "")); }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
+                                    await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", "")); }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, RemoteNodeObjectPriorityScheduler).ConfigureAwait(false);
 
                                 }
                             }
@@ -221,7 +222,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
 
-                                await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetReceived); }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.Lowest).ConfigureAwait(false);
+                                await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetReceived); }, CancellationToken.None, TaskCreationOptions.None, RemoteNodeObjectPriorityScheduler).ConfigureAwait(false);
 
                             }
                         }
@@ -233,7 +234,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         }
                     }
                     RemoteNodeObjectThreadStatus = false;
-                }, CancellationToken.None, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
+                }, CancellationToken.None, TaskCreationOptions.None, RemoteNodeObjectPriorityScheduler);
             }
             catch (Exception error)
             {
@@ -670,7 +671,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                 RemoteNodeObjectInReceiveTransaction = false;
                 RemoteNodeObjectInSyncBlock = false;
                 RemoteNodeObjectInSyncTransaction = false;
-            }, CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal);
+            }, CancellationToken.None, TaskCreationOptions.LongRunning, RemoteNodeObjectPriorityScheduler);
         }
 
         /// <summary>
