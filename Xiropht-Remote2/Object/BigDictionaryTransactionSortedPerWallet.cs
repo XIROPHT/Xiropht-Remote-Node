@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Xiropht_RemoteNode.Object
 {
@@ -552,6 +550,10 @@ namespace Xiropht_RemoteNode.Object
             else
             {
                 idDictionary = (long)(Math.Ceiling((double)Count / MaxTransactionPerDictionary));
+                if (idDictionary > 0)
+                {
+                    idDictionary -= 1;
+                }
                 switch (idDictionary)
                 {
                     case 0:

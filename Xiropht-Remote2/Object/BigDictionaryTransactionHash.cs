@@ -251,6 +251,10 @@ namespace Xiropht_RemoteNode.Object
         public void InsertTransactionHash(long id, string transaction)
         {
             long idDictionary = (long)(Math.Ceiling((double)id / MaxTransactionHashPerDictionary));
+            if (idDictionary > 0)
+            {
+                idDictionary -= 1;
+            }
             switch (idDictionary)
             {
                 case 0:

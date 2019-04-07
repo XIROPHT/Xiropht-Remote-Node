@@ -250,6 +250,10 @@ namespace Xiropht_RemoteNode.Object
         public void InsertTransaction(long id, string transaction)
         {
             long idDictionary = (long)(Math.Ceiling((double)id / MaxTransactionPerDictionary));
+            if (idDictionary > 0)
+            {
+                idDictionary -= 1;
+            }
             switch (idDictionary)
             {
                 case 0:
@@ -568,6 +572,10 @@ namespace Xiropht_RemoteNode.Object
             }
 
             long idDictionary = (long)(Math.Ceiling((double)id / MaxTransactionPerDictionary));
+            if (idDictionary > 0)
+            {
+                idDictionary -= 1;
+            }
             switch (idDictionary)
             {
                 case 0:
