@@ -235,87 +235,21 @@ namespace Xiropht_RemoteNode
                  {
                      Console.WriteLine("Start Remote Node Sync Objects Connection..");
 
-                     if (await RemoteNodeObjectCoinMaxSupply.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectCoinMaxSupply.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-                     if (await RemoteNodeObjectCoinCirculating.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectCoinCirculating.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-                     if (await RemoteNodeObjectTotalBlockMined.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectTotalBlockMined.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-                     if (await RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectTotalPendingTransaction.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-                     if (await RemoteNodeObjectCurrentDifficulty.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectCurrentDifficulty.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-                     if (await RemoteNodeObjectCurrentRate.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectCurrentRate.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-
-                     if (await RemoteNodeObjectTotalFee.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectTotalFee.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-                     if (await RemoteNodeObjectTotalTransaction.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectTotalTransaction.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-                     if (await RemoteNodeObjectTransaction.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectTransaction.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
-                     if (await RemoteNodeObjectBlock.StartConnectionAsync())
-                     {
-                         while (!RemoteNodeObjectBlock.RemoteNodeObjectLoginStatus)
-                         {
-                             await Task.Delay(10);
-                         }
-                     }
+                     await Task.Factory.StartNew(() => RemoteNodeObjectCoinMaxSupply.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectCoinCirculating.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectTotalBlockMined.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectCurrentDifficulty.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectCurrentRate.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectTotalFee.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectTotalTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                     await Task.Factory.StartNew(() => RemoteNodeObjectBlock.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
 
                      if (ClassRemoteNodeSync.WantToBePublicNode)
                      {
-                         if (await RemoteNodeObjectToBePublic.StartConnectionAsync())
-                         {
-                             while (!RemoteNodeObjectToBePublic.RemoteNodeObjectLoginStatus)
-                             {
-                                 await Task.Delay(10);
-                             }
-                         }
+                         await Task.Factory.StartNew(() => RemoteNodeObjectToBePublic.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+
                      }
                      initializeConnection = true;
                  }
