@@ -40,7 +40,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// <summary>
         ///     Setting
         /// </summary>
-        private const int RemoteNodeObjectLoopSendRequestInterval = 10;
+        private const int RemoteNodeObjectLoopSendRequestInterval = 1;
         private const int RemoteNodeObjectLoopSendRequestInterval2 = 1000;
 
         private long LastKeepAlivePacketSent; // Last keep alive packet sent.
@@ -317,7 +317,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                                         if (!RemoteNodeObjectConnectionStatus) break;
 
-                                                        await Task.Delay(10);
+                                                        await Task.Delay(1);
                                                     }
 
                                                     if (cancelBlock)
@@ -428,7 +428,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                                 break;
                                                                             }
 
-                                                                            await Task.Delay(10);
+                                                                            await Task.Delay(1);
                                                                         }
                                                                     }
                                                                     if (cancelTransaction)
