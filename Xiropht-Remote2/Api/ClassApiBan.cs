@@ -121,10 +121,10 @@ namespace Xiropht_RemoteNode.Api
                             switch (FilterSystem)
                             {
                                 case ClassFilterSystemEnumeration.FilterSystemIptables:
-                                    Process.Start("/bin/bash", "-c \"iptables -A " + FilterChainName + " -p tcp -s " + ip + " -j DROP\""); // Add iptables rules.
+                                    Process.Start("/bin/bash", "-c \"iptables -A " + FilterChainName + " -p tcp -s " + ip + " -j DROP\""); // Add iptables rule.
                                     break;
                                 case ClassFilterSystemEnumeration.FilterSystemPacketFilter:
-                                    Process.Start("pfctl", "-t " + FilterChainName + " -T add " + ip + ""); // Add iptables rules.
+                                    Process.Start("pfctl", "-t " + FilterChainName + " -T add " + ip + ""); // Add packet filter rule.
                                     break;
                                 default:
                                     ClassLog.Log("Cannot insert a rule of ban, please check your config and set the filter system name.", 7, 3);
@@ -140,7 +140,7 @@ namespace Xiropht_RemoteNode.Api
                                 {
                                     cmd.StartInfo.FileName = "cmd.exe";
                                     cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                                    cmd.StartInfo.Arguments = "/c netsh advfirewall firewall add rule name=\"AutoBAN (" + ip + ")\" protocol=TCP dir=in remoteip=" + ip + " action=block";
+                                    cmd.StartInfo.Arguments = "/c netsh advfirewall firewall add rule name=\"AutoBAN (" + ip + ")\" protocol=TCP dir=in remoteip=" + ip + " action=block"; // Insert Windows rule.
                                     cmd.Start();
                                 }
                             }
@@ -208,10 +208,10 @@ namespace Xiropht_RemoteNode.Api
                                                 switch (FilterSystem)
                                                 {
                                                     case ClassFilterSystemEnumeration.FilterSystemIptables:
-                                                        Process.Start("/bin/bash", "-c \"iptables -D " + FilterChainName + " -p tcp -s " + filterObject.Key + " -j DROP\""); // Add iptables rules.
+                                                        Process.Start("/bin/bash", "-c \"iptables -D " + FilterChainName + " -p tcp -s " + filterObject.Key + " -j DROP\""); // Remove iptables rule.
                                                         break;
                                                     case ClassFilterSystemEnumeration.FilterSystemPacketFilter:
-                                                        Process.Start("pfctl", "-t " + FilterChainName + " -T del " + filterObject.Key + ""); // Add iptables rules.
+                                                        Process.Start("pfctl", "-t " + FilterChainName + " -T del " + filterObject.Key + ""); // Remove PF rule.
                                                         break;
                                                     default:
                                                         ClassLog.Log("Cannot remove a rule of ban, please check your config and set the filter system name.", 7, 3);
@@ -226,7 +226,7 @@ namespace Xiropht_RemoteNode.Api
                                                     {
                                                         cmd.StartInfo.FileName = "cmd.exe";
                                                         cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                                                        cmd.StartInfo.Arguments = "/c netsh advfirewall firewall delete rule name=\"AutoBAN (" + filterObject.Value.Ip + ")\"";
+                                                        cmd.StartInfo.Arguments = "/c netsh advfirewall firewall delete rule name=\"AutoBAN (" + filterObject.Value.Ip + ")\""; // Remove Windows rule.
                                                         cmd.Start();
                                                     }
                                                 }
@@ -234,7 +234,6 @@ namespace Xiropht_RemoteNode.Api
                                                 {
                                                     ClassLog.Log("Windows - Unban ip " + filterObject.Value.Ip + " exception: " + error.Message, 0, 2);
                                                 }
-                                                //Process.Start("cmd", "/c netsh advfirewall firewall delele rule name=\"AutoBAN (" + filterObject.Key + ")\"");
                                             }
                                         }
                                     }
