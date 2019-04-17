@@ -10,7 +10,6 @@ using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Api;
 using Xiropht_RemoteNode.Command;
 using Xiropht_RemoteNode.Data;
-using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.Object;
 using Xiropht_RemoteNode.RemoteNode;
@@ -35,10 +34,11 @@ namespace Xiropht_RemoteNode
         public static ClassRemoteNodeObject RemoteNodeObjectBlock; // Sync the node for get each block data information.
         public static ClassRemoteNodeObject RemoteNodeObjectTotalTransaction; // Sync the node for get total number of transaction information.
 
+
         /// <summary>
         /// Current wallet address used by the remote node.
         /// </summary>
-        public static string RemoteNodeWalletAddress; 
+        public static string RemoteNodeWalletAddress;
 
         /// <summary>
         /// Threading.
@@ -81,17 +81,13 @@ namespace Xiropht_RemoteNode
         /// </summary>
         public static bool EnableFilteringSystem;
 
-        /// <summary>
-        /// Store concurrent Tasks.
-        /// </summary>
-        public static PriorityScheduler PrioritySchedulerNode;
 
         public static void Main(string[] args)
         {
 
             AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args2)
             {
-                var filePath = ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + "\\error_remotenode.txt");
+                var filePath = ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + "\\error_remotenode.txt");
                 var exception = (Exception)args2.ExceptionObject;
                 using (var writer = new StreamWriter(filePath, true))
                 {
@@ -110,7 +106,6 @@ namespace Xiropht_RemoteNode
 
             };
             Thread.CurrentThread.Name = Path.GetFileName(Environment.GetCommandLineArgs()[0]);
-            PrioritySchedulerNode = new PriorityScheduler(ThreadPriority.Lowest);
             ClassRemoteNodeSave.InitializePath();
             if (ClassRemoteNodeSave.LoadBlockchainTransaction())
             {
@@ -127,7 +122,7 @@ namespace Xiropht_RemoteNode
             Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "R");
 
 
-            if (File.Exists(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
+            if (File.Exists(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
             {
                 ReadConfigFile();
                 if (EnableWriteLog)
@@ -136,7 +131,7 @@ namespace Xiropht_RemoteNode
                 }
                 if (EnableFilteringSystem)
                 {
-                    ClassFilter.EnableFilterSystem();
+                    ClassApiBan.FilterAutoCheckObject();
                 }
             }
             else
@@ -216,85 +211,83 @@ namespace Xiropht_RemoteNode
             RemoteNodeObjectTotalTransaction = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectTotalTransaction);
             RemoteNodeObjectBlock = new ClassRemoteNodeObject(SyncEnumerationObject.ObjectBlock);
 
-            ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
-
 
             Task.Factory.StartNew(async delegate ()
-             {
-                 ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
-                 if (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
-                 {
-                     while (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
-                     {
-                         Console.WriteLine("Blockchain network is not available. Check again after 1 seconds.");
-                         await Task.Delay(1000);
-                     }
-                 }
-                 var initializeConnection = false;
-                 while (!initializeConnection)
-                 {
-                     Console.WriteLine("Start Remote Node Sync Objects Connection..");
+            {
+                ClassCheckRemoteNodeSync.AutoCheckBlockchainNetwork();
+                if (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
+                {
+                    while (!ClassCheckRemoteNodeSync.BlockchainNetworkStatus)
+                    {
+                        Console.WriteLine("Blockchain network is not available. Check again after 1 seconds.");
+                        await Task.Delay(1000);
+                    }
+                }
+                var initializeConnection = false;
+                while (!initializeConnection)
+                {
+                    Console.WriteLine("Start Remote Node Sync Objects Connection..");
 
-                     await Task.Factory.StartNew(() => RemoteNodeObjectCoinMaxSupply.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectCoinCirculating.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectTotalBlockMined.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectCurrentDifficulty.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectCurrentRate.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectTotalFee.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectTotalTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
-                     await Task.Factory.StartNew(() => RemoteNodeObjectBlock.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectCoinMaxSupply.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectCoinCirculating.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectTotalBlockMined.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectCurrentDifficulty.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectCurrentRate.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectTotalFee.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectTotalTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectTransaction.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    await Task.Factory.StartNew(() => RemoteNodeObjectBlock.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
 
-                     if (ClassRemoteNodeSync.WantToBePublicNode)
-                     {
-                         await Task.Factory.StartNew(() => RemoteNodeObjectToBePublic.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
+                    if (ClassRemoteNodeSync.WantToBePublicNode)
+                    {
+                        await Task.Factory.StartNew(() => RemoteNodeObjectToBePublic.StartConnectionAsync(), CancellationToken.None, TaskCreationOptions.LongRunning, PriorityScheduler.BelowNormal).ConfigureAwait(false);
 
-                     }
-                     initializeConnection = true;
-                 }
+                    }
+                    initializeConnection = true;
+                }
 
-                 if (initializeConnection)
-                 {
-                     Console.WriteLine("Remote node objects successfully connected.");
-                 }
-                 else
-                 {
-                     Console.WriteLine("Remote node objects can't connect to the network, retry in 10 seconds..");
-                     ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
-                     RemoteNodeObjectBlock.StopConnection();
-                     RemoteNodeObjectToBePublic.StopConnection();
-                     RemoteNodeObjectTransaction.StopConnection();
-                     RemoteNodeObjectCoinCirculating.StopConnection();
-                     RemoteNodeObjectCoinMaxSupply.StopConnection();
-                     RemoteNodeObjectCurrentDifficulty.StopConnection();
-                     RemoteNodeObjectCurrentRate.StopConnection();
-                     RemoteNodeObjectTotalBlockMined.StopConnection();
-                     RemoteNodeObjectTotalFee.StopConnection();
-                     RemoteNodeObjectTotalPendingTransaction.StopConnection();
-                     RemoteNodeObjectTotalTransaction.StopConnection();
-                     await Task.Delay(10000);
-                 }
+                if (initializeConnection)
+                {
+                    Console.WriteLine("Remote node objects successfully connected.");
+                }
+                else
+                {
+                    Console.WriteLine("Remote node objects can't connect to the network, retry in 10 seconds..");
+                    ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
+                    RemoteNodeObjectBlock.StopConnection();
+                    RemoteNodeObjectToBePublic.StopConnection();
+                    RemoteNodeObjectTransaction.StopConnection();
+                    RemoteNodeObjectCoinCirculating.StopConnection();
+                    RemoteNodeObjectCoinMaxSupply.StopConnection();
+                    RemoteNodeObjectCurrentDifficulty.StopConnection();
+                    RemoteNodeObjectCurrentRate.StopConnection();
+                    RemoteNodeObjectTotalBlockMined.StopConnection();
+                    RemoteNodeObjectTotalFee.StopConnection();
+                    RemoteNodeObjectTotalPendingTransaction.StopConnection();
+                    RemoteNodeObjectTotalTransaction.StopConnection();
+                    await Task.Delay(10000);
+                }
 
 
 
-                 Console.WriteLine("Enable Check Remote Node Objects connection..");
-                 ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();
-                 Console.WriteLine("Enable System of Generating Trusted Key's of Remote Node..");
-                 ClassRemoteNodeKey.StartUpdateTrustedKey();
+                Console.WriteLine("Enable Check Remote Node Objects connection..");
+                ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();
+                Console.WriteLine("Enable System of Generating Trusted Key's of Remote Node..");
+                ClassRemoteNodeKey.StartUpdateTrustedKey();
 
-                 Console.WriteLine("Enable Auto save system..");
-                 ClassRemoteNodeSave.SaveTransaction();
-                 ClassRemoteNodeSave.SaveBlock();
+                Console.WriteLine("Enable Auto save system..");
+                ClassRemoteNodeSave.SaveTransaction();
+                ClassRemoteNodeSave.SaveBlock();
 
-                 Console.WriteLine("Enable API..");
-                 ClassApi.StartApiRemoteNode();
-                 if (EnableApiHttp)
-                 {
-                     Console.WriteLine("Enable API HTTP..");
-                     ClassApiHttp.StartApiHttpServer();
-                 }
-             }, CancellationToken.None, TaskCreationOptions.None, PrioritySchedulerNode).ConfigureAwait(true);
+                Console.WriteLine("Enable API..");
+                ClassApi.StartApiRemoteNode();
+                if (EnableApiHttp)
+                {
+                    Console.WriteLine("Enable API HTTP..");
+                    ClassApiHttp.StartApiHttpServer();
+                }
+            }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, PriorityScheduler.AboveNormal).ConfigureAwait(true);
 
 
             _threadCommandLine = new Thread(delegate ()
@@ -326,8 +319,8 @@ namespace Xiropht_RemoteNode
         private static void SaveConfigFile()
         {
             Console.WriteLine("Save config file..");
-            File.Create(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)).Close();
-            using (StreamWriter writer = new StreamWriter(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)) { AutoFlush = true })
+            File.Create(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)).Close();
+            using (StreamWriter writer = new StreamWriter(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)) { AutoFlush = true })
             {
                 writer.WriteLine("WALLET_ADDRESS=" + RemoteNodeWalletAddress);
                 if (ClassRemoteNodeSync.WantToBePublicNode)
@@ -448,11 +441,11 @@ namespace Xiropht_RemoteNode
                     }
                     if (line.Contains("CHAIN_FILTERING_SYSTEM="))
                     {
-                        ClassFilter.FilterChainName = line.Replace("CHAIN_FILTERING_SYSTEM=", "").ToLower();
+                        ClassApiBan.FilterChainName = line.Replace("CHAIN_FILTERING_SYSTEM=", "").ToLower();
                     }
                     if (line.Contains("NAME_FILTERING_SYSTEM="))
                     {
-                        ClassFilter.FilterSystem = line.Replace("NAME_FILTERING_SYSTEM=", "").ToLower();
+                        ClassApiBan.FilterSystem = line.Replace("NAME_FILTERING_SYSTEM=", "").ToLower();
                     }
                 }
             }

@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Api;
 using Xiropht_RemoteNode.Data;
-using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.RemoteNode;
 
@@ -134,13 +132,13 @@ namespace Xiropht_RemoteNode.Command
                         ClassRemoteNodeKey.StartUpdateTrustedKey();
                         break;
                     case "filterlist":
-                        if (ClassApiBan.ListBanApiIp.Count > 0)
+                        if (ClassApiBan.ListFilterObjects.Count > 0)
                         {
-                            foreach (KeyValuePair<string, ClassApiBanObject> objectBan in ClassApiBan.ListBanApiIp)
+                            foreach (var objectBan in ClassApiBan.ListFilterObjects)
                             {
                                 if (objectBan.Value.Banned)
                                 {
-                                    long banDelay = objectBan.Value.BanDate - DateTimeOffset.Now.ToUnixTimeSeconds();
+                                    long banDelay = objectBan.Value.LastBanDate - DateTimeOffset.Now.ToUnixTimeSeconds();
                                     Console.WriteLine("IP: " + objectBan.Value.Ip + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " banned pending: " + banDelay + " second(s).");
                                 }
                                 else
@@ -155,13 +153,13 @@ namespace Xiropht_RemoteNode.Command
                         }
                         break;
                     case "banlist":
-                        if (ClassApiBan.ListBanApiIp.Count > 0)
+                        if (ClassApiBan.ListFilterObjects.Count > 0)
                         {
-                            foreach(KeyValuePair<string, ClassApiBanObject> objectBan in ClassApiBan.ListBanApiIp)
+                            foreach(var objectBan in ClassApiBan.ListFilterObjects)
                             {
                                 if (objectBan.Value.Banned)
                                 {
-                                    long banDelay = objectBan.Value.BanDate - DateTimeOffset.Now.ToUnixTimeSeconds();
+                                    long banDelay = objectBan.Value.LastBanDate - DateTimeOffset.Now.ToUnixTimeSeconds();
                                     Console.WriteLine("IP: " + objectBan.Value.Ip + " Total Invalid Packet:" + objectBan.Value.TotalInvalidPacket + " banned pending: " + banDelay + " second(s).");
                                 }
                             }

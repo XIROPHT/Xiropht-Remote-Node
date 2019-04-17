@@ -14,7 +14,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Data;
-using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.Object;
 using Xiropht_RemoteNode.Utils;
@@ -53,14 +52,12 @@ namespace Xiropht_RemoteNode.Api
         private static Thread ThreadListenApiHttpConnection;
         private static TcpListener ListenerApiHttpConnection;
         private static bool ListenApiHttpConnectionStatus;
-        public static PriorityScheduler PrioritySchedulerApiHttp;
 
         /// <summary>
         /// Enable http/https api of the remote node, listen incoming connection throught web client.
         /// </summary>
         public static void StartApiHttpServer()
         {
-            PrioritySchedulerApiHttp = new PriorityScheduler(ThreadPriority.Lowest);
             if (UseSSL)
             {
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -93,15 +90,15 @@ namespace Xiropht_RemoteNode.Api
                     try
                     {
                         var client = await ListenerApiHttpConnection.AcceptTcpClientAsync();
-                        var ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
 
                         await Task.Factory.StartNew(async () =>
                         {
-                            using (var clientApiHttpObject = new ClassClientApiHttpObject(client, ip))
+                            using (var clientApiHttpObject = new ClassClientApiHttpObject(client))
                             {
-                                await clientApiHttpObject.StartHandleClientHttpAsync().ConfigureAwait(false);
+                                await Task.Delay(5); // Small latency to prevent overloads.
+                                await clientApiHttpObject.StartHandleClientHttpAsync();
                             }
-                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PrioritySchedulerApiHttp).ConfigureAwait(false);
+                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -171,11 +168,10 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         /// <param name="client"></param>
         /// <param name="ip"></param>
-        public ClassClientApiHttpObject(TcpClient client, string ip)
+        public ClassClientApiHttpObject(TcpClient client)
         {
             _clientStatus = true;
             _client = client;
-            _ip = ip;
         }
 
         /// <summary>
@@ -184,16 +180,28 @@ namespace Xiropht_RemoteNode.Api
         /// <returns></returns>
         public async Task StartHandleClientHttpAsync()
         {
-            await Task.Delay(1);
-            var checkBanResult = false;
+            try
+            {
+                _ip = ((IPEndPoint)(_client.Client.RemoteEndPoint)).Address.ToString();
+            }
+            catch
+            {
+                CloseClientConnection();
+                return;
+            }
+            var checkBanResult = true;
 
             if (_ip != "127.0.0.1") // Do not check localhost ip.
             {
-                checkBanResult = ClassApiBan.CheckBanIp(_ip);
+                checkBanResult = ClassApiBan.FilterCheckIp(_ip);
             }
             int totalWhile = 0;
-            if (!checkBanResult)
+            if (checkBanResult)
             {
+                if (_ip != "127.0.0.1")
+                {
+                    ClassApiBan.FilterInsertIp(_ip);
+                }
                 try
                 {
                     if (!ClassApiHttp.UseSSL)
@@ -321,15 +329,20 @@ namespace Xiropht_RemoteNode.Api
                     {
                         if (packetEach.ToLower().Contains("x-forwarded-for: "))
                         {
-                            _ip = packetEach.ToLower().Replace("x-forwarded-for: ", "");
-                            ClassLog.Log("HTTP/HTTPS API - X-Forwarded-For ip of the client is: " + _ip, 7, 2);
-                            var checkBanResult = ClassApiBan.CheckBanIp(_ip);
-                            if (checkBanResult) // Is Banned
+                            string newIp = packetEach.ToLower().Replace("x-forwarded-for: ", "");
+                            _ip = newIp;
+                            ClassLog.Log("HTTP/HTTPS API - X-Forwarded-For ip of the client is: " + newIp, 7, 2);
+                            var checkBanResult = ClassApiBan.FilterCheckIp(_ip);
+                            if (!checkBanResult) // Is Banned
                             {
                                 return false;
                             }
                             else
                             {
+                                if (!string.IsNullOrEmpty(newIp))
+                                {
+                                    ClassApiBan.FilterInsertIp(newIp);
+                                }
                                 return true;
                             }
                         }
@@ -428,19 +441,19 @@ namespace Xiropht_RemoteNode.Api
                             }
                             else
                             {
-                                ClassApiBan.InsertInvalidPacket(_ip);
+                                ClassApiBan.FilterInsertInvalidPacket(_ip);
                                 await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                             }
                         }
                         else
                         {
-                            ClassApiBan.InsertInvalidPacket(_ip);
+                            ClassApiBan.FilterInsertInvalidPacket(_ip);
                             await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
                     }
                     else
                     {
-                        ClassApiBan.InsertInvalidPacket(_ip);
+                        ClassApiBan.FilterInsertInvalidPacket(_ip);
                         await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     }
                     break;
@@ -468,13 +481,13 @@ namespace Xiropht_RemoteNode.Api
                         }
                         else
                         {
-                            ClassApiBan.InsertInvalidPacket(_ip);
+                            ClassApiBan.FilterInsertInvalidPacket(_ip);
                             await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
                     }
                     else
                     {
-                        ClassApiBan.InsertInvalidPacket(_ip);
+                        ClassApiBan.FilterInsertInvalidPacket(_ip);
                         await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     }
                     break;
@@ -504,19 +517,19 @@ namespace Xiropht_RemoteNode.Api
                             }
                             else
                             {
-                                ClassApiBan.InsertInvalidPacket(_ip);
+                                ClassApiBan.FilterInsertInvalidPacket(_ip);
                                 await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                             }
                         }
                         else
                         {
-                            ClassApiBan.InsertInvalidPacket(_ip);
+                            ClassApiBan.FilterInsertInvalidPacket(_ip);
                             await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
                     }
                     else
                     {
-                        ClassApiBan.InsertInvalidPacket(_ip);
+                        ClassApiBan.FilterInsertInvalidPacket(_ip);
                         await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     }
                     break;
@@ -544,13 +557,13 @@ namespace Xiropht_RemoteNode.Api
                         }
                         else
                         {
-                            ClassApiBan.InsertInvalidPacket(_ip);
+                            ClassApiBan.FilterInsertInvalidPacket(_ip);
                             await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
                     }
                     else
                     {
-                        ClassApiBan.InsertInvalidPacket(_ip);
+                        ClassApiBan.FilterInsertInvalidPacket(_ip);
                         await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     }
                     break;
@@ -580,7 +593,7 @@ namespace Xiropht_RemoteNode.Api
                     await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     break;
                 default:
-                    ClassApiBan.InsertInvalidPacket(_ip);
+                    ClassApiBan.FilterInsertInvalidPacket(_ip);
                     await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                     break;
             }

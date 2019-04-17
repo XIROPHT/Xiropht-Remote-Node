@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Xiropht_Connector_All.Remote;
 using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Data;
-using Xiropht_RemoteNode.Filter;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.Object;
 using Xiropht_RemoteNode.Utils;
@@ -227,8 +226,8 @@ namespace Xiropht_RemoteNode.Api
 
                     if (_totalPacketPerSecond >= ClassApiBan.MaxPacketPerSecond)
                     {
-                        ClassApiBan.ListBanApiIp[_ip].BanDate = DateTimeOffset.Now.ToUnixTimeSeconds() + ClassApiBan.BanTimeInSecond;
-                        ClassApiBan.ListBanApiIp[_ip].Banned = true;
+                        ClassApiBan.ListFilterObjects[_ip].LastBanDate = DateTimeOffset.Now.ToUnixTimeSeconds() + ClassApiBan.BanDelay;
+                        ClassApiBan.ListFilterObjects[_ip].Banned = true;
                         _incomingConnectionStatus = false;
                         break;
                     }
@@ -254,6 +253,11 @@ namespace Xiropht_RemoteNode.Api
 
                 try
                 {
+                    if (!ClassApiBan.FilterCheckIp(_ip))
+                    {
+                        _incomingConnectionStatus = false;
+                        break;
+                    }
                     if (!_incomingConnectionStatus)
                     {
                         _incomingConnectionStatus = false;
@@ -279,15 +283,16 @@ namespace Xiropht_RemoteNode.Api
         public async Task StartHandleIncomingConnectionAsync()
         {
 
-            var checkBanResult = ClassApiBan.CheckBanIp(_ip);
+            var checkBanResult = ClassApiBan.FilterCheckIp(_ip);
 
-            if (checkBanResult)
+            if (!checkBanResult)
             {
                 _client?.Close();
                 _client?.Dispose();
             }
             else
             {
+                ClassApiBan.FilterInsertIp(_ip);
                 _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                 await HandleIncomingConnectionAsync();
             }
@@ -871,7 +876,7 @@ namespace Xiropht_RemoteNode.Api
 
                                         break;
                                     default: // Invalid packet
-                                        ClassApiBan.ListBanApiIp[_ip].TotalInvalidPacket++;
+                                        ClassApiBan.ListFilterObjects[_ip].TotalInvalidPacket++;
                                         break;
                                 }
                             }
@@ -887,7 +892,7 @@ namespace Xiropht_RemoteNode.Api
                     }
                     else
                     {
-                        ClassApiBan.ListBanApiIp[_ip].TotalInvalidPacket++;
+                        ClassApiBan.ListFilterObjects[_ip].TotalInvalidPacket++;
                         if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.EmptyPacket).ConfigureAwait(false)) // Empty Packet
                         {
                             _incomingConnectionStatus = false;
