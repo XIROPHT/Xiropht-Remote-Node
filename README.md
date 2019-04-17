@@ -8,8 +8,12 @@
 https://github.com/XIROPHT/Xiropht-Remote-Node/wiki
 
 <h4>Supported Firewall on the API Ban system</h4>
+
 -> PF [FreeBSD, OpenBSD and others BSD who support PacketFilter]
+
 -> iptables [Linux usually]
+
 -> Windows Firewall (Automaticaly used once the tool is launched on Windows)
+
 
 **Newtonsoft.Json library is used since version 0.2.2.8b for the API HTTP/HTTPS system: https://github.com/JamesNK/Newtonsoft.Json**
