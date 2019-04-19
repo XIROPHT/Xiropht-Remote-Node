@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 using Xiropht_Connector_All.Setting;
 using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Data;
@@ -566,7 +567,7 @@ namespace Xiropht_RemoteNode.RemoteNode
             try
             {
                 var clientBlockchain = new TcpClient();
-                if (await ConnectToTarget(clientBlockchain, ClassConnectorSetting.SeedNodeIp[ClassUtils.GetRandomBetween(0, ClassConnectorSetting.SeedNodeIp.Count - 1)], ClassConnectorSetting.SeedNodePort))
+                if (await ConnectToTarget(clientBlockchain, ClassConnectorSetting.SeedNodeIp.Keys.ElementAt(ClassUtils.GetRandomBetween(0, ClassConnectorSetting.SeedNodeIp.Count - 1)), ClassConnectorSetting.SeedNodePort))
                 {
                     BlockchainNetworkStatus = true;
                 }
