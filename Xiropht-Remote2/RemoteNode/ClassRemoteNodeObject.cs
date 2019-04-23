@@ -905,10 +905,11 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         ClassLog.Log("Transaction Received: " + packetSplit[1], 2, 2);
 
-                        var decompressTransaction = ClassUtils.DecompressData(packetSplit[1]);
-                        ClassLog.Log("Transaction received decompressed: " + decompressTransaction, 2, 2);
+                        // Remove gzip decompression, too slow and unusefull for 0,4 KB per transaction..
+                        //var decompressTransaction = ClassUtils.DecompressData(packetSplit[1]);
+                        //ClassLog.Log("Transaction received decompressed: " + decompressTransaction, 2, 2);
 
-                        var splitTransaction = decompressTransaction.Split(new[] { "END" }, StringSplitOptions.None);
+                        var splitTransaction = packetSplit[1].Split(new[] { "END" }, StringSplitOptions.None);
                         if (splitTransaction.Length > 1)
                         {
                             for (int i = 0; i < splitTransaction.Length; i++)
@@ -974,7 +975,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         }
                         else
                         {
-                            var transactionSubString = decompressTransaction.Substring(0, decompressTransaction.Length - 1);
+                            var transactionSubString = packetSplit[1].Substring(0, packetSplit[1].Length - 1);
                             if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
                             {
                                 if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
