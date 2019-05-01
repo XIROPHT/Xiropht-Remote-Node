@@ -918,7 +918,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 {
                                     if (splitTransaction[i].Length > 0)
                                     {
-                                        var transactionSubString = splitTransaction[i].Substring(0, splitTransaction[i].Length - 1);
+                                        var transactionSubString = splitTransaction[i].Replace("$", "");
 
                                         if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
                                         {
@@ -975,7 +975,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         }
                         else
                         {
-                            var transactionSubString = packetSplit[1].Substring(0, packetSplit[1].Length - 1);
+                            var transactionSubString = packetSplit[1].Replace("$", "");
                             if (!ClassRemoteNodeSync.ListOfTransaction.ContainsValue(transactionSubString))
                             {
                                 if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
