@@ -909,7 +909,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         //var decompressTransaction = ClassUtils.DecompressData(packetSplit[1]);
                         //ClassLog.Log("Transaction received decompressed: " + decompressTransaction, 2, 2);
 
-                        var splitTransaction = packetSplit[1].Split(new[] { "END" }, StringSplitOptions.None);
+                        var splitTransaction = packetSplit[1].Split(new[] { "$" }, StringSplitOptions.None);
                         if (splitTransaction.Length > 1)
                         {
                             for (int i = 0; i < splitTransaction.Length; i++)
