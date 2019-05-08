@@ -36,3 +36,7 @@ or:
 - sudo ./Xiropht-RemoteNode-Linux or sudo ./Xiropht-RemoteNode-Raspberry
 
 **Newtonsoft.Json library is used since version 0.2.2.8b for the API HTTP/HTTPS system: https://github.com/JamesNK/Newtonsoft.Json**
+
+**Developers:**
+
+- Xiropht (Sam Segura)
