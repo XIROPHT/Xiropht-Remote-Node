@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Security;
@@ -573,14 +574,14 @@ namespace Xiropht_RemoteNode.Api
                         { "coin_name", ClassConnectorSetting.CoinName },
                         { "coin_min_name", ClassConnectorSetting.CoinNameMin },
                         { "coin_max_supply", ClassRemoteNodeSync.CoinMaxSupply },
-                        { "coin_circulating", ClassRemoteNodeSync.CoinCirculating },
-                        { "coin_total_fee", ClassRemoteNodeSync.CurrentTotalFee },
-                        { "coin_total_mined", "" + (ClassRemoteNodeSync.ListOfBlock.Count * 10) },
+                        { "coin_circulating", decimal.Parse(ClassRemoteNodeSync.CoinCirculating, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
+                        { "coin_total_fee",  decimal.Parse(ClassRemoteNodeSync.CurrentTotalFee, NumberStyles.Any, Program.GlobalCultureInfo).ToString()},
+                        { "coin_total_mined", (ClassRemoteNodeSync.ListOfBlock.Count *ClassConnectorSetting.ConstantBlockReward).ToString() },
                         { "coin_blockchain_height", "" + (ClassRemoteNodeSync.ListOfBlock.Count + 1) },
                         { "coin_total_block_mined", "" + ClassRemoteNodeSync.ListOfBlock.Count },
                         { "coin_total_block_left", ClassRemoteNodeSync.CurrentBlockLeft },
-                        { "coin_network_difficulty", ClassRemoteNodeSync.CurrentDifficulty },
-                        { "coin_network_hashrate", ClassRemoteNodeSync.CurrentHashrate },
+                        { "coin_network_difficulty", decimal.Parse(ClassRemoteNodeSync.CurrentDifficulty, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
+                        { "coin_network_hashrate", decimal.Parse(ClassRemoteNodeSync.CurrentHashrate, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
                         { "coin_total_transaction", "" + ClassRemoteNodeSync.ListOfTransaction.Count }
                     };
 

@@ -305,12 +305,8 @@ namespace Xiropht_RemoteNode.Api
         public async Task HandleIncomingConnectionAsync()
         {
             _incomingConnectionStatus = true;
-            //new Task(async () => await CheckConnection().ConfigureAwait(false)).Start();
-            //new Task(async () => await CheckPacketSpeedAsync().ConfigureAwait(false)).Start();
             await Task.Factory.StartNew(CheckConnection, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current).ConfigureAwait(false);
             await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current).ConfigureAwait(false);
-
-            //await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).ConfigureAwait(false);
 
             try
             {
