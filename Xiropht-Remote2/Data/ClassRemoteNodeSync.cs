@@ -21,7 +21,7 @@ namespace Xiropht_RemoteNode.Data
         public static string TotalPendingTransaction; // Number of total transactions with status pending in the blockchain. 
         public static string TotalBlockMined; // Number of total of blocks mined in the blockchain.
         public static string TotalTransaction; // Number of total transaction in the blockchain.
-        public const int MaxTransactionRange = 2;
+        public const int MaxTransactionRange = 10;
         public static bool EnableTransactionRange = true;
 
         /// <summary>

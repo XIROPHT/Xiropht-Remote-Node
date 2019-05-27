@@ -25,14 +25,12 @@ namespace Xiropht_RemoteNode.Api
         private static Thread _threadApiReceiveConnection;
         private static TcpListener _tcpListenerApiReceiveConnection;
         public static bool ApiReceiveConnectionStatus;
-        public static PriorityScheduler PrioritySchedulerApi;
 
         /// <summary>
         /// Start to listen incoming connection to API.
         /// </summary>
         public static void StartApiRemoteNode()
         {
-            PrioritySchedulerApi = new PriorityScheduler(ThreadPriority.Lowest);
             ApiReceiveConnectionStatus = true;
             _tcpListenerApiReceiveConnection = new TcpListener(IPAddress.Any, ClassConnectorSetting.RemoteNodePort);
             _tcpListenerApiReceiveConnection.Start();
@@ -69,19 +67,21 @@ namespace Xiropht_RemoteNode.Api
                 try
                 {
 
-                    var client = await _tcpListenerApiReceiveConnection.AcceptTcpClientAsync().ConfigureAwait(false);
-                    string ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
-
-                    ClassLog.Log("API Receive incoming connection from IP: " + ip, 5, 2);
-
-                    await Task.Factory.StartNew(async () =>
+                    await _tcpListenerApiReceiveConnection.AcceptTcpClientAsync().ContinueWith(async clientTask =>
                     {
-                        using (var clientApiObjectConnection = new ClassApiObjectConnection(client, ip))
-                        {
-                            await clientApiObjectConnection.StartHandleIncomingConnectionAsync();
-                        }
-                    }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PrioritySchedulerApi).ConfigureAwait(false);
+                        var client = await clientTask;
+                        string ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
 
+                        ClassLog.Log("API Receive incoming connection from IP: " + ip, 5, 2);
+
+                        await Task.Factory.StartNew(async () =>
+                        {
+                            using (var clientApiObjectConnection = new ClassApiObjectConnection(client, ip))
+                            {
+                                await clientApiObjectConnection.StartHandleIncomingConnectionAsync();
+                            }
+                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
+                    });
                 }
                 catch
                 {
@@ -305,14 +305,13 @@ namespace Xiropht_RemoteNode.Api
         public async Task HandleIncomingConnectionAsync()
         {
             _incomingConnectionStatus = true;
-            await Task.Factory.StartNew(CheckConnection, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current).ConfigureAwait(false);
-            await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current).ConfigureAwait(false);
+            await Task.Factory.StartNew(CheckConnection, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+            await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
 
             try
             {
                 while (_incomingConnectionStatus)
                 {
-                    await Task.Delay(1);
                     if (!ClassApi.ApiReceiveConnectionStatus)
                     {
                         _incomingConnectionStatus = false;
@@ -338,85 +337,89 @@ namespace Xiropht_RemoteNode.Api
                                 {
                                     using (var bufferPacket = new ApiObjectConnectionPacket())
                                     {
-                                        int received = await bufferedStreamNetwork.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length);
-                                        if (received > 0)
+                                        int received = 0;
+
+                                        while ((received = await bufferedStreamNetwork.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length)) > 0)
                                         {
-                                            bufferPacket.packet = Encoding.UTF8.GetString(bufferPacket.buffer, 0, received);
-
-
-                                            _totalPacketPerSecond++;
-                                            _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
-
-
-                                            if (bufferPacket.packet.Contains("*"))
+                                            if (received > 0)
                                             {
-                                                var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
-                                                if (splitPacket.Length > 1)
+                                                bufferPacket.packet = Encoding.UTF8.GetString(bufferPacket.buffer, 0, received);
+
+
+                                                _totalPacketPerSecond++;
+                                                _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
+
+
+                                                if (bufferPacket.packet.Contains("*"))
                                                 {
-                                                    foreach (var packetMerged in splitPacket)
+                                                    var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
+                                                    if (splitPacket.Length > 1)
                                                     {
-                                                        if (_incomingConnectionStatus)
+                                                        foreach (var packetMerged in splitPacket)
                                                         {
-                                                            if (packetMerged != null)
+                                                            if (_incomingConnectionStatus)
                                                             {
-                                                                if (!string.IsNullOrEmpty(packetMerged))
+                                                                if (packetMerged != null)
                                                                 {
-                                                                    if (packetMerged.Length > 1)
+                                                                    if (!string.IsNullOrEmpty(packetMerged))
                                                                     {
-
-                                                                        var packetReplace = packetMerged.Replace("*", "");
-                                                                        ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
-
-                                                                        await Task.Factory.StartNew(async delegate
+                                                                        if (packetMerged.Length > 1)
                                                                         {
-                                                                            if (_incomingConnectionStatus)
+
+                                                                            var packetReplace = packetMerged.Replace("*", "");
+                                                                            ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
+
+                                                                            await Task.Factory.StartNew(async delegate
                                                                             {
-                                                                                if (!await HandleIncomingPacketAsync(packetReplace))
+                                                                                if (_incomingConnectionStatus)
                                                                                 {
-                                                                                    ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                                                    _incomingConnectionStatus = false;
+                                                                                    if (!await HandleIncomingPacketAsync(packetReplace))
+                                                                                    {
+                                                                                        ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
+                                                                                        _incomingConnectionStatus = false;
+                                                                                    }
                                                                                 }
-                                                                            }
-                                                                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                                                                            }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                                                                        }
                                                                     }
                                                                 }
                                                             }
                                                         }
                                                     }
+                                                    else
+                                                    {
+                                                        if (_incomingConnectionStatus)
+                                                        {
+                                                            var packetReplace = bufferPacket.packet.Replace("*", "");
+                                                            ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
+
+                                                            await Task.Factory.StartNew(async delegate
+                                                            {
+                                                                if (!await HandleIncomingPacketAsync(packetReplace))
+                                                                {
+                                                                    ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
+                                                                    _incomingConnectionStatus = false;
+                                                                }
+                                                            }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                                                        }
+                                                    }
                                                 }
                                                 else
                                                 {
+
+                                                    ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
+
                                                     if (_incomingConnectionStatus)
                                                     {
-                                                        var packetReplace = bufferPacket.packet.Replace("*", "");
-                                                        ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
-
                                                         await Task.Factory.StartNew(async delegate
                                                         {
-                                                            if (!await HandleIncomingPacketAsync(packetReplace))
+                                                            if (!await HandleIncomingPacketAsync(bufferPacket.packet))
                                                             {
                                                                 ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
                                                                 _incomingConnectionStatus = false;
                                                             }
                                                         }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
                                                     }
-                                                }
-                                            }
-                                            else
-                                            {
-
-                                                ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
-
-                                                if (_incomingConnectionStatus)
-                                                {
-                                                    await Task.Factory.StartNew(async delegate
-                                                    {
-                                                        if (!await HandleIncomingPacketAsync(bufferPacket.packet))
-                                                        {
-                                                            ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                            _incomingConnectionStatus = false;
-                                                        }
-                                                    }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
                                                 }
                                             }
                                         }
