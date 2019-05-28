@@ -106,10 +106,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                     while ((line = sr.ReadLine()) != null)
                     {
                         counter++;
-                        ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(ClassRemoteNodeSync.ListOfTransaction.Count, line);
                         try
                         {
-                            ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(line);
+                            if(ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(line))
+                            {
+                                ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(ClassRemoteNodeSync.ListOfTransaction.Count, line);
+                            }
                         }
                         catch
                         {
@@ -154,8 +156,11 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 counter++;
                                 var splitLineBlock = line.Split(new[] { "#" }, StringSplitOptions.None);
                                 var blockId = ClassRemoteNodeSync.ListOfBlock.Count;
-                                ClassRemoteNodeSync.ListOfBlock.Add(blockId, line);
-                                ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(splitLineBlock[1], blockId);
+                                if (ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(splitLineBlock[1]) == -1)
+                                {
+                                    ClassRemoteNodeSync.ListOfBlock.Add(blockId, line);
+                                    ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(splitLineBlock[1], blockId);
+                                }
                             }
                         }
                     }

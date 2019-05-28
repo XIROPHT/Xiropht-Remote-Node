@@ -762,7 +762,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         var blockIdTmp = int.Parse(blockLineSplit[0]);
                                         if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp - 1))
                                         {
-                                            if (!ClassRemoteNodeSync.ListOfBlock.ContainsValue(blockSubString))
+                                            if (ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(blockLineSplit[1]) == -1)
                                             {
                                                 ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
                                                 ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp - 1);
@@ -802,7 +802,7 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                             if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp - 1))
                             {
-                                if (!ClassRemoteNodeSync.ListOfBlock.ContainsValue(blockSubString))
+                                if (ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(blockLineSplit[1]) == -1)
                                 {
                                     ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
                                     ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp - 1);
@@ -876,11 +876,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                         ClassRemoteNodeSync.TotalBlockMined = packetSplit[1];
                         if (int.TryParse(packetSplit[1], out var totalBlockMined))
                         {
-                            if (totalBlockMined < ClassRemoteNodeSync.ListOfBlock.Count && !Program.RemoteNodeObjectCoinCirculating.RemoteNodeObjectInSyncBlock)
-                            {
-                                ClassRemoteNodeSync.ListOfBlock.Clear();
-                                ClassRemoteNodeSave.ClearBlockSyncSave();
-                            }
                             var totalBlockLeft =
                                 Math.Round(
                                     (decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ","), System.Globalization.NumberStyles.Any,
