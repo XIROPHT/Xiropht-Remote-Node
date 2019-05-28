@@ -19,7 +19,7 @@ https://github.com/XIROPHT/Xiropht-Remote-Node/wiki
 
 On Linux OS (Work also Raspbian OS for Raspberry):
 
-- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.7.0R2/Xiropht-RemoteNode-0.2.7.0R2-Linux.zip 
+- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.7.0R2/Xiropht-RemoteNode-0.2.7.0R2-Linux-64bit.zip
 
 or:
 
