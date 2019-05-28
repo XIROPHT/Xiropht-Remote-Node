@@ -58,7 +58,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         ClassRemoteNodeSync.ListOfTransactionHash.InsertTransactionHash(ClassRemoteNodeSync.ListOfTransactionHash.Count, hashTransaction);
 
-                        /*
+
+                        #region test data of tx
                         decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
                         decimal amount = 0; // Amount.
                         decimal fee = 0; // Fee.
@@ -81,8 +82,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                      realFeeAmountRecv + "#";
                         string dataInformationRecv = "RECV#" + amount + "#" + fee + "#" + timestamp + "#" +
                                                      hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" +
-                                                     realFeeAmountRecv + "#";*/
-
+                                                     realFeeAmountRecv + "#";
+                        #endregion
                         if (idWalletSender != -1)
                         {
                             var tupleTxSender = new Tuple<string, string>(hashTransaction, "SEND");
