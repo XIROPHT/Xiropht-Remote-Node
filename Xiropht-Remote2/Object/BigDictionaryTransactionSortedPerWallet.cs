@@ -6,106 +6,106 @@ namespace Xiropht_RemoteNode.Object
 {
     public class BigDictionaryTransactionSortedPerWallet
     {
-        private Dictionary<float, List<string>> _bigDictionaryTransaction1;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction2;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction3;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction4;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction5;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction6;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction7;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction8;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction9;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction10;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction11;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction12;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction13;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction14;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction15;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction16;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction17;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction18;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction19;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction20;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction21;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction22;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction23;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction24;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction25;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction26;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction27;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction28;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction29;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction30;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction31;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction32;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction33;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction34;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction35;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction36;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction37;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction38;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction39;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction40;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction41;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction42;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction43;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction44;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction45;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction46;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction47;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction48;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction49;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction50;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction51;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction52;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction53;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction54;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction55;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction56;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction57;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction58;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction59;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction60;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction61;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction62;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction63;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction64;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction65;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction66;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction67;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction68;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction69;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction70;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction71;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction72;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction73;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction74;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction75;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction76;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction77;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction78;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction79;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction80;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction81;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction82;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction83;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction84;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction85;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction86;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction87;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction88;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction89;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction90;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction91;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction92;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction93;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction94;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction95;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction96;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction97;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction98;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction99;
-        private Dictionary<float, List<string>> _bigDictionaryTransaction100;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction1;  // wallet id | Tuple: id transaction, type tx
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction2;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction3;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction4;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction5;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction6;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction7;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction8;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction9;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction10;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction11;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction12;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction13;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction14;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction15;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction16;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction17;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction18;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction19;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction20;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction21;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction22;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction23;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction24;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction25;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction26;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction27;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction28;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction29;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction30;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction31;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction32;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction33;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction34;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction35;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction36;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction37;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction38;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction39;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction40;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction41;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction42;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction43;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction44;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction45;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction46;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction47;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction48;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction49;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction50;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction51;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction52;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction53;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction54;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction55;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction56;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction57;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction58;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction59;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction60;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction61;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction62;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction63;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction64;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction65;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction66;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction67;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction68;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction69;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction70;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction71;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction72;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction73;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction74;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction75;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction76;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction77;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction78;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction79;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction80;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction81;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction82;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction83;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction84;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction85;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction86;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction87;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction88;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction89;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction90;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction91;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction92;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction93;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction94;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction95;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction96;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction97;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction98;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction99;
+        private Dictionary<float, List<Tuple<string, string>>> _bigDictionaryTransaction100;
 
 
         public const int MaxTransactionPerDictionary = 10000000; // 10 millions of transactions hash per dictionary
@@ -113,115 +113,115 @@ namespace Xiropht_RemoteNode.Object
 
         public BigDictionaryTransactionSortedPerWallet()
         {
-            _bigDictionaryTransaction1 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction2 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction3 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction4 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction5 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction6 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction7 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction8 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction9 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction10 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction1 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction2 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction3 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction4 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction5 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction6 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction7 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction8 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction9 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction10 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction11 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction12 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction13 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction14 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction15 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction16 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction17 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction18 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction19 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction20 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction11 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction12 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction13 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction14 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction15 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction16 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction17 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction18 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction19 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction20 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction21 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction22 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction23 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction24 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction25 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction26 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction27 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction28 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction29 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction30 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction21 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction22 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction23 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction24 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction25 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction26 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction27 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction28 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction29 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction30 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction31 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction32 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction33 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction34 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction35 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction36 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction37 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction38 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction39 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction40 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction31 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction32 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction33 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction34 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction35 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction36 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction37 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction38 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction39 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction40 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction41 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction42 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction43 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction44 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction45 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction46 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction47 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction48 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction49 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction50 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction41 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction42 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction43 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction44 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction45 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction46 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction47 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction48 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction49 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction50 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction51 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction52 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction53 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction54 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction55 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction56 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction57 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction58 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction59 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction60 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction51 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction52 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction53 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction54 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction55 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction56 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction57 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction58 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction59 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction60 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction61 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction62 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction63 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction64 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction65 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction66 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction67 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction68 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction69 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction70 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction61 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction62 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction63 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction64 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction65 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction66 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction67 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction68 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction69 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction70 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction71 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction72 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction73 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction74 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction75 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction76 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction77 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction78 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction79 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction80 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction71 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction72 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction73 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction74 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction75 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction76 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction77 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction78 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction79 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction80 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction81 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction82 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction83 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction84 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction85 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction86 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction87 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction88 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction89 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction90 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction81 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction82 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction83 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction84 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction85 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction86 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction87 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction88 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction89 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction90 = new Dictionary<float, List<Tuple<string, string>>>();
 
-            _bigDictionaryTransaction91 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction92 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction93 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction94 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction95 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction96 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction97 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction98 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction99 = new Dictionary<float, List<string>>();
-            _bigDictionaryTransaction100 = new Dictionary<float, List<string>>();
+            _bigDictionaryTransaction91 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction92 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction93 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction94 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction95 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction96 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction97 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction98 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction99 = new Dictionary<float, List<Tuple<string, string>>>();
+            _bigDictionaryTransaction100 = new Dictionary<float, List<Tuple<string, string>>>();
         }
 
         public long Count
@@ -238,7 +238,7 @@ namespace Xiropht_RemoteNode.Object
         /// </summary>
         /// <param name="id"></param>
         /// <param name="transaction"></param>
-        public void InsertTransactionSorted(float id, string transaction)
+        public void InsertTransactionSorted(float id, Tuple<string, string> transaction)
         {
             long idDictionary = ContainsKey(id);
             if (idDictionary != -1)
@@ -557,304 +557,304 @@ namespace Xiropht_RemoteNode.Object
                 switch (idDictionary)
                 {
                     case 0:
-                        _bigDictionaryTransaction1.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction1.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 1:
-                        _bigDictionaryTransaction2.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction2.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 2:
-                        _bigDictionaryTransaction3.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction3.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 3:
-                        _bigDictionaryTransaction4.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction4.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 4:
-                        _bigDictionaryTransaction5.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction5.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 5:
-                        _bigDictionaryTransaction6.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction6.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 6:
-                        _bigDictionaryTransaction7.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction7.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 7:
-                        _bigDictionaryTransaction8.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction8.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 8:
-                        _bigDictionaryTransaction9.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction9.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 9:
-                        _bigDictionaryTransaction10.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction10.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 10:
-                        _bigDictionaryTransaction11.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction11.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 11:
-                        _bigDictionaryTransaction12.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction12.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 12:
-                        _bigDictionaryTransaction13.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction13.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 13:
-                        _bigDictionaryTransaction14.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction14.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 14:
-                        _bigDictionaryTransaction15.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction15.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 15:
-                        _bigDictionaryTransaction16.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction16.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 16:
-                        _bigDictionaryTransaction17.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction17.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 17:
-                        _bigDictionaryTransaction18.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction18.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 18:
-                        _bigDictionaryTransaction19.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction19.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 19:
-                        _bigDictionaryTransaction20.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction20.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 20:
-                        _bigDictionaryTransaction21.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction21.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 21:
-                        _bigDictionaryTransaction22.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction22.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 22:
-                        _bigDictionaryTransaction23.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction23.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 23:
-                        _bigDictionaryTransaction24.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction24.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 24:
-                        _bigDictionaryTransaction25.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction25.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 25:
-                        _bigDictionaryTransaction26.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction26.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 26:
-                        _bigDictionaryTransaction27.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction27.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 27:
-                        _bigDictionaryTransaction28.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction28.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 28:
-                        _bigDictionaryTransaction29.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction29.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 29:
-                        _bigDictionaryTransaction30.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction30.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 30:
-                        _bigDictionaryTransaction31.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction31.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 31:
-                        _bigDictionaryTransaction32.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction32.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 32:
-                        _bigDictionaryTransaction33.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction33.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 33:
-                        _bigDictionaryTransaction34.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction34.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 34:
-                        _bigDictionaryTransaction35.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction35.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 35:
-                        _bigDictionaryTransaction36.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction36.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 36:
-                        _bigDictionaryTransaction37.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction37.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 37:
-                        _bigDictionaryTransaction38.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction38.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 38:
-                        _bigDictionaryTransaction39.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction39.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 39:
-                        _bigDictionaryTransaction40.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction40.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 40:
-                        _bigDictionaryTransaction41.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction41.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 41:
-                        _bigDictionaryTransaction42.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction42.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 42:
-                        _bigDictionaryTransaction43.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction43.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 43:
-                        _bigDictionaryTransaction44.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction44.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 44:
-                        _bigDictionaryTransaction45.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction45.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 45:
-                        _bigDictionaryTransaction46.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction46.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 46:
-                        _bigDictionaryTransaction47.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction47.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 47:
-                        _bigDictionaryTransaction48.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction48.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 48:
-                        _bigDictionaryTransaction49.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction49.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 49:
-                        _bigDictionaryTransaction50.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction50.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 50:
-                        _bigDictionaryTransaction51.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction51.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 51:
-                        _bigDictionaryTransaction52.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction52.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 52:
-                        _bigDictionaryTransaction53.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction53.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 53:
-                        _bigDictionaryTransaction54.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction54.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 54:
-                        _bigDictionaryTransaction55.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction55.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 55:
-                        _bigDictionaryTransaction56.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction56.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 56:
-                        _bigDictionaryTransaction57.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction57.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 57:
-                        _bigDictionaryTransaction58.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction58.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 58:
-                        _bigDictionaryTransaction59.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction59.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 59:
-                        _bigDictionaryTransaction60.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction60.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 60:
-                        _bigDictionaryTransaction61.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction61.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 61:
-                        _bigDictionaryTransaction62.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction62.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 62:
-                        _bigDictionaryTransaction63.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction63.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 63:
-                        _bigDictionaryTransaction64.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction64.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 64:
-                        _bigDictionaryTransaction65.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction65.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 65:
-                        _bigDictionaryTransaction66.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction66.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 66:
-                        _bigDictionaryTransaction67.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction67.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 67:
-                        _bigDictionaryTransaction68.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction68.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 68:
-                        _bigDictionaryTransaction69.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction69.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 69:
-                        _bigDictionaryTransaction70.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction70.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 70:
-                        _bigDictionaryTransaction71.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction71.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 71:
-                        _bigDictionaryTransaction72.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction72.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 72:
-                        _bigDictionaryTransaction73.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction73.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 73:
-                        _bigDictionaryTransaction74.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction74.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 74:
-                        _bigDictionaryTransaction75.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction75.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 75:
-                        _bigDictionaryTransaction76.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction76.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 76:
-                        _bigDictionaryTransaction77.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction77.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 77:
-                        _bigDictionaryTransaction78.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction78.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 78:
-                        _bigDictionaryTransaction79.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction79.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 79:
-                        _bigDictionaryTransaction80.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction80.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 80:
-                        _bigDictionaryTransaction81.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction81.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 81:
-                        _bigDictionaryTransaction82.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction82.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 82:
-                        _bigDictionaryTransaction83.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction83.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 83:
-                        _bigDictionaryTransaction84.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction84.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 84:
-                        _bigDictionaryTransaction85.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction85.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 85:
-                        _bigDictionaryTransaction86.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction86.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 86:
-                        _bigDictionaryTransaction87.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction87.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 87:
-                        _bigDictionaryTransaction88.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction88.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 88:
-                        _bigDictionaryTransaction89.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction89.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 89:
-                        _bigDictionaryTransaction90.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction90.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 90:
-                        _bigDictionaryTransaction91.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction91.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 91:
-                        _bigDictionaryTransaction92.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction92.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 92:
-                        _bigDictionaryTransaction93.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction93.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 93:
-                        _bigDictionaryTransaction94.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction94.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 94:
-                        _bigDictionaryTransaction95.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction95.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 95:
-                        _bigDictionaryTransaction96.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction96.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 96:
-                        _bigDictionaryTransaction97.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction97.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 97:
-                        _bigDictionaryTransaction98.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction98.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 98:
-                        _bigDictionaryTransaction99.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction99.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                     case 99:
-                        _bigDictionaryTransaction100.Add(id, new List<string>() { transaction });
+                        _bigDictionaryTransaction100.Add(id, new List<Tuple<string, string>>() { transaction });
                         break;
                 }
             }
@@ -1083,7 +1083,7 @@ namespace Xiropht_RemoteNode.Object
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public string GetTransactionPerId(float id, int transactionId)
+        public Tuple<string, string> GetTransactionPerId(float id, int transactionId)
         {
 
             long idDictionary = ContainsKey(id);
@@ -1293,7 +1293,7 @@ namespace Xiropht_RemoteNode.Object
                         return _bigDictionaryTransaction100[id][transactionId];
                 }
             }
-            return "WRONG";
+            return new Tuple<string, string>("WRONG", "WRONG");
         }
 
         /// <summary>

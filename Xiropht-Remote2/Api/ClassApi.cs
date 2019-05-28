@@ -664,18 +664,99 @@ namespace Xiropht_RemoteNode.Api
                                                     }
                                                     else
                                                     {
-                                                        string transaction = ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, idTransactionAskFromWallet);
-                                                        if (transaction == "WRONG")
+
+                                                        var tupleTransaction = ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, idTransactionAskFromWallet);
+
+                                                        if (tupleTransaction.Item1 != "WRONG")
                                                         {
-                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
+                                                            long getTransactionId = ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(tupleTransaction.Item1);
+
+                                                            if (getTransactionId != -1)
                                                             {
-                                                                _incomingConnectionStatus = false;
-                                                                return false;
+                                                                string transaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(getTransactionId);
+                                                                if (transaction != "WRONG")
+                                                                {
+                                                                    var dataTransactionSplit = transaction.Split(new[] { "-" }, StringSplitOptions.None);
+
+                                                                    if (tupleTransaction.Item2 == "SEND")
+                                                                    {
+                                                                        decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
+                                                                        decimal amount = 0; // Amount.
+                                                                        decimal fee = 0; // Fee.
+                                                                        string timestampRecv = dataTransactionSplit[6];
+                                                                        string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
+
+                                                                        var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" }, StringSplitOptions.None);
+
+                                                                        // Real crypted fee, amount sender.
+                                                                        string blockHeight = splitTransactionInformation[0];
+                                                                        string realFeeAmountSend = splitTransactionInformation[1];
+                                                                        string realFeeAmountRecv = splitTransactionInformation[2];
+                                                                        transaction = "SEND#" + amount + "#" + fee + "#" + timestamp + "#" + hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" + realFeeAmountRecv + "#";
+
+
+                                                                    }
+                                                                    else if (tupleTransaction.Item2 == "RECV")
+                                                                    {
+                                                                        decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
+                                                                        decimal amount = 0; // Amount.
+                                                                        decimal fee = 0; // Fee.
+                                                                        string timestampRecv = dataTransactionSplit[6];
+                                                                        string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
+
+                                                                        var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" }, StringSplitOptions.None);
+
+                                                                        // Real crypted fee, amount sender.
+                                                                        string blockHeight = splitTransactionInformation[0];
+                                                                        string realFeeAmountSend = splitTransactionInformation[1];
+                                                                        string realFeeAmountRecv = splitTransactionInformation[2];
+
+                                                                        transaction = "RECV#" + amount + "#" + fee + "#" + timestamp + "#" + hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" + realFeeAmountRecv + "#";
+
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        transaction = "WRONG";
+                                                                    }
+
+                                                                    if (transaction != "WRONG")
+                                                                    {
+                                                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletTransactionPerId + "|" + transaction).ConfigureAwait(false))
+                                                                        {
+                                                                            _incomingConnectionStatus = false;
+                                                                            return false;
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
+                                                                        {
+                                                                            _incomingConnectionStatus = false;
+                                                                            return false;
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
+                                                                    {
+                                                                        _incomingConnectionStatus = false;
+                                                                        return false;
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
+                                                                {
+                                                                    _incomingConnectionStatus = false;
+                                                                    return false;
+                                                                }
                                                             }
                                                         }
                                                         else
                                                         {
-                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletTransactionPerId + "|" + transaction).ConfigureAwait(false))
+                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                             {
                                                                 _incomingConnectionStatus = false;
                                                                 return false;
@@ -724,8 +805,8 @@ namespace Xiropht_RemoteNode.Api
                                                     }
                                                     else
                                                     {
-                                                        string transaction = ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, idAnonymityTransactionAskFromWallet);
-                                                        if (transaction == "WRONG")
+                                                        //string transaction = ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, idAnonymityTransactionAskFromWallet);
+                                                        /*if (transaction == "WRONG")
                                                         {
                                                             if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                             {
@@ -736,6 +817,103 @@ namespace Xiropht_RemoteNode.Api
                                                         else
                                                         {
                                                             if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletAnonymityTransactionPerId + "|" + transaction).ConfigureAwait(false))
+                                                            {
+                                                                _incomingConnectionStatus = false;
+                                                                return false;
+                                                            }
+                                                        }*/
+                                                        var tupleTransaction = ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, idAnonymityTransactionAskFromWallet);
+
+                                                        if (tupleTransaction.Item1 != "WRONG")
+                                                        {
+                                                            long getTransactionId = ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(tupleTransaction.Item1);
+
+                                                            if (getTransactionId != -1)
+                                                            {
+                                                                string transaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(getTransactionId);
+                                                                if (transaction != "WRONG")
+                                                                {
+                                                                    var dataTransactionSplit = transaction.Split(new[] { "-" }, StringSplitOptions.None);
+
+                                                                    if (tupleTransaction.Item2 == "SEND")
+                                                                    {
+                                                                        decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
+                                                                        decimal amount = 0; // Amount.
+                                                                        decimal fee = 0; // Fee.
+                                                                        string timestampRecv = dataTransactionSplit[6];
+                                                                        string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
+
+                                                                        var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" }, StringSplitOptions.None);
+
+                                                                        // Real crypted fee, amount sender.
+                                                                        string blockHeight = splitTransactionInformation[0];
+                                                                        string realFeeAmountSend = splitTransactionInformation[1];
+                                                                        string realFeeAmountRecv = splitTransactionInformation[2];
+                                                                        transaction = "SEND#" + amount + "#" + fee + "#" + timestamp + "#" + hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" + realFeeAmountRecv + "#";
+
+
+                                                                    }
+                                                                    else if (tupleTransaction.Item2 == "RECV")
+                                                                    {
+                                                                        decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
+                                                                        decimal amount = 0; // Amount.
+                                                                        decimal fee = 0; // Fee.
+                                                                        string timestampRecv = dataTransactionSplit[6];
+                                                                        string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
+
+                                                                        var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" }, StringSplitOptions.None);
+
+                                                                        // Real crypted fee, amount sender.
+                                                                        string blockHeight = splitTransactionInformation[0];
+                                                                        string realFeeAmountSend = splitTransactionInformation[1];
+                                                                        string realFeeAmountRecv = splitTransactionInformation[2];
+
+                                                                        transaction = "RECV#" + amount + "#" + fee + "#" + timestamp + "#" + hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" + realFeeAmountRecv + "#";
+
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        transaction = "WRONG";
+                                                                    }
+
+                                                                    if (transaction != "WRONG")
+                                                                    {
+                                                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletAnonymityTransactionPerId + "|" + transaction).ConfigureAwait(false))
+                                                                        {
+                                                                            _incomingConnectionStatus = false;
+                                                                            return false;
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
+                                                                        {
+                                                                            _incomingConnectionStatus = false;
+                                                                            return false;
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
+                                                                    {
+                                                                        _incomingConnectionStatus = false;
+                                                                        return false;
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
+                                                                {
+                                                                    _incomingConnectionStatus = false;
+                                                                    return false;
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                             {
                                                                 _incomingConnectionStatus = false;
                                                                 return false;
