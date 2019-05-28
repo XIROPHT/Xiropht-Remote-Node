@@ -375,7 +375,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     ClassRemoteNodeKey.DataTransactionRead = string.Empty;
                                                 }
 
-
                                                 if (long.TryParse(ClassRemoteNodeSync.TotalTransaction,
                                                     out var askTransaction))
                                                 {
@@ -390,7 +389,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                             {
                                                                 if (ClassRemoteNodeSync.ListOfTransaction.Count < askTransactionTmp)
                                                                 {
-                                                                    bool cancelTransaction = false;
                                                                     totalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count;
                                                                     long transactionIdAsked = ClassRemoteNodeSync.ListOfTransaction.Count; 
 
@@ -404,7 +402,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                                     ClassRemoteNodeCommand
                                                                                         .ClassRemoteNodeSendToSeedEnumeration
                                                                                         .RemoteAskTransactionPerRange + "|" +
-                                                                                    transactionIdAsked + "|" + MaxTransactionRange, Program.Certificate, false, true))
+                                                                                    transactionIdAsked.ToString("F0") + "|" + MaxTransactionRange, Program.Certificate, false, true))
                                                                             {
                                                                                 RemoteNodeObjectConnectionStatus = false;
                                                                             }
@@ -416,7 +414,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                                     ClassRemoteNodeCommand
                                                                                         .ClassRemoteNodeSendToSeedEnumeration
                                                                                         .RemoteAskTransactionPerId + "|" +
-                                                                                    transactionIdAsked, Program.Certificate, false, true))
+                                                                                    transactionIdAsked.ToString("F0"), Program.Certificate, false, true))
                                                                             {
                                                                                 RemoteNodeObjectConnectionStatus = false;
                                                                             }
@@ -429,18 +427,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                             break;
                                                                         }
 
-                                                                        if (!EnableTransactionRange)
+                                                                        if (ClassRemoteNodeSync.ListOfBlock.Count < int.Parse(ClassRemoteNodeSync.TotalBlockMined))
                                                                         {
-                                                                            await Task.Delay(1);
+                                                                            await Task.Delay(ClassUtils.GetRandomBetween(1, 100));
                                                                         }
                                                                         else
                                                                         {
-                                                                            await Task.Delay(MaxTransactionRange);
-                                                                        }
-                                                                        if (cancelTransaction)
-                                                                        {
-                                                                            RemoteNodeObjectConnectionStatus = false;
-                                                                            break;
+                                                                            await Task.Delay(1);
                                                                         }
                                                                     }
 

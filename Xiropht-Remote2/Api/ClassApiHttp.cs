@@ -46,10 +46,7 @@ namespace Xiropht_RemoteNode.Api
     public class ClassApiHttp
     {
         public static int PersonalRemoteNodeHttpPort;
-        public static bool UseSSL;
         public static bool IsBehindProxy;
-        public static string SSLPath;
-        public static X509Certificate ApiCertificateSSL;
         private static Thread ThreadListenApiHttpConnection;
         private static TcpListener ListenerApiHttpConnection;
         private static bool ListenApiHttpConnectionStatus;
@@ -59,21 +56,6 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         public static void StartApiHttpServer()
         {
-            if (UseSSL)
-            {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                try
-                {
-                    ApiCertificateSSL = X509Certificate.CreateFromCertFile(SSLPath);
-
-
-                }
-                catch(Exception error)
-                {
-                    Console.WriteLine("Cannot open certificate: " + SSLPath + " exception error: " + error.Message);
-                }
-            }
             ListenApiHttpConnectionStatus = true;
             if (PersonalRemoteNodeHttpPort <= 0) // Not selected or invalid
             {
@@ -205,77 +187,20 @@ namespace Xiropht_RemoteNode.Api
                 }
                 try
                 {
-                    if (!ClassApiHttp.UseSSL)
+
+                    while (_clientStatus)
                     {
-                        while (_clientStatus)
+                        try
                         {
-                            try
+                            byte[] buffer = new byte[ClassConnectorSetting.MaxNetworkPacketSize];
+                            using (NetworkStream clientHttpReader = new NetworkStream(_client.Client))
                             {
-                                byte[] buffer = new byte[ClassConnectorSetting.MaxNetworkPacketSize];
-                                using (NetworkStream clientHttpReader = new NetworkStream(_client.Client))
+                                using (var bufferedStreamNetwork = new BufferedStream(clientHttpReader, ClassConnectorSetting.MaxNetworkPacketSize))
                                 {
-                                    using (var bufferedStreamNetwork = new BufferedStream(clientHttpReader, ClassConnectorSetting.MaxNetworkPacketSize))
-                                    {
-                                        int received = await bufferedStreamNetwork.ReadAsync(buffer, 0, buffer.Length);
-                                        if (received > 0)
-                                        {
-                                            string packet = Encoding.UTF8.GetString(buffer, 0, received);
-                                            try
-                                            {
-                                                if (!GetAndCheckForwardedIp(packet))
-                                                {
-                                                    break;
-                                                }
-                                            }
-                                            catch
-                                            {
-
-                                            }
-
-                                            packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
-
-                                            packet = packet.Replace("/", "");
-                                            packet = packet.Replace(" ", "");
-                                            ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - " + packet, 6, 2);
-                                            await HandlePacketHttpAsync(packet);
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            totalWhile++;
-                                        }
-                                        if (totalWhile >= 8)
-                                        {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            catch (Exception error)
-                            {
-                                Console.WriteLine("HTTP API - exception error: " + error.Message);
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        _clientSslStream = new SslStream(_client.GetStream(), false);
-                        _clientSslStream.AuthenticateAsServer(ClassApiHttp.ApiCertificateSSL, false, SslProtocols.Tls12, true);
-                        ClassLog.Log("HTTPS API -  SSL Authentification succeed for client IP: "+_ip, 6, 2);
-
-                        while (_clientStatus)
-                        {
-                            try
-                            {
-                                byte[] buffer = new byte[8192];
-                                int received = 0;
-
-                                while ((received = await _clientSslStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                                {
+                                    int received = await bufferedStreamNetwork.ReadAsync(buffer, 0, buffer.Length);
                                     if (received > 0)
                                     {
-                                        string packet = Encoding.UTF8.GetString(buffer);
+                                        string packet = Encoding.UTF8.GetString(buffer, 0, received);
                                         try
                                         {
                                             if (!GetAndCheckForwardedIp(packet))
@@ -287,28 +212,34 @@ namespace Xiropht_RemoteNode.Api
                                         {
 
                                         }
+
                                         packet = ClassUtilsNode.GetStringBetween(packet, "GET", "HTTP");
+
                                         packet = packet.Replace("/", "");
                                         packet = packet.Replace(" ", "");
-                                        ClassLog.Log("HTTPS API - packet received from IP: " + _ip + " - " + packet, 6, 2);
+                                        ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - " + packet, 6, 2);
                                         await HandlePacketHttpAsync(packet);
                                         break;
                                     }
                                     else
                                     {
+                                        totalWhile++;
+                                    }
+                                    if (totalWhile >= 8)
+                                    {
                                         break;
                                     }
                                 }
                             }
-                            catch (Exception error)
-                            {
-                                Console.WriteLine("HTTPS API - exception error: " + error.Message);
-                                break;
-                            }
+                        }
+                        catch
+                        {
+                            break;
                         }
                     }
+
                 }
-                catch 
+                catch
                 {
                 }
 
@@ -669,23 +600,15 @@ namespace Xiropht_RemoteNode.Api
         {
             try
             {
-                var bytePacket = Encoding.UTF8.GetBytes(packet);
-                if (!ClassApiHttp.UseSSL)
+                using (var networkStream = new NetworkStream(_client.Client))
                 {
-
-                    using (var networkStream = new NetworkStream(_client.Client))
+                    using (var bufferedStreamNetwork = new BufferedStream(networkStream, ClassConnectorSetting.MaxNetworkPacketSize))
                     {
-                        using (var bufferedStreamNetwork = new BufferedStream(networkStream, ClassConnectorSetting.MaxNetworkPacketSize))
-                        {
-                            await bufferedStreamNetwork.WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
-                            await bufferedStreamNetwork.FlushAsync().ConfigureAwait(false);
-                        }
+                        var bytePacket = Encoding.UTF8.GetBytes(packet);
+
+                        await bufferedStreamNetwork.WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
+                        await bufferedStreamNetwork.FlushAsync().ConfigureAwait(false);
                     }
-                }
-                else
-                {
-                    await _clientSslStream.WriteAsync(bytePacket, 0, bytePacket.Length).ConfigureAwait(false);
-                    await _clientSslStream.FlushAsync().ConfigureAwait(false);
                 }
             }
             catch

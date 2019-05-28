@@ -179,11 +179,14 @@ namespace Xiropht_RemoteNode.Api
         private int _totalPacketPerSecond;
         private bool disposed;
         private long _lastPacketReceived;
+        private string MalformedPacket;
+
 
         public ClassApiObjectConnection(TcpClient clientTmp, string ipTmp)
         {
             _client = clientTmp;
             _ip = ipTmp;
+            MalformedPacket = string.Empty;
         }
 
         ~ClassApiObjectConnection()
@@ -346,12 +349,18 @@ namespace Xiropht_RemoteNode.Api
                                                 bufferPacket.packet = Encoding.UTF8.GetString(bufferPacket.buffer, 0, received);
 
 
+
                                                 _totalPacketPerSecond++;
                                                 _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
 
 
                                                 if (bufferPacket.packet.Contains("*"))
                                                 {
+                                                    if (!string.IsNullOrEmpty(MalformedPacket))
+                                                    {
+                                                        bufferPacket.packet = MalformedPacket + bufferPacket.packet;
+                                                        MalformedPacket = string.Empty;
+                                                    }
                                                     var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
                                                     if (splitPacket.Length > 1)
                                                     {
@@ -409,16 +418,16 @@ namespace Xiropht_RemoteNode.Api
 
                                                     ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
 
-                                                    if (_incomingConnectionStatus)
+                                                    if (MalformedPacket.Length >= int.MaxValue || (long)(MalformedPacket.Length + bufferPacket.packet.Length) >= int.MaxValue)
                                                     {
-                                                        await Task.Factory.StartNew(async delegate
+                                                        MalformedPacket = string.Empty;
+                                                    }
+                                                    else
+                                                    {
+                                                        if (_incomingConnectionStatus)
                                                         {
-                                                            if (!await HandleIncomingPacketAsync(bufferPacket.packet))
-                                                            {
-                                                                ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                                _incomingConnectionStatus = false;
-                                                            }
-                                                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                                                            MalformedPacket += bufferPacket.packet;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -457,6 +466,7 @@ namespace Xiropht_RemoteNode.Api
 
         private void StopClientApiConnection()
         {
+            MalformedPacket = string.Empty;
             _client?.Close();
             _client?.Dispose();
         }

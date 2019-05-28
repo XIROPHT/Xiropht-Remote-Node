@@ -180,14 +180,6 @@ namespace Xiropht_RemoteNode
                             portChoosed = Console.ReadLine();
                         }
                     }
-                    Console.WriteLine("Do you want to enable HTTPS mode ? [Y/N]");
-                    answer = Console.ReadLine();
-                    if (answer == "Y" || answer == "y")
-                    {
-                        ClassApiHttp.UseSSL = true;
-                        Console.WriteLine("Write your ssl certificate path, including the file name [Only PFX certificate file is compatible]: ");
-                        ClassApiHttp.SSLPath = Console.ReadLine();
-                    }
                 }
                 SaveConfigFile();
 
@@ -339,22 +331,6 @@ namespace Xiropht_RemoteNode
                 {
                     writer.WriteLine("ENABLE_API_HTTP=N");
                 }
-                if (ClassApiHttp.UseSSL)
-                {
-                    writer.WriteLine("ENABLE_HTTPS_API_MODE=Y");
-                }
-                else
-                {
-                    writer.WriteLine("ENABLE_HTTPS_API_MODE=N");
-                }
-                if (!string.IsNullOrEmpty(ClassApiHttp.SSLPath))
-                {
-                    writer.WriteLine("HTTPS_CERTIFICATE_PATH=" + ClassApiHttp.SSLPath);
-                }
-                else
-                {
-                    writer.WriteLine("HTTPS_CERTIFICATE_PATH=");
-                }
                 writer.WriteLine("API_HTTP_PORT=" + ClassApiHttp.PersonalRemoteNodeHttpPort);
                 writer.WriteLine("LOG_LEVEL=" + LogLevel);
                 writer.WriteLine("//write log option should be used only for analysis, this system can hanging your remote nodes in production mode.");
@@ -406,18 +382,6 @@ namespace Xiropht_RemoteNode
                     if (line.Contains("API_HTTP_PORT="))
                     {
                         int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
-                    }
-                    if (line.Contains("ENABLE_HTTPS_API_MODE="))
-                    {
-                        string option = line.Replace("ENABLE_HTTPS_API_MODE=", "");
-                        if (option.ToLower() == "y")
-                        {
-                            ClassApiHttp.UseSSL = true;
-                        }
-                    }
-                    if (line.Contains("HTTPS_CERTIFICATE_PATH="))
-                    {
-                        ClassApiHttp.SSLPath = line.Replace("HTTPS_CERTIFICATE_PATH=", "");
                     }
                     if (line.Contains("LOG_LEVEL="))
                     {

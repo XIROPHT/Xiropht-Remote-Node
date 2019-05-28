@@ -9,6 +9,20 @@ using Xiropht_RemoteNode.RemoteNode;
 
 namespace Xiropht_RemoteNode.Command
 {
+    public class ClassCommandLineEnumeration
+    {
+        public const string CommandLineHelp = "help";
+        public const string CommandLineStatus = "status";
+        public const string CommandLineTransaction = "transaction";
+        public const string CommandLineBlock = "block";
+        public const string CommandLineLog = "log";
+        public const string CommandLineClearSync = "clearsync";
+        public const string CommandLineFilterList = "filterlist";
+        public const string CommandLineBanList = "banlist";
+        public const string CommandLineSave = "save";
+        public const string CommandLineExit = "exit";
+    }
+
     public class ClassCommandLine
     {
         public static bool CommandLine(string command)
@@ -18,19 +32,19 @@ namespace Xiropht_RemoteNode.Command
             {
                 switch (splitCommand[0])
                 {
-                    case "help":
+                    case ClassCommandLineEnumeration.CommandLineHelp:
                         Console.WriteLine("Command list: ");
-                        Console.WriteLine("status -> Get Network status of your node");
-                        Console.WriteLine("transaction -> Get the number of transaction(s) sync.");
-                        Console.WriteLine("block -> Get the number of block(s) sync.");
-                        Console.WriteLine("log -> Can set level of log to show: (default) log 0 max level 4");
-                        Console.WriteLine("clearsync -> Clear the sync of the remote node.");
-                        Console.WriteLine("filterlist -> show every incoming connections ip's and their status.");
-                        Console.WriteLine("banlist -> show every incoming connections ip's banned.");
-                        Console.WriteLine("save -> Save sync.");
-                        Console.WriteLine("exit -> Save sync and Exit the node.");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineStatus + " -> Get Network status of your node");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineTransaction + " -> Get the number of transaction(s) sync.");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineBlock + " -> Get the number of block(s) sync.");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineLog + " -> Can set level of log to show: (default) log 0 max level 4");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineClearSync + " -> Clear the sync of the remote node.");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineFilterList + " -> show every incoming connections ip's and their status.");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineBanList + " -> show every incoming connections ip's banned.");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineSave + " -> Save sync.");
+                        Console.WriteLine(ClassCommandLineEnumeration.CommandLineExit + " -> Save sync and Exit the node.");
                         break;
-                    case "status":
+                    case ClassCommandLineEnumeration.CommandLineStatus:
                         Console.WriteLine("Total Transaction Sync: " + (ClassRemoteNodeSync.ListOfTransaction.Count));
                         Console.WriteLine("Total Transaction in the Blockchain: " + ClassRemoteNodeSync.TotalTransaction);
                         long totalTransactionSortedPerWallet = ClassRemoteNodeSync.ListTransactionPerWallet.Count;
@@ -46,8 +60,6 @@ namespace Xiropht_RemoteNode.Command
                         {
                             Console.WriteLine("Current Mining Hashrate: " + ClassUtils.GetTranslateHashrate(ClassRemoteNodeSync.CurrentHashrate.Replace(".", ","), 2).Replace(",", "."), Program.GlobalCultureInfo);
                         }
-
-                        //var tmp = decimal.Parse(ClassUtils.GetTranslateBigNumber(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ",")), NumberStyles.Any, Program.GlobalCultureInfo);
                         Console.WriteLine("Total Coin Max Supply: " + ClassRemoteNodeSync.CoinMaxSupply, Program.GlobalCultureInfo);
 
                         Console.WriteLine("Total Coin Circulating: " + ClassRemoteNodeSync.CoinCirculating, Program.GlobalCultureInfo);
@@ -76,16 +88,16 @@ namespace Xiropht_RemoteNode.Command
                             Console.WriteLine("Hash Block Key: " + ClassRemoteNodeSync.HashBlockList);
                         
                         break;
-                    case "transaction":
+                    case ClassCommandLineEnumeration.CommandLineTransaction:
                         Console.WriteLine("Total Transaction Sync: " + (ClassRemoteNodeSync.ListOfTransaction.Count));
                         Console.WriteLine("Total Transaction in the Blockchain: " + ClassRemoteNodeSync.TotalTransaction);
                         break;
-                    case "block":
+                    case ClassCommandLineEnumeration.CommandLineBlock:
                         Console.WriteLine("Total Block(s) Sync: " + (ClassRemoteNodeSync.ListOfBlock.Count));
                         Console.WriteLine("Total Block(s) mined in the Blockchain: " + ClassRemoteNodeSync.TotalBlockMined);
                         Console.WriteLine("Total Block(s) left to mining: " + ClassRemoteNodeSync.CurrentBlockLeft);
                         break;
-                    case "log":
+                    case ClassCommandLineEnumeration.CommandLineLog:
                         if (!string.IsNullOrEmpty(splitCommand[1]))
                         {
                             if (int.TryParse(splitCommand[1], out var logLevel))
@@ -111,7 +123,7 @@ namespace Xiropht_RemoteNode.Command
                             Console.WriteLine("Empty/Missing argument.");
                         }
                         break;
-                    case "clearsync":
+                    case ClassCommandLineEnumeration.CommandLineClearSync:
                         ClassRemoteNodeSync.ListOfBlock.Clear();
                         ClassRemoteNodeSync.ListOfTransaction.Clear();
                         ClassRemoteNodeSync.ListOfTransactionHash.Clear();
@@ -131,7 +143,7 @@ namespace Xiropht_RemoteNode.Command
                         ClassRemoteNodeKey.StartUpdateHashTransactionList();
                         ClassRemoteNodeKey.StartUpdateTrustedKey();
                         break;
-                    case "filterlist":
+                    case ClassCommandLineEnumeration.CommandLineFilterList:
                         if (ClassApiBan.ListFilterObjects.Count > 0)
                         {
                             foreach (var objectBan in ClassApiBan.ListFilterObjects)
@@ -152,7 +164,7 @@ namespace Xiropht_RemoteNode.Command
                             Console.WriteLine("Their is any incoming ip on the list.");
                         }
                         break;
-                    case "banlist":
+                    case ClassCommandLineEnumeration.CommandLineBanList:
                         if (ClassApiBan.ListFilterObjects.Count > 0)
                         {
                             foreach(var objectBan in ClassApiBan.ListFilterObjects)
@@ -169,7 +181,7 @@ namespace Xiropht_RemoteNode.Command
                             Console.WriteLine("Their is any incoming ip on the list.");
                         }
                         break;
-                    case "save":
+                    case ClassCommandLineEnumeration.CommandLineSave:
                         Console.WriteLine("Stop auto save system. Start manual save sync..");
                         while (ClassRemoteNodeSave.InSaveTransactionDatabase)
                         {
@@ -190,7 +202,7 @@ namespace Xiropht_RemoteNode.Command
                         ClassRemoteNodeSave.SaveTransaction();
                         ClassRemoteNodeSave.SaveBlock();
                         break;
-                    case "exit":
+                    case ClassCommandLineEnumeration.CommandLineExit:
                         Program.Closed = true;
                         Console.WriteLine("Disable auto reconnect remote node..");
                         ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
