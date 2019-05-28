@@ -1,5 +1,5 @@
 # Xiropht-Remote-Node
-<h3>Xiropht Remote Node version 0.2.7.0R2 compatible with Windows with Netframework 4.6.1 or higher or other OS like Linux who need to use Mono.</h3>
+<h3>Xiropht Remote Node version 0.2.7.1R compatible with Windows with Netframework 4.6.1 or higher or other OS like Linux who need to use Mono.</h3>
 
 **In production, we suggest to compile source in Release Mode to disable log files and debug mode.**
 
@@ -19,17 +19,17 @@ https://github.com/XIROPHT/Xiropht-Remote-Node/wiki
 
 On Linux OS (Work also Raspbian OS for Raspberry):
 
-- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.7.0R2/Xiropht-RemoteNode-0.2.7.0R2-Linux-64bit.zip
+- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.7.1R/Xiropht-RemoteNode-0.2.7.1R-Linux-64bit.zip
 
 or:
 
-- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.7.0R2/Xiropht-RemoteNode-0.2.7.0R2-Raspberry.zip
+- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.7.1R/Xiropht-RemoteNode-0.2.7.1R-Raspberry.zip
 
-- sudo unzip Xiropht-RemoteNode-0.2.7.0R2-Linux.zip
+- sudo unzip Xiropht-RemoteNode-0.2.7.1R-Linux.zip
 
 or:
 
-- sudo unzip Xiropht-RemoteNode-0.2.7.0R2-Raspberry.zip
+- sudo unzip Xiropht-RemoteNode-0.2.7.1R-Raspberry.zip
 
 - sudo chmod 0777 Xiropht-RemoteNode-Linux or Xiropht-RemoteNode-Raspberry
 
