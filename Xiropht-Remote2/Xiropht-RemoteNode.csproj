@@ -60,6 +60,7 @@
     <Compile Include="Api\ClassApi.cs" />
     <Compile Include="Api\ClassApiHttp.cs" />
     <Compile Include="Api\ClassApiBan.cs" />
+    <Compile Include="Api\ClassApiTransaction.cs" />
     <Compile Include="Object\BigDictionaryTransaction.cs" />
     <Compile Include="Object\BigDictionaryTransactionHash.cs" />
     <Compile Include="Object\BigDictionaryTransactionSortedPerWallet.cs" />
