@@ -124,10 +124,10 @@ namespace Xiropht_RemoteNode.Command
                         }
                         break;
                     case ClassCommandLineEnumeration.CommandLineClearSync:
-                        ClassRemoteNodeSync.ListOfBlock.Clear();
                         ClassRemoteNodeSync.ListOfTransaction.Clear();
                         ClassRemoteNodeSync.ListOfTransactionHash.Clear();
                         ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
+                        ClassRemoteNodeSync.ListOfBlock.Clear();
                         ClassRemoteNodeSync.ListOfBlockHash.Clear();
                         ClassRemoteNodeSave.ClearBlockSyncSave();
                         ClassRemoteNodeSave.ClearTransactionSyncSave();
