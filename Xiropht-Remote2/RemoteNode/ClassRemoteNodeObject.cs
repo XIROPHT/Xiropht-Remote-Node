@@ -863,13 +863,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendNumberOfTransaction: // Receive total number of transaction information.
                         RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.TotalTransaction = packetSplit[1].Replace("SEND-NUMBER-OF-TRANSACTION", "");
-                        if (long.Parse(ClassRemoteNodeSync.TotalTransaction) <
-                            ClassRemoteNodeSync.ListOfTransaction.Count && !Program.RemoteNodeObjectTransaction.RemoteNodeObjectInSyncTransaction)
-                        {
-                            ClassRemoteNodeSync.ListOfTransaction.Clear();
-                            ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
-                            ClassRemoteNodeSave.ClearTransactionSyncSave();
-                        }
 
                         ClassLog.Log("Total Transaction: " + packetSplit[1].Replace("SEND-NUMBER-OF-TRANSACTION", ""),
                             2, 2);
