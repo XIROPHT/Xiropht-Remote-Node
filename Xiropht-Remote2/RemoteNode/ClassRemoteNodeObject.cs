@@ -285,68 +285,48 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     var totalBlockSaved = ClassRemoteNodeSync.ListOfBlock.Count;
                                                     for (var i = 0; i < askBlock; i++)
                                                     {
-                                                        totalBlockSaved = ClassRemoteNodeSync.ListOfBlock.Count;
-                                                        if (int.TryParse(ClassRemoteNodeSync.TotalBlockMined, out totalBlockMined))
+                                                        var cancelBlock = false;
+                                                        var blockIdAsked = totalBlockSaved + i;
+                                                        RemoteNodeObjectInReceiveBlock = true;
+                                                        if (!await RemoteNodeObjectTcpClient
+                                                            .SendPacketToSeedNodeAsync(
+                                                                ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration
+                                                                    .RemoteAskBlockPerId + "|" + blockIdAsked,
+                                                                Program.Certificate,
+                                                                false, true))
                                                         {
-                                                            if (totalBlockSaved < totalBlockMined)
-                                                            {
-                                                                var cancelBlock = false;
-                                                                var blockIdAsked = totalBlockSaved + i;
-                                                                RemoteNodeObjectInReceiveBlock = true;
-                                                                if (!await RemoteNodeObjectTcpClient
-                                                                    .SendPacketToSeedNodeAsync(
-                                                                        ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration
-                                                                            .RemoteAskBlockPerId + "|" + blockIdAsked,
-                                                                        Program.Certificate,
-                                                                        false, true))
-                                                                {
-                                                                    RemoteNodeObjectInReceiveBlock = false;
-                                                                    RemoteNodeObjectConnectionStatus = false;
-                                                                    break;
-                                                                }
-
-                                                                while (RemoteNodeObjectInReceiveBlock)
-                                                                {
-                                                                    var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectBlock
-                                                                        .RemoteNodeObjectLastPacketReceived;
-                                                                    var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                                                                    if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeSyncResponse < currentTimestamp)
-                                                                    {
-                                                                        ClassLog.Log(
-                                                                            "Sync object block mined, take too much time to receive a block, cancel and retry now.",
-                                                                            2, 3);
-                                                                        cancelBlock = true;
-                                                                        RemoteNodeObjectInSyncBlock = false;
-                                                                        RemoteNodeObjectInReceiveBlock = false;
-                                                                        break;
-                                                                    }
-
-                                                                    if (!RemoteNodeObjectConnectionStatus) break;
-
-                                                                    await Task.Delay(1);
-                                                                }
-
-                                                                if (cancelBlock)
-                                                                {
-                                                                    RemoteNodeObjectInSyncBlock = false;
-                                                                    RemoteNodeObjectInReceiveBlock = false;
-                                                                    i = askBlock;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-
-                                                                if (totalBlockSaved > totalBlockMined + 1)
-                                                                {
-                                                                    ClassLog.Log("Too much block, clean sync: ", 2, 3);
-                                                                    ClassRemoteNodeSync.ListOfBlock.Clear();
-                                                                    ClassRemoteNodeSync.ListOfBlockHash.Clear();
-                                                                    ClassRemoteNodeKey.DataBlockRead = string.Empty;
-                                                                }
-
-                                                            }
+                                                            RemoteNodeObjectInReceiveBlock = false;
+                                                            RemoteNodeObjectConnectionStatus = false;
+                                                            break;
                                                         }
 
+                                                        while (RemoteNodeObjectInReceiveBlock)
+                                                        {
+                                                            var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectBlock
+                                                                .RemoteNodeObjectLastPacketReceived;
+                                                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeSyncResponse < currentTimestamp)
+                                                            {
+                                                                ClassLog.Log(
+                                                                    "Sync object block mined, take too much time to receive a block, cancel and retry now.",
+                                                                    2, 3);
+                                                                cancelBlock = true;
+                                                                RemoteNodeObjectInSyncBlock = false;
+                                                                RemoteNodeObjectInReceiveBlock = false;
+                                                                break;
+                                                            }
+
+                                                            if (!RemoteNodeObjectConnectionStatus) break;
+
+                                                            await Task.Delay(1);
+                                                        }
+
+                                                        if (cancelBlock)
+                                                        {
+                                                            RemoteNodeObjectInSyncBlock = false;
+                                                            RemoteNodeObjectInReceiveBlock = false;
+                                                            i = askBlock;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -393,7 +373,14 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 if (long.TryParse(ClassRemoteNodeSync.TotalTransaction,
                                                     out var totalTransaction))
                                                 {
-
+                                                    if (ClassRemoteNodeSync.ListOfTransaction.Count > totalTransaction+1)
+                                                    {
+                                                        ClassLog.Log("Too much transaction, clean sync: ", 2, 3);
+                                                        ClassRemoteNodeSync.ListOfTransaction.Clear();
+                                                        ClassRemoteNodeSync.ListOfTransactionHash.Clear();
+                                                        ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
+                                                        ClassRemoteNodeKey.DataTransactionRead = string.Empty;
+                                                    }
 
                                                     if (long.TryParse(ClassRemoteNodeSync.TotalTransaction,
                                                         out var askTransaction))
@@ -405,7 +392,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                         {
                                                             for (long i = totalTransactionSaved; i < askTransaction; i++)
                                                             {
-
                                                                 if (long.TryParse(ClassRemoteNodeSync.TotalTransaction, out var askTransactionTmp))
                                                                 {
                                                                     if (ClassRemoteNodeSync.ListOfTransaction.Count < askTransactionTmp)
@@ -457,23 +443,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                                 await Task.Delay(1);
                                                                             }
                                                                         }
+
                                                                     }
-                                                                }
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            if (long.TryParse(ClassRemoteNodeSync.TotalTransaction, out totalTransaction))
-                                                            {
-                                                                if (totalTransactionSaved > totalTransaction + 1)
-                                                                {
-                                                                    ClassLog.Log("Too much transaction, clean sync: ", 2, 3);
-                                                                    ClassRemoteNodeSync.ListOfTransaction.Clear();
-                                                                    ClassRemoteNodeSync.ListOfTransactionHash.Clear();
-                                                                    ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
-                                                                    ClassRemoteNodeKey.DataTransactionRead = string.Empty;
-                                                                    StopConnection();
-                                                                    break;
                                                                 }
                                                             }
                                                         }
