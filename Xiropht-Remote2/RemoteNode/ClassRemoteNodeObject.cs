@@ -273,7 +273,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 if (int.TryParse(ClassRemoteNodeSync.TotalBlockMined,
                                                     out var totalBlockMined))
                                                 {
-                                                    if (ClassRemoteNodeSync.ListOfBlock.Count > totalBlockMined+1)
+                                                    if (ClassRemoteNodeSync.ListOfBlock.Count > totalBlockMined + 1)
                                                     {
                                                         ClassLog.Log("Too much block, clean sync: ", 2, 3);
                                                         ClassRemoteNodeSync.ListOfBlock.Clear();
@@ -373,14 +373,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 if (long.TryParse(ClassRemoteNodeSync.TotalTransaction,
                                                     out var totalTransaction))
                                                 {
-                                                    if (ClassRemoteNodeSync.ListOfTransaction.Count > totalTransaction+1)
-                                                    {
-                                                        ClassLog.Log("Too much transaction, clean sync: ", 2, 3);
-                                                        ClassRemoteNodeSync.ListOfTransaction.Clear();
-                                                        ClassRemoteNodeSync.ListOfTransactionHash.Clear();
-                                                        ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
-                                                        ClassRemoteNodeKey.DataTransactionRead = string.Empty;
-                                                    }
+
 
                                                     if (long.TryParse(ClassRemoteNodeSync.TotalTransaction,
                                                         out var askTransaction))
@@ -392,6 +385,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                         {
                                                             for (long i = totalTransactionSaved; i < askTransaction; i++)
                                                             {
+
                                                                 if (long.TryParse(ClassRemoteNodeSync.TotalTransaction, out var askTransactionTmp))
                                                                 {
                                                                     if (ClassRemoteNodeSync.ListOfTransaction.Count < askTransactionTmp)
@@ -443,8 +437,23 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                                 await Task.Delay(1);
                                                                             }
                                                                         }
-
                                                                     }
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if (long.TryParse(ClassRemoteNodeSync.TotalTransaction, out totalTransaction))
+                                                            {
+                                                                if (totalTransactionSaved > totalTransaction + 1)
+                                                                {
+                                                                    ClassLog.Log("Too much transaction, clean sync: ", 2, 3);
+                                                                    ClassRemoteNodeSync.ListOfTransaction.Clear();
+                                                                    ClassRemoteNodeSync.ListOfTransactionHash.Clear();
+                                                                    ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
+                                                                    ClassRemoteNodeKey.DataTransactionRead = string.Empty;
+                                                                    StopConnection();
+                                                                    break;
                                                                 }
                                                             }
                                                         }
