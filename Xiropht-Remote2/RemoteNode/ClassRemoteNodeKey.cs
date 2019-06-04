@@ -109,7 +109,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                 try
                 {
 
-                    //ClassRemoteNodeSync.HashBlockList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(String.Empty, ClassRemoteNodeSync.ListOfBlock.Values));
                     string blockBLock = string.Empty;
                     string schema = ClassRemoteNodeSync.SchemaHashBlock;
 

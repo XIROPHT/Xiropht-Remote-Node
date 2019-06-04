@@ -124,24 +124,33 @@ namespace Xiropht_RemoteNode.Command
                         }
                         break;
                     case ClassCommandLineEnumeration.CommandLineClearSync:
-                        ClassRemoteNodeSync.ListOfTransaction.Clear();
-                        ClassRemoteNodeSync.ListOfTransactionHash.Clear();
-                        ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
-                        ClassRemoteNodeSync.ListOfBlock.Clear();
-                        ClassRemoteNodeSync.ListOfBlockHash.Clear();
-                        ClassRemoteNodeSave.ClearBlockSyncSave();
-                        ClassRemoteNodeSave.ClearTransactionSyncSave();
-                        ClassRemoteNodeKey.DataBlockRead = string.Empty;
-                        ClassRemoteNodeKey.DataTransactionRead = string.Empty;
-                        ClassRemoteNodeSave.TotalBlockSaved = 0;
-                        ClassRemoteNodeSave.TotalTransactionSaved = 0;
-                        ClassRemoteNodeSave.DataTransactionSaved = string.Empty;
-                        ClassRemoteNodeSave.DataBlockSaved = string.Empty;
+                        if (Program.RemoteNodeObjectTransaction.RemoteNodeObjectInSyncTransaction || Program.RemoteNodeObjectBlock.RemoteNodeObjectInSyncBlock)
+                        {
+                            Console.WriteLine("Cannot clean remote node sync, your remote node is currently on sync.");
+                            Console.WriteLine("If you absolutly want to clear your sync, close the remote node, remove the Blockchain folder and restart.");
+                        }
+                        else
+                        {
+                            ClassRemoteNodeSync.ListOfTransaction.Clear();
+                            ClassRemoteNodeSync.ListOfTransactionHash.Clear();
+                            ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
+                            ClassRemoteNodeSync.ListOfBlock.Clear();
+                            ClassRemoteNodeSync.ListOfBlockHash.Clear();
+                            ClassRemoteNodeSave.ClearBlockSyncSave();
+                            ClassRemoteNodeSave.ClearTransactionSyncSave();
+                            ClassRemoteNodeKey.DataBlockRead = string.Empty;
+                            ClassRemoteNodeKey.DataTransactionRead = string.Empty;
+                            ClassRemoteNodeSave.TotalBlockSaved = 0;
+                            ClassRemoteNodeSave.TotalTransactionSaved = 0;
+                            ClassRemoteNodeSave.DataTransactionSaved = string.Empty;
+                            ClassRemoteNodeSave.DataBlockSaved = string.Empty;
 
 
-                        Console.WriteLine("Clear finish, restart sync..");
-                        ClassRemoteNodeKey.StartUpdateHashTransactionList();
-                        ClassRemoteNodeKey.StartUpdateTrustedKey();
+                            Console.WriteLine("Clear finish, restart sync..");
+                            ClassRemoteNodeKey.StartUpdateHashTransactionList();
+                            ClassRemoteNodeKey.StartUpdateHashBlockList();
+                            ClassRemoteNodeKey.StartUpdateTrustedKey();
+                        }
                         break;
                     case ClassCommandLineEnumeration.CommandLineFilterList:
                         if (ClassApiBan.ListFilterObjects.Count > 0)
