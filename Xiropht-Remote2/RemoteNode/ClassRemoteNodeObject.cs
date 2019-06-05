@@ -159,7 +159,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 RemoteNodeObjectThreadStatus = false;
                                 break;
                             }
-                            var packetReceived = await RemoteNodeObjectTcpClient.ReceivePacketFromSeedNodeAsync(Program.Certificate, false, true).ConfigureAwait(false);
+                            var packetReceived = await RemoteNodeObjectTcpClient.ReceivePacketFromSeedNodeAsync(Program.Certificate, false, true);
 
 
                             if (packetReceived == ClassSeedNodeStatus.SeedError)
@@ -190,7 +190,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                         break;
                                                     }
 
-                                                    await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetRecv); }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                                     RemoteNodeHandlePacketNetworkAsync(packetRecv);
                                                 }
                                 }
                                 else
@@ -205,7 +205,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", "")); }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                    RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", ""));
 
                                 }
                             }
@@ -221,7 +221,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
 
-                                await Task.Factory.StartNew(() => { RemoteNodeHandlePacketNetworkAsync(packetReceived); }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current).ConfigureAwait(false);
+                                 RemoteNodeHandlePacketNetworkAsync(packetReceived);
 
                             }
                         }
