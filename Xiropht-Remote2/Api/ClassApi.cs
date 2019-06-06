@@ -342,44 +342,43 @@ namespace Xiropht_RemoteNode.Api
                                     {
                                         int received = 0;
 
-                                        while ((received = await bufferedStreamNetwork.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length)) > 0)
+                                        using (CancellationTokenSource cancelListen = new CancellationTokenSource(ClassConnectorSetting.MaxTimeoutConnect))
                                         {
-                                            if (received > 0)
+                                            while ((received = await bufferedStreamNetwork.ReadAsync(bufferPacket.buffer, 0, bufferPacket.buffer.Length)) > 0)
                                             {
-                                                bufferPacket.packet = Encoding.UTF8.GetString(bufferPacket.buffer, 0, received);
-
-
-
-                                                _totalPacketPerSecond++;
-                                                _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
-
-
-                                                if (bufferPacket.packet.Contains("*"))
+                                                if (received > 0)
                                                 {
-                                                    if (!string.IsNullOrEmpty(MalformedPacket))
+                                                    bufferPacket.packet = Encoding.UTF8.GetString(bufferPacket.buffer, 0, received);
+
+
+
+                                                    _totalPacketPerSecond++;
+                                                    _lastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
+
+
+                                                    if (bufferPacket.packet.Contains("*"))
                                                     {
-                                                        bufferPacket.packet = MalformedPacket + bufferPacket.packet;
-                                                        MalformedPacket = string.Empty;
-                                                    }
-                                                    var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
-                                                    if (splitPacket.Length > 1)
-                                                    {
-                                                        foreach (var packetMerged in splitPacket)
+                                                        if (!string.IsNullOrEmpty(MalformedPacket))
                                                         {
-                                                            if (_incomingConnectionStatus)
+                                                            bufferPacket.packet = MalformedPacket + bufferPacket.packet;
+                                                            MalformedPacket = string.Empty;
+                                                        }
+                                                        var splitPacket = bufferPacket.packet.Split(new[] { "*" }, StringSplitOptions.None);
+                                                        if (splitPacket.Length > 1)
+                                                        {
+                                                            foreach (var packetMerged in splitPacket)
                                                             {
-                                                                if (packetMerged != null)
+                                                                if (_incomingConnectionStatus)
                                                                 {
-                                                                    if (!string.IsNullOrEmpty(packetMerged))
+                                                                    if (packetMerged != null)
                                                                     {
-                                                                        if (packetMerged.Length > 1)
+                                                                        if (!string.IsNullOrEmpty(packetMerged))
                                                                         {
-
-                                                                            var packetReplace = packetMerged.Replace("*", "");
-                                                                            ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
-
-                                                                            await Task.Factory.StartNew(async delegate
+                                                                            if (packetMerged.Length > 1)
                                                                             {
+
+                                                                                var packetReplace = packetMerged.Replace("*", "");
+                                                                                ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
                                                                                 if (_incomingConnectionStatus)
                                                                                 {
                                                                                     if (!await HandleIncomingPacketAsync(packetReplace))
@@ -388,45 +387,42 @@ namespace Xiropht_RemoteNode.Api
                                                                                         _incomingConnectionStatus = false;
                                                                                     }
                                                                                 }
-                                                                            }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                                                                            }
                                                                         }
                                                                     }
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if (_incomingConnectionStatus)
+                                                            {
+                                                                var packetReplace = bufferPacket.packet.Replace("*", "");
+                                                                ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
+
+                                                                if (!await HandleIncomingPacketAsync(packetReplace))
+                                                                {
+                                                                    ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
+                                                                    _incomingConnectionStatus = false;
                                                                 }
                                                             }
                                                         }
                                                     }
                                                     else
                                                     {
-                                                        if (_incomingConnectionStatus)
-                                                        {
-                                                            var packetReplace = bufferPacket.packet.Replace("*", "");
-                                                            ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + packetReplace, 5, 2);
 
-                                                            await Task.Factory.StartNew(async delegate
-                                                            {
-                                                                if (!await HandleIncomingPacketAsync(packetReplace))
-                                                                {
-                                                                    ClassLog.Log("API - Cannot send packet to IP: " + _ip + "", 5, 2);
-                                                                    _incomingConnectionStatus = false;
-                                                                }
-                                                            }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                                                        ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
+
+                                                        if (MalformedPacket.Length >= int.MaxValue || (long)(MalformedPacket.Length + bufferPacket.packet.Length) >= int.MaxValue)
+                                                        {
+                                                            MalformedPacket = string.Empty;
                                                         }
-                                                    }
-                                                }
-                                                else
-                                                {
-
-                                                    ClassLog.Log("API - Packet received from IP: " + _ip + " is: " + bufferPacket.packet, 5, 2);
-
-                                                    if (MalformedPacket.Length >= int.MaxValue || (long)(MalformedPacket.Length + bufferPacket.packet.Length) >= int.MaxValue)
-                                                    {
-                                                        MalformedPacket = string.Empty;
-                                                    }
-                                                    else
-                                                    {
-                                                        if (_incomingConnectionStatus)
+                                                        else
                                                         {
-                                                            MalformedPacket += bufferPacket.packet;
+                                                            if (_incomingConnectionStatus)
+                                                            {
+                                                                MalformedPacket += bufferPacket.packet;
+                                                            }
                                                         }
                                                     }
                                                 }
