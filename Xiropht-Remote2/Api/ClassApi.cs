@@ -80,7 +80,7 @@ namespace Xiropht_RemoteNode.Api
                             {
                                 await clientApiObjectConnection.StartHandleIncomingConnectionAsync();
                             }
-                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
+                        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
                     });
                 }
                 catch

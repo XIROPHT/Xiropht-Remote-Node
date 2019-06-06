@@ -72,16 +72,18 @@ namespace Xiropht_RemoteNode.Api
                 {
                     try
                     {
-                        var client = await ListenerApiHttpConnection.AcceptTcpClientAsync();
-
-                        await Task.Factory.StartNew(async () =>
-                        {
-                            using (var clientApiHttpObject = new ClassClientApiHttpObject(client))
-                            {
-                                await Task.Delay(5); // Small latency to prevent overloads.
-                                await clientApiHttpObject.StartHandleClientHttpAsync();
-                            }
-                        }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, PriorityScheduler.Lowest).ConfigureAwait(false);
+                        await ListenerApiHttpConnection.AcceptTcpClientAsync().ContinueWith(async taskClient =>
+                       {
+                           var client = await taskClient;
+                           await Task.Factory.StartNew(async () =>
+                           {
+                               using (var clientApiHttpObject = new ClassClientApiHttpObject(client))
+                               {
+                                   await Task.Delay(5); // Small latency to prevent overloads.
+                                    await clientApiHttpObject.StartHandleClientHttpAsync();
+                               }
+                           }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                       });
                     }
                     catch
                     {
