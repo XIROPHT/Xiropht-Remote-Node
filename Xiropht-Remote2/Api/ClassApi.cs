@@ -73,14 +73,21 @@ namespace Xiropht_RemoteNode.Api
                         string ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
 
                         ClassLog.Log("API Receive incoming connection from IP: " + ip, 5, 2);
-
-                        await Task.Factory.StartNew(async () =>
+                        CancellationTokenSource cancellationTokenApi = new CancellationTokenSource();
+                        try
                         {
-                            using (var clientApiObjectConnection = new ClassApiObjectConnection(client, ip))
+                            await Task.Factory.StartNew(async () =>
                             {
-                                await clientApiObjectConnection.StartHandleIncomingConnectionAsync();
-                            }
-                        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+                                using (var clientApiObjectConnection = new ClassApiObjectConnection(client, ip, cancellationTokenApi))
+                                {
+                                    await clientApiObjectConnection.StartHandleIncomingConnectionAsync();
+                                }
+                            }, cancellationTokenApi.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+
+                        }
                     });
                 }
                 catch
@@ -180,13 +187,14 @@ namespace Xiropht_RemoteNode.Api
         private bool disposed;
         private long _lastPacketReceived;
         private string MalformedPacket;
+        private CancellationTokenSource CancellationTokenApi;
 
-
-        public ClassApiObjectConnection(TcpClient clientTmp, string ipTmp)
+        public ClassApiObjectConnection(TcpClient clientTmp, string ipTmp, CancellationTokenSource cancellationTokenApi)
         {
             _client = clientTmp;
             _ip = ipTmp;
             MalformedPacket = string.Empty;
+            CancellationTokenApi = cancellationTokenApi;
         }
 
         ~ClassApiObjectConnection()
@@ -463,8 +471,26 @@ namespace Xiropht_RemoteNode.Api
         private void StopClientApiConnection()
         {
             MalformedPacket = string.Empty;
-            _client?.Close();
-            _client?.Dispose();
+            try
+            {
+                _client?.Close();
+                _client?.Dispose();
+            }
+            catch
+            {
+
+            }
+            try
+            {
+                if (!CancellationTokenApi.IsCancellationRequested)
+                {
+                    CancellationTokenApi.Cancel();
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         /// <summary>

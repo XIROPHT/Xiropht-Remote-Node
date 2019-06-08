@@ -72,17 +72,24 @@ namespace Xiropht_RemoteNode.Api
                 {
                     try
                     {
-                        await ListenerApiHttpConnection.AcceptTcpClientAsync().ContinueWith(async taskClient =>
+                       await ListenerApiHttpConnection.AcceptTcpClientAsync().ContinueWith(async taskClient =>
                        {
                            var client = await taskClient;
-                           await Task.Factory.StartNew(async () =>
+                           CancellationTokenSource cancellationTokenApiHttp = new CancellationTokenSource();
+                           try
                            {
-                               using (var clientApiHttpObject = new ClassClientApiHttpObject(client))
+                               await Task.Factory.StartNew(async () =>
                                {
-                                   await Task.Delay(5); // Small latency to prevent overloads.
-                                    await clientApiHttpObject.StartHandleClientHttpAsync();
-                               }
-                           }, CancellationToken.None, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                   using (var clientApiHttpObject = new ClassClientApiHttpObject(client, cancellationTokenApiHttp))
+                                   {
+                                       await clientApiHttpObject.StartHandleClientHttpAsync();
+                                   }
+                               }, cancellationTokenApiHttp.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                           }
+                           catch
+                           {
+
+                           }
                        });
                     }
                     catch
@@ -147,16 +154,18 @@ namespace Xiropht_RemoteNode.Api
         private TcpClient _client;
         private string _ip;
         private SslStream _clientSslStream;
+        private CancellationTokenSource CancellationTokenSourceApi;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="client"></param>
         /// <param name="ip"></param>
-        public ClassClientApiHttpObject(TcpClient client)
+        public ClassClientApiHttpObject(TcpClient client, CancellationTokenSource cancellationTokenSourceApi)
         {
             _clientStatus = true;
             _client = client;
+            CancellationTokenSourceApi = cancellationTokenSourceApi;
         }
 
         /// <summary>
@@ -293,8 +302,26 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         private void CloseClientConnection()
         {
-            _client?.Close();
-            _client?.Dispose();
+            try
+            {
+                _client?.Close();
+                _client?.Dispose();
+            }
+            catch
+            {
+
+            }
+            try
+            {
+                if (!CancellationTokenSourceApi.IsCancellationRequested)
+                {
+                    CancellationTokenSourceApi.Cancel();
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         /// <summary>
