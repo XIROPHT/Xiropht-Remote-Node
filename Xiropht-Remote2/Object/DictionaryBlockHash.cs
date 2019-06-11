@@ -19,12 +19,20 @@ namespace Xiropht_RemoteNode.Object
         /// </summary>
         /// <param name="blockHash"></param>
         /// <param name="blockId"></param>
-        public void InsertBlockHash(string blockHash, int blockId)
+        public bool InsertBlockHash(string blockHash, int blockId)
         {
-            if (!ListBlockHash.ContainsKey(blockHash))
+            try
             {
-                ListBlockHash.Add(blockHash, blockId);
+                if (!ListBlockHash.ContainsKey(blockHash))
+                {
+                    ListBlockHash.Add(blockHash, blockId);
+                    return true;
+                }
             }
+            catch
+            {
+            }
+            return false;
         }
 
         /// <summary>

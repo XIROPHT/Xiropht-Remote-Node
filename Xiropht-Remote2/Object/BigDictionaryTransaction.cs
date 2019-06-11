@@ -10,7 +10,7 @@ namespace Xiropht_RemoteNode.Object
         private Dictionary<long, string> _bigDictionaryTransaction3; // 19 999 999 - 29 999 999
         private Dictionary<long, string> _bigDictionaryTransaction4; // 29 999 999 - 39 999 999
         private Dictionary<long, string> _bigDictionaryTransaction5; // 39 999 999 - 49 999 999
-        private Dictionary<long, string> _bigDictionaryTransaction6; // 49 999 999 - 59 999 999
+        private Dictionary<long, string> _bigDictionaryTransaction6; // 99 999 999 - 59 999 999
         private Dictionary<long, string> _bigDictionaryTransaction7; // 59 999 999 - 69 999 999
         private Dictionary<long, string> _bigDictionaryTransaction8; // 79 999 999 - 89 999 999
         private Dictionary<long, string> _bigDictionaryTransaction9; // 89 999 999 - 99 999 999 
@@ -117,7 +117,7 @@ namespace Xiropht_RemoteNode.Object
         private Dictionary<long, string> _bigDictionaryTransaction100; // 999 999 999 - 1 009 999 999 ~39.620 GB
 
 
-        public const int MaxTransactionPerDictionary = 10000000; // 10 millions of transactions per dictionary
+        public const int MaxTransactionPerDictionary = 100000000; // 10 millions of transactions per dictionary
 
 
         public BigDictionaryTransaction()
@@ -1817,6 +1817,5 @@ namespace Xiropht_RemoteNode.Object
             _bigDictionaryTransaction99.Clear();
             _bigDictionaryTransaction100.Clear();
         }
-
     }
 }

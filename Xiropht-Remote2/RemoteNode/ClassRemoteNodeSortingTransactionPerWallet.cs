@@ -56,45 +56,51 @@ namespace Xiropht_RemoteNode.RemoteNode
                     string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
                     if (ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(hashTransaction) == -1)
                     {
-                        ClassRemoteNodeSync.ListOfTransactionHash.InsertTransactionHash(ClassRemoteNodeSync.ListOfTransactionHash.Count, hashTransaction);
-
-
-                        #region test data of tx
-                        decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
-                        decimal amount = 0; // Amount.
-                        decimal fee = 0; // Fee.
-                        string timestampRecv = dataTransactionSplit[6];
-
-                        var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" },
-                            StringSplitOptions.None);
-
-                        string blockHeight = splitTransactionInformation[0]; // Block height;
-
-
-                        // Real crypted fee, amount sender.
-                        string realFeeAmountSend = splitTransactionInformation[1];
-
-                        // Real crypted fee, amount receiver.
-                        string realFeeAmountRecv = splitTransactionInformation[2];
-
-                        string dataInformationSend = "SEND#" + amount + "#" + fee + "#" + timestamp + "#" +
-                                                     hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" +
-                                                     realFeeAmountRecv + "#";
-                        string dataInformationRecv = "RECV#" + amount + "#" + fee + "#" + timestamp + "#" +
-                                                     hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" +
-                                                     realFeeAmountRecv + "#";
-                        #endregion
-                        if (idWalletSender != -1)
+                        if (ClassRemoteNodeSync.ListOfTransactionHash.InsertTransactionHash(ClassRemoteNodeSync.ListOfTransactionHash.Count, hashTransaction))
                         {
-                            var tupleTxSender = new Tuple<string, string>(hashTransaction, "SEND");
-                            //ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletSender, dataInformationSend);
-                            ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletSender, tupleTxSender);
+
+
+                            #region test data of tx
+                            decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
+                            decimal amount = 0; // Amount.
+                            decimal fee = 0; // Fee.
+                            string timestampRecv = dataTransactionSplit[6];
+
+                            var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" },
+                                StringSplitOptions.None);
+
+                            string blockHeight = splitTransactionInformation[0]; // Block height;
+
+
+                            // Real crypted fee, amount sender.
+                            string realFeeAmountSend = splitTransactionInformation[1];
+
+                            // Real crypted fee, amount receiver.
+                            string realFeeAmountRecv = splitTransactionInformation[2];
+
+                            string dataInformationSend = "SEND#" + amount + "#" + fee + "#" + timestamp + "#" +
+                                                         hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" +
+                                                         realFeeAmountRecv + "#";
+                            string dataInformationRecv = "RECV#" + amount + "#" + fee + "#" + timestamp + "#" +
+                                                         hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" +
+                                                         realFeeAmountRecv + "#";
+                            #endregion
+                            if (idWalletSender != -1)
+                            {
+                                var tupleTxSender = new Tuple<string, string>(hashTransaction, "SEND");
+                                //ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletSender, dataInformationSend);
+                                ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletSender, tupleTxSender);
+                            }
+                            if (idWalletReceiver != -1)
+                            {
+                                var tupleTxReceiver = new Tuple<string, string>(hashTransaction, "RECV");
+                                //ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletReceiver, dataInformationRecv);
+                                ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletReceiver, tupleTxReceiver);
+                            }
                         }
-                        if (idWalletReceiver != -1)
+                        else
                         {
-                            var tupleTxReceiver = new Tuple<string, string>(hashTransaction, "RECV");
-                            //ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletReceiver, dataInformationRecv);
-                            ClassRemoteNodeSync.ListTransactionPerWallet.InsertTransactionSorted(idWalletReceiver, tupleTxReceiver);
+                            return false;
                         }
                     }
                 }

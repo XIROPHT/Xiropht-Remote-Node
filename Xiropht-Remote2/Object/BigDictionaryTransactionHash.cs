@@ -248,316 +248,324 @@ namespace Xiropht_RemoteNode.Object
         /// </summary>
         /// <param name="id"></param>
         /// <param name="transaction"></param>
-        public void InsertTransactionHash(long id, string transaction)
+        public bool InsertTransactionHash(long id, string transaction)
         {
-            long idDictionary = (long)(Math.Ceiling((double)id / MaxTransactionHashPerDictionary));
-            if (idDictionary > 0)
+            try
             {
-                idDictionary -= 1;
+                long idDictionary = (long)(Math.Ceiling((double)id / MaxTransactionHashPerDictionary));
+                if (idDictionary > 0)
+                {
+                    idDictionary -= 1;
+                }
+                switch (idDictionary)
+                {
+                    case 0:
+                        _bigDictionaryTransaction1.Add(transaction, id);
+                        break;
+                    case 1:
+                        _bigDictionaryTransaction2.Add(transaction, id);
+                        break;
+                    case 2:
+                        _bigDictionaryTransaction3.Add(transaction, id);
+                        break;
+                    case 3:
+                        _bigDictionaryTransaction4.Add(transaction, id);
+                        break;
+                    case 4:
+                        _bigDictionaryTransaction5.Add(transaction, id);
+                        break;
+                    case 5:
+                        _bigDictionaryTransaction6.Add(transaction, id);
+                        break;
+                    case 6:
+                        _bigDictionaryTransaction7.Add(transaction, id);
+                        break;
+                    case 7:
+                        _bigDictionaryTransaction8.Add(transaction, id);
+                        break;
+                    case 8:
+                        _bigDictionaryTransaction9.Add(transaction, id);
+                        break;
+                    case 9:
+                        _bigDictionaryTransaction10.Add(transaction, id);
+                        break;
+                    case 10:
+                        _bigDictionaryTransaction11.Add(transaction, id);
+                        break;
+                    case 11:
+                        _bigDictionaryTransaction12.Add(transaction, id);
+                        break;
+                    case 12:
+                        _bigDictionaryTransaction13.Add(transaction, id);
+                        break;
+                    case 13:
+                        _bigDictionaryTransaction14.Add(transaction, id);
+                        break;
+                    case 14:
+                        _bigDictionaryTransaction15.Add(transaction, id);
+                        break;
+                    case 15:
+                        _bigDictionaryTransaction16.Add(transaction, id);
+                        break;
+                    case 16:
+                        _bigDictionaryTransaction17.Add(transaction, id);
+                        break;
+                    case 17:
+                        _bigDictionaryTransaction18.Add(transaction, id);
+                        break;
+                    case 18:
+                        _bigDictionaryTransaction19.Add(transaction, id);
+                        break;
+                    case 19:
+                        _bigDictionaryTransaction20.Add(transaction, id);
+                        break;
+                    case 20:
+                        _bigDictionaryTransaction21.Add(transaction, id);
+                        break;
+                    case 21:
+                        _bigDictionaryTransaction22.Add(transaction, id);
+                        break;
+                    case 22:
+                        _bigDictionaryTransaction23.Add(transaction, id);
+                        break;
+                    case 23:
+                        _bigDictionaryTransaction24.Add(transaction, id);
+                        break;
+                    case 24:
+                        _bigDictionaryTransaction25.Add(transaction, id);
+                        break;
+                    case 25:
+                        _bigDictionaryTransaction26.Add(transaction, id);
+                        break;
+                    case 26:
+                        _bigDictionaryTransaction27.Add(transaction, id);
+                        break;
+                    case 27:
+                        _bigDictionaryTransaction28.Add(transaction, id);
+                        break;
+                    case 28:
+                        _bigDictionaryTransaction29.Add(transaction, id);
+                        break;
+                    case 29:
+                        _bigDictionaryTransaction30.Add(transaction, id);
+                        break;
+                    case 30:
+                        _bigDictionaryTransaction31.Add(transaction, id);
+                        break;
+                    case 31:
+                        _bigDictionaryTransaction32.Add(transaction, id);
+                        break;
+                    case 32:
+                        _bigDictionaryTransaction33.Add(transaction, id);
+                        break;
+                    case 33:
+                        _bigDictionaryTransaction34.Add(transaction, id);
+                        break;
+                    case 34:
+                        _bigDictionaryTransaction35.Add(transaction, id);
+                        break;
+                    case 35:
+                        _bigDictionaryTransaction36.Add(transaction, id);
+                        break;
+                    case 36:
+                        _bigDictionaryTransaction37.Add(transaction, id);
+                        break;
+                    case 37:
+                        _bigDictionaryTransaction38.Add(transaction, id);
+                        break;
+                    case 38:
+                        _bigDictionaryTransaction39.Add(transaction, id);
+                        break;
+                    case 39:
+                        _bigDictionaryTransaction40.Add(transaction, id);
+                        break;
+                    case 40:
+                        _bigDictionaryTransaction41.Add(transaction, id);
+                        break;
+                    case 41:
+                        _bigDictionaryTransaction42.Add(transaction, id);
+                        break;
+                    case 42:
+                        _bigDictionaryTransaction43.Add(transaction, id);
+                        break;
+                    case 43:
+                        _bigDictionaryTransaction44.Add(transaction, id);
+                        break;
+                    case 44:
+                        _bigDictionaryTransaction45.Add(transaction, id);
+                        break;
+                    case 45:
+                        _bigDictionaryTransaction46.Add(transaction, id);
+                        break;
+                    case 46:
+                        _bigDictionaryTransaction47.Add(transaction, id);
+                        break;
+                    case 47:
+                        _bigDictionaryTransaction48.Add(transaction, id);
+                        break;
+                    case 48:
+                        _bigDictionaryTransaction49.Add(transaction, id);
+                        break;
+                    case 49:
+                        _bigDictionaryTransaction50.Add(transaction, id);
+                        break;
+                    case 50:
+                        _bigDictionaryTransaction51.Add(transaction, id);
+                        break;
+                    case 51:
+                        _bigDictionaryTransaction52.Add(transaction, id);
+                        break;
+                    case 52:
+                        _bigDictionaryTransaction53.Add(transaction, id);
+                        break;
+                    case 53:
+                        _bigDictionaryTransaction54.Add(transaction, id);
+                        break;
+                    case 54:
+                        _bigDictionaryTransaction55.Add(transaction, id);
+                        break;
+                    case 55:
+                        _bigDictionaryTransaction56.Add(transaction, id);
+                        break;
+                    case 56:
+                        _bigDictionaryTransaction57.Add(transaction, id);
+                        break;
+                    case 57:
+                        _bigDictionaryTransaction58.Add(transaction, id);
+                        break;
+                    case 58:
+                        _bigDictionaryTransaction59.Add(transaction, id);
+                        break;
+                    case 59:
+                        _bigDictionaryTransaction60.Add(transaction, id);
+                        break;
+                    case 60:
+                        _bigDictionaryTransaction61.Add(transaction, id);
+                        break;
+                    case 61:
+                        _bigDictionaryTransaction62.Add(transaction, id);
+                        break;
+                    case 62:
+                        _bigDictionaryTransaction63.Add(transaction, id);
+                        break;
+                    case 63:
+                        _bigDictionaryTransaction64.Add(transaction, id);
+                        break;
+                    case 64:
+                        _bigDictionaryTransaction65.Add(transaction, id);
+                        break;
+                    case 65:
+                        _bigDictionaryTransaction66.Add(transaction, id);
+                        break;
+                    case 66:
+                        _bigDictionaryTransaction67.Add(transaction, id);
+                        break;
+                    case 67:
+                        _bigDictionaryTransaction68.Add(transaction, id);
+                        break;
+                    case 68:
+                        _bigDictionaryTransaction69.Add(transaction, id);
+                        break;
+                    case 69:
+                        _bigDictionaryTransaction70.Add(transaction, id);
+                        break;
+                    case 70:
+                        _bigDictionaryTransaction71.Add(transaction, id);
+                        break;
+                    case 71:
+                        _bigDictionaryTransaction72.Add(transaction, id);
+                        break;
+                    case 72:
+                        _bigDictionaryTransaction73.Add(transaction, id);
+                        break;
+                    case 73:
+                        _bigDictionaryTransaction74.Add(transaction, id);
+                        break;
+                    case 74:
+                        _bigDictionaryTransaction75.Add(transaction, id);
+                        break;
+                    case 75:
+                        _bigDictionaryTransaction76.Add(transaction, id);
+                        break;
+                    case 76:
+                        _bigDictionaryTransaction77.Add(transaction, id);
+                        break;
+                    case 77:
+                        _bigDictionaryTransaction78.Add(transaction, id);
+                        break;
+                    case 78:
+                        _bigDictionaryTransaction79.Add(transaction, id);
+                        break;
+                    case 79:
+                        _bigDictionaryTransaction80.Add(transaction, id);
+                        break;
+                    case 80:
+                        _bigDictionaryTransaction81.Add(transaction, id);
+                        break;
+                    case 81:
+                        _bigDictionaryTransaction82.Add(transaction, id);
+                        break;
+                    case 82:
+                        _bigDictionaryTransaction83.Add(transaction, id);
+                        break;
+                    case 83:
+                        _bigDictionaryTransaction84.Add(transaction, id);
+                        break;
+                    case 84:
+                        _bigDictionaryTransaction85.Add(transaction, id);
+                        break;
+                    case 85:
+                        _bigDictionaryTransaction86.Add(transaction, id);
+                        break;
+                    case 86:
+                        _bigDictionaryTransaction87.Add(transaction, id);
+                        break;
+                    case 87:
+                        _bigDictionaryTransaction88.Add(transaction, id);
+                        break;
+                    case 88:
+                        _bigDictionaryTransaction89.Add(transaction, id);
+                        break;
+                    case 89:
+                        _bigDictionaryTransaction90.Add(transaction, id);
+                        break;
+                    case 90:
+                        _bigDictionaryTransaction91.Add(transaction, id);
+                        break;
+                    case 91:
+                        _bigDictionaryTransaction92.Add(transaction, id);
+                        break;
+                    case 92:
+                        _bigDictionaryTransaction93.Add(transaction, id);
+                        break;
+                    case 93:
+                        _bigDictionaryTransaction94.Add(transaction, id);
+                        break;
+                    case 94:
+                        _bigDictionaryTransaction95.Add(transaction, id);
+                        break;
+                    case 95:
+                        _bigDictionaryTransaction96.Add(transaction, id);
+                        break;
+                    case 96:
+                        _bigDictionaryTransaction97.Add(transaction, id);
+                        break;
+                    case 97:
+                        _bigDictionaryTransaction98.Add(transaction, id);
+                        break;
+                    case 98:
+                        _bigDictionaryTransaction99.Add(transaction, id);
+                        break;
+                    case 99:
+                        _bigDictionaryTransaction100.Add(transaction, id);
+                        break;
+                }
             }
-            switch (idDictionary)
+            catch
             {
-                case 0:
-                    _bigDictionaryTransaction1.Add(transaction, id);
-                    break;
-                case 1:
-                    _bigDictionaryTransaction2.Add(transaction, id);
-                    break;
-                case 2:
-                    _bigDictionaryTransaction3.Add(transaction, id);
-                    break;
-                case 3:
-                    _bigDictionaryTransaction4.Add(transaction, id);
-                    break;
-                case 4:
-                    _bigDictionaryTransaction5.Add(transaction, id);
-                    break;
-                case 5:
-                    _bigDictionaryTransaction6.Add(transaction, id);
-                    break;
-                case 6:
-                    _bigDictionaryTransaction7.Add(transaction, id);
-                    break;
-                case 7:
-                    _bigDictionaryTransaction8.Add(transaction, id);
-                    break;
-                case 8:
-                    _bigDictionaryTransaction9.Add(transaction, id);
-                    break;
-                case 9:
-                    _bigDictionaryTransaction10.Add(transaction, id);
-                    break;
-                case 10:
-                    _bigDictionaryTransaction11.Add(transaction, id);
-                    break;
-                case 11:
-                    _bigDictionaryTransaction12.Add(transaction, id);
-                    break;
-                case 12:
-                    _bigDictionaryTransaction13.Add(transaction, id);
-                    break;
-                case 13:
-                    _bigDictionaryTransaction14.Add(transaction, id);
-                    break;
-                case 14:
-                    _bigDictionaryTransaction15.Add(transaction, id);
-                    break;
-                case 15:
-                    _bigDictionaryTransaction16.Add(transaction, id);
-                    break;
-                case 16:
-                    _bigDictionaryTransaction17.Add(transaction, id);
-                    break;
-                case 17:
-                    _bigDictionaryTransaction18.Add(transaction, id);
-                    break;
-                case 18:
-                    _bigDictionaryTransaction19.Add(transaction, id);
-                    break;
-                case 19:
-                    _bigDictionaryTransaction20.Add(transaction, id);
-                    break;
-                case 20:
-                    _bigDictionaryTransaction21.Add(transaction, id);
-                    break;
-                case 21:
-                    _bigDictionaryTransaction22.Add(transaction, id);
-                    break;
-                case 22:
-                    _bigDictionaryTransaction23.Add(transaction, id);
-                    break;
-                case 23:
-                    _bigDictionaryTransaction24.Add(transaction, id);
-                    break;
-                case 24:
-                    _bigDictionaryTransaction25.Add(transaction, id);
-                    break;
-                case 25:
-                    _bigDictionaryTransaction26.Add(transaction, id);
-                    break;
-                case 26:
-                    _bigDictionaryTransaction27.Add(transaction, id);
-                    break;
-                case 27:
-                    _bigDictionaryTransaction28.Add(transaction, id);
-                    break;
-                case 28:
-                    _bigDictionaryTransaction29.Add(transaction, id);
-                    break;
-                case 29:
-                    _bigDictionaryTransaction30.Add(transaction, id);
-                    break;
-                case 30:
-                    _bigDictionaryTransaction31.Add(transaction, id);
-                    break;
-                case 31:
-                    _bigDictionaryTransaction32.Add(transaction, id);
-                    break;
-                case 32:
-                    _bigDictionaryTransaction33.Add(transaction, id);
-                    break;
-                case 33:
-                    _bigDictionaryTransaction34.Add(transaction, id);
-                    break;
-                case 34:
-                    _bigDictionaryTransaction35.Add(transaction, id);
-                    break;
-                case 35:
-                    _bigDictionaryTransaction36.Add(transaction, id);
-                    break;
-                case 36:
-                    _bigDictionaryTransaction37.Add(transaction, id);
-                    break;
-                case 37:
-                    _bigDictionaryTransaction38.Add(transaction, id);
-                    break;
-                case 38:
-                    _bigDictionaryTransaction39.Add(transaction, id);
-                    break;
-                case 39:
-                    _bigDictionaryTransaction40.Add(transaction, id);
-                    break;
-                case 40:
-                    _bigDictionaryTransaction41.Add(transaction, id);
-                    break;
-                case 41:
-                    _bigDictionaryTransaction42.Add(transaction, id);
-                    break;
-                case 42:
-                    _bigDictionaryTransaction43.Add(transaction, id);
-                    break;
-                case 43:
-                    _bigDictionaryTransaction44.Add(transaction, id);
-                    break;
-                case 44:
-                    _bigDictionaryTransaction45.Add(transaction, id);
-                    break;
-                case 45:
-                    _bigDictionaryTransaction46.Add(transaction, id);
-                    break;
-                case 46:
-                    _bigDictionaryTransaction47.Add(transaction, id);
-                    break;
-                case 47:
-                    _bigDictionaryTransaction48.Add(transaction, id);
-                    break;
-                case 48:
-                    _bigDictionaryTransaction49.Add(transaction, id);
-                    break;
-                case 49:
-                    _bigDictionaryTransaction50.Add(transaction, id);
-                    break;
-                case 50:
-                    _bigDictionaryTransaction51.Add(transaction, id);
-                    break;
-                case 51:
-                    _bigDictionaryTransaction52.Add(transaction, id);
-                    break;
-                case 52:
-                    _bigDictionaryTransaction53.Add(transaction, id);
-                    break;
-                case 53:
-                    _bigDictionaryTransaction54.Add(transaction, id);
-                    break;
-                case 54:
-                    _bigDictionaryTransaction55.Add(transaction, id);
-                    break;
-                case 55:
-                    _bigDictionaryTransaction56.Add(transaction, id);
-                    break;
-                case 56:
-                    _bigDictionaryTransaction57.Add(transaction, id);
-                    break;
-                case 57:
-                    _bigDictionaryTransaction58.Add(transaction, id);
-                    break;
-                case 58:
-                    _bigDictionaryTransaction59.Add(transaction, id);
-                    break;
-                case 59:
-                    _bigDictionaryTransaction60.Add(transaction, id);
-                    break;
-                case 60:
-                    _bigDictionaryTransaction61.Add(transaction, id);
-                    break;
-                case 61:
-                    _bigDictionaryTransaction62.Add(transaction, id);
-                    break;
-                case 62:
-                    _bigDictionaryTransaction63.Add(transaction, id);
-                    break;
-                case 63:
-                    _bigDictionaryTransaction64.Add(transaction, id);
-                    break;
-                case 64:
-                    _bigDictionaryTransaction65.Add(transaction, id);
-                    break;
-                case 65:
-                    _bigDictionaryTransaction66.Add(transaction, id);
-                    break;
-                case 66:
-                    _bigDictionaryTransaction67.Add(transaction, id);
-                    break;
-                case 67:
-                    _bigDictionaryTransaction68.Add(transaction, id);
-                    break;
-                case 68:
-                    _bigDictionaryTransaction69.Add(transaction, id);
-                    break;
-                case 69:
-                    _bigDictionaryTransaction70.Add(transaction, id);
-                    break;
-                case 70:
-                    _bigDictionaryTransaction71.Add(transaction, id);
-                    break;
-                case 71:
-                    _bigDictionaryTransaction72.Add(transaction, id);
-                    break;
-                case 72:
-                    _bigDictionaryTransaction73.Add(transaction, id);
-                    break;
-                case 73:
-                    _bigDictionaryTransaction74.Add(transaction, id);
-                    break;
-                case 74:
-                    _bigDictionaryTransaction75.Add(transaction, id);
-                    break;
-                case 75:
-                    _bigDictionaryTransaction76.Add(transaction, id);
-                    break;
-                case 76:
-                    _bigDictionaryTransaction77.Add(transaction, id);
-                    break;
-                case 77:
-                    _bigDictionaryTransaction78.Add(transaction, id);
-                    break;
-                case 78:
-                    _bigDictionaryTransaction79.Add(transaction, id);
-                    break;
-                case 79:
-                    _bigDictionaryTransaction80.Add(transaction, id);
-                    break;
-                case 80:
-                    _bigDictionaryTransaction81.Add(transaction, id);
-                    break;
-                case 81:
-                    _bigDictionaryTransaction82.Add(transaction, id);
-                    break;
-                case 82:
-                    _bigDictionaryTransaction83.Add(transaction, id);
-                    break;
-                case 83:
-                    _bigDictionaryTransaction84.Add(transaction, id);
-                    break;
-                case 84:
-                    _bigDictionaryTransaction85.Add(transaction, id);
-                    break;
-                case 85:
-                    _bigDictionaryTransaction86.Add(transaction, id);
-                    break;
-                case 86:
-                    _bigDictionaryTransaction87.Add(transaction, id);
-                    break;
-                case 87:
-                    _bigDictionaryTransaction88.Add(transaction, id);
-                    break;
-                case 88:
-                    _bigDictionaryTransaction89.Add(transaction, id);
-                    break;
-                case 89:
-                    _bigDictionaryTransaction90.Add(transaction, id);
-                    break;
-                case 90:
-                    _bigDictionaryTransaction91.Add(transaction, id);
-                    break;
-                case 91:
-                    _bigDictionaryTransaction92.Add(transaction, id);
-                    break;
-                case 92:
-                    _bigDictionaryTransaction93.Add(transaction, id);
-                    break;
-                case 93:
-                    _bigDictionaryTransaction94.Add(transaction, id);
-                    break;
-                case 94:
-                    _bigDictionaryTransaction95.Add(transaction, id);
-                    break;
-                case 95:
-                    _bigDictionaryTransaction96.Add(transaction, id);
-                    break;
-                case 96:
-                    _bigDictionaryTransaction97.Add(transaction, id);
-                    break;
-                case 97:
-                    _bigDictionaryTransaction98.Add(transaction, id);
-                    break;
-                case 98:
-                    _bigDictionaryTransaction99.Add(transaction, id);
-                    break;
-                case 99:
-                    _bigDictionaryTransaction100.Add(transaction, id);
-                    break;
+                return false;
             }
+            return true;
         }
 
         /// <summary>

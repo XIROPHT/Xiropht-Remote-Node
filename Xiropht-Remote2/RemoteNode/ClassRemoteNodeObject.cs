@@ -809,31 +809,33 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             {
                                                 try
                                                 {
-                                                    ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
-                                                    ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp - 1);
-                                                    if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
-                                                        ClassRemoteNodeSync.TotalBlockMined)
+                                                    if (ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp - 1))
                                                     {
-                                                        ClassLog.Log(
-                                                            "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count +
-                                                            "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 1);
-                                                        if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaBlock, Program.Certificate, false, true))
+                                                        ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
+                                                        if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
+                                                            ClassRemoteNodeSync.TotalBlockMined)
                                                         {
-                                                            RemoteNodeObjectConnectionStatus = false;
-                                                            RemoteNodeObjectLoginStatus = false;
-                                                            RemoteNodeObjectConnectionStatus = false;
-                                                            RemoteNodeObjectInReceiveBlock = false;
-                                                            RemoteNodeObjectInReceiveTransaction = false;
-                                                            RemoteNodeObjectInSyncBlock = false;
-                                                            RemoteNodeObjectInSyncTransaction = false;
-                                                            Console.WriteLine("Remote Node Object sync disconnected, ask schema block failed. Restart connection in a minute.");
+                                                            ClassLog.Log(
+                                                                "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count +
+                                                                "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 1);
+                                                            if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaBlock, Program.Certificate, false, true))
+                                                            {
+                                                                RemoteNodeObjectConnectionStatus = false;
+                                                                RemoteNodeObjectLoginStatus = false;
+                                                                RemoteNodeObjectConnectionStatus = false;
+                                                                RemoteNodeObjectInReceiveBlock = false;
+                                                                RemoteNodeObjectInReceiveTransaction = false;
+                                                                RemoteNodeObjectInSyncBlock = false;
+                                                                RemoteNodeObjectInSyncTransaction = false;
+                                                                Console.WriteLine("Remote Node Object sync disconnected, ask schema block failed. Restart connection in a minute.");
+                                                            }
                                                         }
-                                                    }
-                                                    else
-                                                    {
-                                                        ClassLog.Log(
-                                                            "Block mined synced at: " + ClassRemoteNodeSync.ListOfBlock.Count +
-                                                            "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 2);
+                                                        else
+                                                        {
+                                                            ClassLog.Log(
+                                                                "Block mined synced at: " + ClassRemoteNodeSync.ListOfBlock.Count +
+                                                                "/" + ClassRemoteNodeSync.TotalBlockMined, 0, 2);
+                                                        }
                                                     }
                                                 }
                                                 catch
@@ -857,31 +859,33 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             {
                                                 try
                                                 {
-                                                    ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
-                                                    ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp - 1);
-                                                    if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
-                                                        ClassRemoteNodeSync.TotalBlockMined)
+                                                    if (ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp - 1))
                                                     {
-                                                        ClassLog.Log(
-                                                            "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
-                                                            ClassRemoteNodeSync.TotalBlockMined, 0, 1);
-                                                        if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaBlock, Program.Certificate, false, true))
+                                                        ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
+                                                        if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
+                                                            ClassRemoteNodeSync.TotalBlockMined)
                                                         {
-                                                            RemoteNodeObjectConnectionStatus = false;
-                                                            RemoteNodeObjectLoginStatus = false;
-                                                            RemoteNodeObjectConnectionStatus = false;
-                                                            RemoteNodeObjectInReceiveBlock = false;
-                                                            RemoteNodeObjectInReceiveTransaction = false;
-                                                            RemoteNodeObjectInSyncBlock = false;
-                                                            RemoteNodeObjectInSyncTransaction = false;
-                                                            Console.WriteLine("Remote Node Object sync disconnected, ask schema block failed. Restart connection in a minute.");
+                                                            ClassLog.Log(
+                                                                "Block mined synced, " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
+                                                                ClassRemoteNodeSync.TotalBlockMined, 0, 1);
+                                                            if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaBlock, Program.Certificate, false, true))
+                                                            {
+                                                                RemoteNodeObjectConnectionStatus = false;
+                                                                RemoteNodeObjectLoginStatus = false;
+                                                                RemoteNodeObjectConnectionStatus = false;
+                                                                RemoteNodeObjectInReceiveBlock = false;
+                                                                RemoteNodeObjectInReceiveTransaction = false;
+                                                                RemoteNodeObjectInSyncBlock = false;
+                                                                RemoteNodeObjectInSyncTransaction = false;
+                                                                Console.WriteLine("Remote Node Object sync disconnected, ask schema block failed. Restart connection in a minute.");
+                                                            }
                                                         }
-                                                    }
-                                                    else
-                                                    {
-                                                        ClassLog.Log(
-                                                            "Block mined synced at: " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
-                                                            ClassRemoteNodeSync.TotalBlockMined, 0, 2);
+                                                        else
+                                                        {
+                                                            ClassLog.Log(
+                                                                "Block mined synced at: " + ClassRemoteNodeSync.ListOfBlock.Count + "/" +
+                                                                ClassRemoteNodeSync.TotalBlockMined, 0, 2);
+                                                        }
                                                     }
                                                 }
                                                 catch
