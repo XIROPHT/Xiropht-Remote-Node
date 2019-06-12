@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Xiropht_Connector_All.Setting;
 
 namespace Xiropht_RemoteNode.Object
 {
@@ -42,6 +43,10 @@ namespace Xiropht_RemoteNode.Object
         /// <returns></returns>
         public int GetBlockIdFromHash(string blockHash)
         {
+            if (blockHash.Length != ClassConnectorSetting.MaxBlockHashSize)
+            {
+                return -1;
+            }
             if (ListBlockHash.ContainsKey(blockHash))
             {
                 return ListBlockHash[blockHash];
