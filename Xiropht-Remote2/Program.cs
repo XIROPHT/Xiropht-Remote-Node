@@ -115,8 +115,9 @@ namespace Xiropht_RemoteNode
             {
                 Console.WriteLine("Blockchain database corrupted, clean up..");
                 ClassRemoteNodeSync.ListOfTransaction.Clear();
-                ClassRemoteNodeSync.ListOfBlock.Clear();
+                ClassRemoteNodeSync.ListOfTransactionHash.Clear();
                 ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
+                ClassRemoteNodeSync.ListOfBlock.Clear();
                 Thread.Sleep(2000);
             }
             Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "R");

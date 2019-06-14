@@ -14,7 +14,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// Add a new transaction on the sorted list of transaction per wallet.
         /// </summary>
         /// <param name="transaction"></param>
-        public static bool AddNewTransactionSortedPerWallet(string transaction)
+        public static bool AddNewTransactionSortedPerWallet(string transaction, long idTransaction)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
                     if (ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(hashTransaction) == -1)
                     {
-                        if (ClassRemoteNodeSync.ListOfTransactionHash.InsertTransactionHash(ClassRemoteNodeSync.ListOfTransactionHash.Count, hashTransaction))
+                        if (ClassRemoteNodeSync.ListOfTransactionHash.InsertTransactionHash(idTransaction, hashTransaction))
                         {
 
 

@@ -961,62 +961,73 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                         ClassLog.Log("Transaction Received: " + packetSplit[1], 2, 2);
 
+
                         var splitTransaction = packetSplit[1].Split(new[] { "$" }, StringSplitOptions.None);
                         if (splitTransaction.Length > 0)
                         {
                             for (int i = 0; i < splitTransaction.Length; i++)
                             {
-                                if (splitTransaction[i] != null)
+                                if (i < splitTransaction.Length)
                                 {
-                                    if (splitTransaction[i].Length > 0)
+                                    if (splitTransaction[i] != null)
                                     {
-                                        var transactionSubString = splitTransaction[i].Replace("$", "");
-
-                                        var dataTransactionSplit = transactionSubString.Split(new[] { "-" }, StringSplitOptions.None);
-
-                                        if (dataTransactionSplit[5].Length == ClassConnectorSetting.MaxTransactionHashSize)
+                                        if (splitTransaction[i].Length > 0)
                                         {
-                                            if (ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(dataTransactionSplit[5]) != 1)
+                                            var transactionSubString = splitTransaction[i].Replace("$", "");
+                                            var transactionSubSplit = transactionSubString.Split(new[] { "%" }, StringSplitOptions.None);
+                                            var dataTransactionSplit = transactionSubSplit[1].Split(new[] { "-" }, StringSplitOptions.None);
+
+                                            long transactionIdInsert = long.Parse(transactionSubSplit[0]);
+
+                                            ClassLog.Log("Transaction Received: " + transactionSubSplit[1], 2, 2);
+
+                                            if (dataTransactionSplit[5].Length == ClassConnectorSetting.MaxTransactionHashSize)
                                             {
-
-                                                if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
+                                                if (!ClassRemoteNodeSync.ListOfTransaction.ContainsKey(transactionIdInsert))
                                                 {
-                                                    ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
-
-                                                    RemoteNodeObjectConnectionStatus = false;
-                                                    RemoteNodeObjectLoginStatus = false;
-                                                    RemoteNodeObjectTcpClient?.DisconnectToSeed();
-                                                }
-                                                else
-                                                {
-                                                    try
+                                                    if (ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(dataTransactionSplit[5]) != 1)
                                                     {
-                                                        ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
-                                                        if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
+
+                                                        if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubSplit[1], transactionIdInsert))
                                                         {
-                                                            ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
-                                                            if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
-                                                            {
-                                                                RemoteNodeObjectConnectionStatus = false;
-                                                                RemoteNodeObjectLoginStatus = false;
-                                                                RemoteNodeObjectConnectionStatus = false;
-                                                                RemoteNodeObjectInReceiveBlock = false;
-                                                                RemoteNodeObjectInReceiveTransaction = false;
-                                                                RemoteNodeObjectInSyncBlock = false;
-                                                                RemoteNodeObjectInSyncTransaction = false;
-                                                                Console.WriteLine("Remote Node Object sync disconnected, ask schema transaction failed. Restart connection in a minute.");
-                                                            }
+                                                            ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
+
+                                                            RemoteNodeObjectConnectionStatus = false;
+                                                            RemoteNodeObjectLoginStatus = false;
+                                                            RemoteNodeObjectTcpClient?.DisconnectToSeed();
                                                         }
                                                         else
                                                         {
-                                                            ClassLog.Log("Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
-                                                        }
+                                                            try
+                                                            {
+                                                                ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(transactionIdInsert, transactionSubSplit[1]);
+                                                                if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
+                                                                {
+                                                                    ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
+                                                                    if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
+                                                                    {
+                                                                        RemoteNodeObjectConnectionStatus = false;
+                                                                        RemoteNodeObjectLoginStatus = false;
+                                                                        RemoteNodeObjectConnectionStatus = false;
+                                                                        RemoteNodeObjectInReceiveBlock = false;
+                                                                        RemoteNodeObjectInReceiveTransaction = false;
+                                                                        RemoteNodeObjectInSyncBlock = false;
+                                                                        RemoteNodeObjectInSyncTransaction = false;
+                                                                        Console.WriteLine("Remote Node Object sync disconnected, ask schema transaction failed. Restart connection in a minute.");
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    ClassLog.Log("Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+                                                                }
 
-                                                    }
-                                                    catch
-                                                    {
-                                                        StopConnection();
-                                                        return;
+                                                            }
+                                                            catch
+                                                            {
+                                                                StopConnection();
+                                                                return;
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1028,53 +1039,58 @@ namespace Xiropht_RemoteNode.RemoteNode
                         else
                         {
                             var transactionSubString = packetSplit[1].Replace("$", "");
+                            var transactionSubSplit = transactionSubString.Split(new[] { "%" }, StringSplitOptions.None); // Format : id transaction | content
+                            var dataTransactionSplit = transactionSubSplit[1].Split(new[] { "-" }, StringSplitOptions.None);
+                            long transactionIdInsert = long.Parse(transactionSubSplit[0]);
 
-                            var dataTransactionSplit = transactionSubString.Split(new[] { "-" }, StringSplitOptions.None);
+                            ClassLog.Log("Transaction Received: " + transactionSubSplit[1], 2, 2);
 
                             if (dataTransactionSplit[5].Length == ClassConnectorSetting.MaxTransactionHashSize)
                             {
                                 if (ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(dataTransactionSplit[5]) != 1)
                                 {
-
-                                    if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubString))
+                                    if (!ClassRemoteNodeSync.ListOfTransaction.ContainsKey(transactionIdInsert))
                                     {
-                                        ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
-
-                                        RemoteNodeObjectConnectionStatus = false;
-                                        RemoteNodeObjectLoginStatus = false;
-                                        RemoteNodeObjectTcpClient?.DisconnectToSeed();
-
-                                    }
-                                    else
-                                    {
-                                        try
+                                        if (!ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionSubSplit[1], transactionIdInsert))
                                         {
-                                            ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(ClassRemoteNodeSync.ListOfTransaction.Count, transactionSubString);
-                                            if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
+                                            ClassLog.Log("Transaction ID: " + ClassRemoteNodeSync.ListOfTransaction.Count + " error, asking again the transaction. Data: " + transactionSubString, 0, 3);
+
+                                            RemoteNodeObjectConnectionStatus = false;
+                                            RemoteNodeObjectLoginStatus = false;
+                                            RemoteNodeObjectTcpClient?.DisconnectToSeed();
+
+                                        }
+                                        else
+                                        {
+                                            try
                                             {
-                                                ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
-                                                if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
+                                                ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(transactionIdInsert, transactionSubSplit[1]);
+                                                if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
                                                 {
-                                                    RemoteNodeObjectConnectionStatus = false;
-                                                    RemoteNodeObjectLoginStatus = false;
-                                                    RemoteNodeObjectConnectionStatus = false;
-                                                    RemoteNodeObjectInReceiveBlock = false;
-                                                    RemoteNodeObjectInReceiveTransaction = false;
-                                                    RemoteNodeObjectInSyncBlock = false;
-                                                    RemoteNodeObjectInSyncTransaction = false;
-                                                    Console.WriteLine("Remote Node Object sync disconnected, ask schema transaction failed. Restart connection in a minute.");
+                                                    ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
+                                                    if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
+                                                    {
+                                                        RemoteNodeObjectConnectionStatus = false;
+                                                        RemoteNodeObjectLoginStatus = false;
+                                                        RemoteNodeObjectConnectionStatus = false;
+                                                        RemoteNodeObjectInReceiveBlock = false;
+                                                        RemoteNodeObjectInReceiveTransaction = false;
+                                                        RemoteNodeObjectInSyncBlock = false;
+                                                        RemoteNodeObjectInSyncTransaction = false;
+                                                        Console.WriteLine("Remote Node Object sync disconnected, ask schema transaction failed. Restart connection in a minute.");
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    ClassLog.Log("Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
+
                                                 }
                                             }
-                                            else
+                                            catch
                                             {
-                                                ClassLog.Log("Transaction synced at: " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 2);
-
+                                                StopConnection();
+                                                return;
                                             }
-                                        }
-                                        catch
-                                        {
-                                            StopConnection();
-                                            return;
                                         }
                                     }
                                 }

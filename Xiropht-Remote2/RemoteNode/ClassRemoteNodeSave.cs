@@ -97,30 +97,43 @@ namespace Xiropht_RemoteNode.RemoteNode
                 Console.WriteLine("Load transaction database file..");
 
                 var counter = 0;
-
-                using (FileStream fs = File.Open(GetCurrentPath() + GetBlockchainTransactionPath() + BlockchainTransactonDatabase, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (BufferedStream bs = new BufferedStream(fs))
-                using (StreamReader sr = new StreamReader(bs))
+                try
                 {
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
+                    using (FileStream fs = File.Open(GetCurrentPath() + GetBlockchainTransactionPath() + BlockchainTransactonDatabase, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (BufferedStream bs = new BufferedStream(fs))
+                    using (StreamReader sr = new StreamReader(bs))
                     {
-                        counter++;
-                        try
+                        string line;
+                        while ((line = sr.ReadLine()) != null)
                         {
-                            if(ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(line))
+                            counter++;
+                            long totalTransaction = ClassRemoteNodeSync.ListOfTransaction.Count;
+                            try
                             {
-                                ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(ClassRemoteNodeSync.ListOfTransaction.Count, line);
+                                if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(line, totalTransaction))
+                                {
+                                    ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(totalTransaction, line);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Transaction: " + line + " on line: " + counter + " is probably duplicate or corrupted. Ignored.");
+                                }
                             }
-                        }
-                        catch
-                        {
-                            ClassRemoteNodeSync.ListOfTransaction.Clear();
-                            return false;
+                            catch
+                            {
+                                Console.WriteLine("Transaction database seems corrupted, clearing transaction database and resync..");
+                                ClassRemoteNodeSync.ListOfTransaction.Clear();
+                                ClassRemoteNodeSync.ListOfTransactionHash.Clear();
+                                ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
+                                return true;
+                            }
                         }
                     }
                 }
-
+                catch
+                {
+                    return false;
+                }
                 TotalTransactionSaved = counter;
                 Console.WriteLine(counter + " transaction successfully loaded and included on memory..");
             }
