@@ -259,7 +259,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 {
                                                     if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
                                                     {
-                                                        BlockchainTransactionWriter.Write(i + "%" + ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
+                                                        var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
+
+                                                        BlockchainTransactionWriter.Write(transactionObject.Item2 + "%" + transactionObject.Item1 + "\n");
                                                     }
                                                 }
                                             }
@@ -314,7 +316,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             {
                                                 if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
                                                 {
-                                                    sw.Write(i + "%" + ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
+                                                    var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
+
+                                                    sw.Write(transactionObject.Item2 + "%" + transactionObject.Item1 + "\n");
                                                 }
                                             }
                                         }

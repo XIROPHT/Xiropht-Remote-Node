@@ -423,41 +423,28 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                                                 if (transactionIdAsked <= askTransaction)
                                                                 {
-                                                                    if (transactionIdAsked + 20 < askTransaction)
-                                                                    {
-                                                                        RemoteNodeObjectInReceiveTransaction = true;
-                                                                        if (EnableTransactionRange)
-                                                                        {
-                                                                            if (!await RemoteNodeObjectTcpClient
-                                                                                .SendPacketToSeedNodeAsync(
-                                                                                    ClassRemoteNodeCommand
-                                                                                        .ClassRemoteNodeSendToSeedEnumeration
-                                                                                        .RemoteAskTransactionPerRange + "|" +
-                                                                                    transactionIdAsked.ToString("F0") + "|" + MaxTransactionRange, Program.Certificate, false, true))
-                                                                            {
-                                                                                RemoteNodeObjectConnectionStatus = false;
-                                                                            }
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskTransactionPerId + "|" +transactionIdAsked.ToString("F0"), Program.Certificate, false, true))
-                                                                            {
-                                                                                RemoteNodeObjectConnectionStatus = false;
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                    else
+
+                                                                    RemoteNodeObjectInReceiveTransaction = true;
+                                                                    if (EnableTransactionRange)
                                                                     {
                                                                         if (!await RemoteNodeObjectTcpClient
                                                                             .SendPacketToSeedNodeAsync(
                                                                                 ClassRemoteNodeCommand
                                                                                     .ClassRemoteNodeSendToSeedEnumeration
-                                                                                    .RemoteAskTransactionPerId + "|" +
-                                                                                transactionIdAsked.ToString("F0"), Program.Certificate, false, true))
+                                                                                    .RemoteAskTransactionPerRange + "|" +
+                                                                                transactionIdAsked.ToString("F0") + "|" + MaxTransactionRange, Program.Certificate, false, true))
                                                                         {
                                                                             RemoteNodeObjectConnectionStatus = false;
                                                                         }
                                                                     }
+                                                                    else
+                                                                    {
+                                                                        if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskTransactionPerId + "|" + transactionIdAsked.ToString("F0"), Program.Certificate, false, true))
+                                                                        {
+                                                                            RemoteNodeObjectConnectionStatus = false;
+                                                                        }
+                                                                    }
+
                                                                     while (RemoteNodeObjectInReceiveTransaction)
                                                                     {
                                                                         if (!RemoteNodeObjectConnectionStatus)
@@ -476,42 +463,6 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                     }
                                                                 }
 
-                                                                for (var i = 0; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++) // Research missed tx.
-                                                                {
-                                                                    if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
-                                                                    {
-                                                                        if (!ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
-                                                                        {
-                                                                            RemoteNodeObjectInReceiveTransaction = true;
-                                                                            if (!await RemoteNodeObjectTcpClient
-                                                                                .SendPacketToSeedNodeAsync(
-                                                                                    ClassRemoteNodeCommand
-                                                                                        .ClassRemoteNodeSendToSeedEnumeration
-                                                                                        .RemoteAskTransactionPerId + "|" +
-                                                                                    i.ToString("F0"), Program.Certificate, false, true))
-                                                                            {
-                                                                                RemoteNodeObjectConnectionStatus = false;
-                                                                            }
-
-                                                                            while (RemoteNodeObjectInReceiveTransaction)
-                                                                            {
-                                                                                if (!RemoteNodeObjectConnectionStatus)
-                                                                                {
-                                                                                    break;
-                                                                                }
-
-                                                                                if (ClassRemoteNodeSync.ListOfBlock.Count < int.Parse(ClassRemoteNodeSync.TotalBlockMined))
-                                                                                {
-                                                                                    await Task.Delay(ClassUtils.GetRandomBetween(1, 100));
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    await Task.Delay(ClassUtils.GetRandomBetween(1, 10));
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
                                                             }
                                                             else
                                                             {
@@ -526,6 +477,46 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                         ClassRemoteNodeKey.DataTransactionRead = string.Empty;
                                                                         StopConnection(string.Empty);
                                                                         break;
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        for (var i = 0; i < totalTransaction; i++) // Research missed tx.
+                                                                        {
+                                                                            if (i < totalTransaction)
+                                                                            {
+                                                                                if (!ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
+                                                                                {
+                                                                                    RemoteNodeObjectInReceiveTransaction = true;
+                                                                                    if (!await RemoteNodeObjectTcpClient
+                                                                                        .SendPacketToSeedNodeAsync(
+                                                                                            ClassRemoteNodeCommand
+                                                                                                .ClassRemoteNodeSendToSeedEnumeration
+                                                                                                .RemoteAskTransactionPerId + "|" +
+                                                                                            i.ToString("F0"), Program.Certificate, false, true))
+                                                                                    {
+                                                                                        RemoteNodeObjectConnectionStatus = false;
+                                                                                    }
+
+                                                                                    while (RemoteNodeObjectInReceiveTransaction)
+                                                                                    {
+                                                                                        if (!RemoteNodeObjectConnectionStatus)
+                                                                                        {
+                                                                                            break;
+                                                                                        }
+
+                                                                                        if (ClassRemoteNodeSync.ListOfBlock.Count < int.Parse(ClassRemoteNodeSync.TotalBlockMined))
+                                                                                        {
+                                                                                            await Task.Delay(ClassUtils.GetRandomBetween(1, 100));
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            await Task.Delay(ClassUtils.GetRandomBetween(1, 10));
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+
                                                                     }
                                                                 }
                                                             }

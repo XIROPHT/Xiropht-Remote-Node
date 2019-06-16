@@ -64,7 +64,7 @@ namespace Xiropht_RemoteNode.Api
 
                 if (getTransactionId != -1)
                 {
-                    Transaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(getTransactionId);
+                    Transaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(getTransactionId).Item1;
                     if (Transaction != "WRONG")
                     {
                         var dataTransactionSplit = Transaction.Split(new[] { "-" }, StringSplitOptions.None);

@@ -460,7 +460,7 @@ namespace Xiropht_RemoteNode.Api
                         {
                             if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(selectedIndex))
                             {
-                                var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(selectedIndex).Split(new[] { "-" }, StringSplitOptions.None);
+                                var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(selectedIndex).Item1.Split(new[] { "-" }, StringSplitOptions.None);
                                 Dictionary<string, string> transactionContent = new Dictionary<string, string>
                                 {
                                     { "transaction_id", "" + (selectedIndex + 1) },
@@ -500,7 +500,7 @@ namespace Xiropht_RemoteNode.Api
                         long transactionIndex = ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(selectedHash);
                         if (transactionIndex != -1)
                         {
-                            var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionIndex).Split(new[] { "-" }, StringSplitOptions.None);
+                            var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionIndex).Item1.Split(new[] { "-" }, StringSplitOptions.None);
                             Dictionary<string, string> transactionContent = new Dictionary<string, string>
                                 {
                                     { "transaction_id", "" + (transactionIndex + 1) },
