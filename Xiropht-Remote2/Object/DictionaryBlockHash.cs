@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
-using Xiropht_Connector_All.Setting;
 
 namespace Xiropht_RemoteNode.Object
 {
     public class DictionaryBlockHash
     {
-        private Dictionary<string, int> ListBlockHash;
+        private Dictionary<string, long> ListBlockHash;
 
         /// <summary>
         /// Constructor
         /// </summary>
         public DictionaryBlockHash()
         {
-            ListBlockHash = new Dictionary<string, int>();
+            ListBlockHash = new Dictionary<string, long>();
         }
 
         /// <summary>
@@ -20,7 +19,7 @@ namespace Xiropht_RemoteNode.Object
         /// </summary>
         /// <param name="blockHash"></param>
         /// <param name="blockId"></param>
-        public bool InsertBlockHash(string blockHash, int blockId)
+        public bool InsertBlockHash(string blockHash, long blockId)
         {
             try
             {
@@ -41,12 +40,8 @@ namespace Xiropht_RemoteNode.Object
         /// </summary>
         /// <param name="blockHash"></param>
         /// <returns></returns>
-        public int GetBlockIdFromHash(string blockHash)
+        public long GetBlockIdFromHash(string blockHash)
         {
-            if (blockHash.Length != ClassConnectorSetting.MaxBlockHashSize)
-            {
-                return -1;
-            }
             if (ListBlockHash.ContainsKey(blockHash))
             {
                 return ListBlockHash[blockHash];

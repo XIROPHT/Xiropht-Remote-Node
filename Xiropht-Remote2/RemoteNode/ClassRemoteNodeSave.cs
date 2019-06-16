@@ -107,16 +107,32 @@ namespace Xiropht_RemoteNode.RemoteNode
                         while ((line = sr.ReadLine()) != null)
                         {
                             counter++;
-                            long totalTransaction = ClassRemoteNodeSync.ListOfTransaction.Count;
                             try
                             {
-                                if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(line, totalTransaction))
+                                if (line.Contains("%"))
                                 {
-                                    ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(totalTransaction, line);
+                                    var splitTransaction = line.Split(new[] { "%" }, StringSplitOptions.None);
+                                    long idTransaction = long.Parse(splitTransaction[0]);
+                                    if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(splitTransaction[1], idTransaction))
+                                    {
+                                        ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(idTransaction, splitTransaction[1]);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Transaction: " + line + " on line: " + counter + " is probably duplicate or corrupted. Ignored.");
+                                    }
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Transaction: " + line + " on line: " + counter + " is probably duplicate or corrupted. Ignored.");
+                                    long totalTransaction = ClassRemoteNodeSync.ListOfTransaction.Count;
+                                    if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(line, totalTransaction))
+                                    {
+                                        ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(totalTransaction, line);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Transaction: " + line + " on line: " + counter + " is probably duplicate or corrupted. Ignored.");
+                                    }
                                 }
                             }
                             catch
@@ -168,11 +184,15 @@ namespace Xiropht_RemoteNode.RemoteNode
                             {
                                 counter++;
                                 var splitLineBlock = line.Split(new[] { "#" }, StringSplitOptions.None);
-                                var blockId = ClassRemoteNodeSync.ListOfBlock.Count;
-                                if (ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(splitLineBlock[1]) == -1)
+                                string blockHash = splitLineBlock[1];
+                                long blockId = long.Parse(splitLineBlock[0]);
+                                if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockId-1))
                                 {
-                                    ClassRemoteNodeSync.ListOfBlock.Add(blockId, line);
-                                    ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(splitLineBlock[1], blockId);
+                                    if (ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(blockHash) == -1)
+                                    {
+                                        ClassRemoteNodeSync.ListOfBlock.Add(blockId-1, line);
+                                        ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockHash, blockId-1);
+                                    }
                                 }
                             }
                         }
@@ -237,9 +257,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             {
                                                 if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
                                                 {
-                                                    if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i)))
+                                                    if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
                                                     {
-                                                        BlockchainTransactionWriter.Write(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
+                                                        BlockchainTransactionWriter.Write(i + "%" + ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
                                                     }
                                                 }
                                             }
@@ -292,13 +312,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         {
                                             if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
                                             {
-                                                if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i)))
+                                                if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
                                                 {
-
-
-
-                                                    sw.Write(ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
-
+                                                    sw.Write(i + "%" + ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i) + "\n");
                                                 }
                                             }
                                         }
@@ -368,12 +384,9 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                             for (var i = TotalBlockSaved; i < ClassRemoteNodeSync.ListOfBlock.Count; i++)
                                             {
-                                                if (i < ClassRemoteNodeSync.ListOfBlock.Count)
+                                                if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(i))
                                                 {
-                                                    if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfBlock[i]))
-                                                    {
-                                                        BlockchainBlockWriter.Write(ClassRemoteNodeSync.ListOfBlock[i] + "\n");
-                                                    }
+                                                    BlockchainBlockWriter.Write(ClassRemoteNodeSync.ListOfBlock[i] + "\n");
                                                 }
                                             }
 
@@ -422,12 +435,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 {
                                     for (var i = 0; i < ClassRemoteNodeSync.ListOfBlock.Count; i++)
                                     {
-                                        if (i < ClassRemoteNodeSync.ListOfBlock.Count)
+                                        if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(i))
                                         {
-                                            if (!string.IsNullOrEmpty(ClassRemoteNodeSync.ListOfBlock[i]))
-                                            {
-                                                sw.Write(ClassRemoteNodeSync.ListOfBlock[i] + "\n");
-                                            }
+                                            sw.Write(ClassRemoteNodeSync.ListOfBlock[i] + "\n");
                                         }
                                     }
                                 }

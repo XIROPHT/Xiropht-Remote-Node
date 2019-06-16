@@ -217,16 +217,16 @@ namespace Xiropht_RemoteNode.Command
                         ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop each connection of the remote node.");
-                        Program.RemoteNodeObjectBlock.StopConnection();
-                        Program.RemoteNodeObjectTransaction.StopConnection();
-                        Program.RemoteNodeObjectTotalTransaction.StopConnection();
-                        Program.RemoteNodeObjectCoinCirculating.StopConnection();
-                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection();
-                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection();
-                        Program.RemoteNodeObjectCurrentRate.StopConnection();
-                        Program.RemoteNodeObjectTotalBlockMined.StopConnection();
-                        Program.RemoteNodeObjectTotalFee.StopConnection();
-                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
+                        Program.RemoteNodeObjectBlock.StopConnection("end");
+                        Program.RemoteNodeObjectTransaction.StopConnection("end");
+                        Program.RemoteNodeObjectTotalTransaction.StopConnection("end");
+                        Program.RemoteNodeObjectCoinCirculating.StopConnection("end");
+                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection("end");
+                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection("end");
+                        Program.RemoteNodeObjectCurrentRate.StopConnection("end");
+                        Program.RemoteNodeObjectTotalBlockMined.StopConnection("end");
+                        Program.RemoteNodeObjectTotalFee.StopConnection("end");
+                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection("end");
                         ClassLog.StopWriteLog();
 
                         Thread.Sleep(1000);

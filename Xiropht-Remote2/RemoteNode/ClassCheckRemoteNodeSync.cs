@@ -38,8 +38,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Block disconnected, reconnect now..", 2, 3);
-                        Program.RemoteNodeObjectBlock.StopConnection();
+                        Program.RemoteNodeObjectBlock.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectBlock.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -61,9 +60,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Object Sync block disconnected, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectBlock.StopConnection();
+                            Program.RemoteNodeObjectBlock.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectBlock.StartConnectionAsync()).ConfigureAwait(false);
                             if (Program.Closed)
                             {
@@ -82,9 +80,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Coin Circulating disconnected, reconnect now..", 2, 3);
 
-                        Program.RemoteNodeObjectCoinCirculating.StopConnection();
+                        Program.RemoteNodeObjectCoinCirculating.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectCoinCirculating.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -107,9 +104,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                            ClassLog.Log("Last packet from Object Coin Circulating more than 10 seconds ago, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectCoinCirculating.StopConnection();
+                            Program.RemoteNodeObjectCoinCirculating.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectCoinCirculating.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -129,9 +125,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Coin Max Supply disconnected, reconnect now..", 2, 3);
-
-                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection();
+                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectCoinMaxSupply.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -153,9 +147,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Last packet from Object Sync Coin Max Supply more than 10 seconds ago, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectCoinMaxSupply.StopConnection();
+                            Program.RemoteNodeObjectCoinMaxSupply.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectCoinMaxSupply.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -175,9 +168,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Current Difficulty disconnected, reconnect now..", 2, 3);
 
-                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection();
+                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectCurrentDifficulty.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -199,9 +191,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Last packet from Object Sync Current Difficulty more than 10 seconds ago, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectCurrentDifficulty.StopConnection();
+                            Program.RemoteNodeObjectCurrentDifficulty.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectCurrentDifficulty.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -221,9 +212,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Current Hashrate disconnected, reconnect now..", 2, 3);
 
-                        Program.RemoteNodeObjectCurrentRate.StopConnection();
+                        Program.RemoteNodeObjectCurrentRate.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectCurrentRate.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -245,9 +235,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Last packet from Object Sync Current Hashrate more than 10 seconds ago, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectCurrentRate.StopConnection();
+                            Program.RemoteNodeObjectCurrentRate.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectCurrentRate.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -268,9 +257,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Total Block Mined disconnected, reconnect now..", 2, 3);
 
-                        Program.RemoteNodeObjectTotalBlockMined.StopConnection();
+                        Program.RemoteNodeObjectTotalBlockMined.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalBlockMined.StartConnectionAsync()).ConfigureAwait(false);
                         if (Program.Closed)
                         {
@@ -291,9 +279,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Last packet from Object Sync Current Total BlockMined more than 10 seconds ago, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectTotalBlockMined.StopConnection();
+                            Program.RemoteNodeObjectTotalBlockMined.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalBlockMined.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -313,9 +300,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Total Fee disconnected, reconnect now..", 2, 3);
 
-                        Program.RemoteNodeObjectTotalFee.StopConnection();
+                        Program.RemoteNodeObjectTotalFee.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalFee.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -337,9 +323,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Last packet from Object Sync Total Fee more than 10 seconds ago, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectTotalFee.StopConnection();
+                            Program.RemoteNodeObjectTotalFee.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalFee.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -359,9 +344,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Total Pending Transaction disconnected, reconnect now..", 2, 3);
 
-                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
+                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -383,9 +367,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Last packet from Object Sync Total Pending Transaction more than 10 seconds ago, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
+                            Program.RemoteNodeObjectTotalPendingTransaction.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -405,9 +388,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
                             Thread.Sleep(1000);
                         }
-                        ClassLog.Log("Object Sync Transaction disconnected, reconnect now..", 2, 3);
 
-                        Program.RemoteNodeObjectTransaction.StopConnection();
+                        Program.RemoteNodeObjectTransaction.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectTransaction.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -429,9 +411,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Object Sync Transaction disconnected, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectTransaction.StopConnection();
+                            Program.RemoteNodeObjectTransaction.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectTransaction.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -452,9 +433,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                             Thread.Sleep(1000);
                         }
 
-                        ClassLog.Log("Object Sync Total number of Transaction disconnected, reconnect now..", 2, 3);
 
-                        Program.RemoteNodeObjectTotalTransaction.StopConnection();
+                        Program.RemoteNodeObjectTotalTransaction.StopConnection("reconnect");
                         await Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalTransaction.StartConnectionAsync()).ConfigureAwait(false);
 
                         if (Program.Closed)
@@ -478,9 +458,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
-                            ClassLog.Log("Last packet from Object Total number of Transaction more than 10 seconds ago, reconnect now..", 2, 3);
 
-                            Program.RemoteNodeObjectTotalTransaction.StopConnection();
+                            Program.RemoteNodeObjectTotalTransaction.StopConnection("reconnect");
                             await Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalTransaction.StartConnectionAsync()).ConfigureAwait(false);
 
                             if (Program.Closed)
@@ -502,10 +481,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 }
                                 Thread.Sleep(1000);
                             }
+                            ClassRemoteNodeSync.ImPublicNode = false;
                             ClassRemoteNodeSync.ListOfPublicNodes.Clear();
-                            ClassLog.Log("Object Sync Want to be Public disconnected, reconnect now..", 2, 3);
-
-                            Program.RemoteNodeObjectToBePublic.StopConnection();
+                            ClassRemoteNodeSync.MyOwnIP = string.Empty;
+                            Program.RemoteNodeObjectToBePublic.StopConnection("reconnect");
                             await Program.RemoteNodeObjectToBePublic.StartConnectionAsync();
 
                             if (Program.Closed)
@@ -581,16 +560,16 @@ namespace Xiropht_RemoteNode.RemoteNode
             catch
             {
                 BlockchainNetworkStatus = false;
-                Program.RemoteNodeObjectBlock.StopConnection();
-                Program.RemoteNodeObjectTransaction.StopConnection();
-                Program.RemoteNodeObjectTotalTransaction.StopConnection();
-                Program.RemoteNodeObjectCoinCirculating.StopConnection();
-                Program.RemoteNodeObjectCoinMaxSupply.StopConnection();
-                Program.RemoteNodeObjectCurrentDifficulty.StopConnection();
-                Program.RemoteNodeObjectCurrentRate.StopConnection();
-                Program.RemoteNodeObjectTotalBlockMined.StopConnection();
-                Program.RemoteNodeObjectTotalFee.StopConnection();
-                Program.RemoteNodeObjectTotalPendingTransaction.StopConnection();
+                Program.RemoteNodeObjectBlock.StopConnection(string.Empty);
+                Program.RemoteNodeObjectTransaction.StopConnection(string.Empty);
+                Program.RemoteNodeObjectTotalTransaction.StopConnection(string.Empty);
+                Program.RemoteNodeObjectCoinCirculating.StopConnection(string.Empty);
+                Program.RemoteNodeObjectCoinMaxSupply.StopConnection(string.Empty);
+                Program.RemoteNodeObjectCurrentDifficulty.StopConnection(string.Empty);
+                Program.RemoteNodeObjectCurrentRate.StopConnection(string.Empty);
+                Program.RemoteNodeObjectTotalBlockMined.StopConnection(string.Empty);
+                Program.RemoteNodeObjectTotalFee.StopConnection(string.Empty);
+                Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(string.Empty);
             }
         }
     }

@@ -248,17 +248,17 @@ namespace Xiropht_RemoteNode
                 {
                     Console.WriteLine("Remote node objects can't connect to the network, retry in 10 seconds..");
                     ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
-                    RemoteNodeObjectBlock.StopConnection();
-                    RemoteNodeObjectToBePublic.StopConnection();
-                    RemoteNodeObjectTransaction.StopConnection();
-                    RemoteNodeObjectCoinCirculating.StopConnection();
-                    RemoteNodeObjectCoinMaxSupply.StopConnection();
-                    RemoteNodeObjectCurrentDifficulty.StopConnection();
-                    RemoteNodeObjectCurrentRate.StopConnection();
-                    RemoteNodeObjectTotalBlockMined.StopConnection();
-                    RemoteNodeObjectTotalFee.StopConnection();
-                    RemoteNodeObjectTotalPendingTransaction.StopConnection();
-                    RemoteNodeObjectTotalTransaction.StopConnection();
+                    RemoteNodeObjectBlock.StopConnection(string.Empty);
+                    RemoteNodeObjectToBePublic.StopConnection(string.Empty);
+                    RemoteNodeObjectTransaction.StopConnection(string.Empty);
+                    RemoteNodeObjectCoinCirculating.StopConnection(string.Empty);
+                    RemoteNodeObjectCoinMaxSupply.StopConnection(string.Empty);
+                    RemoteNodeObjectCurrentDifficulty.StopConnection(string.Empty);
+                    RemoteNodeObjectCurrentRate.StopConnection(string.Empty);
+                    RemoteNodeObjectTotalBlockMined.StopConnection(string.Empty);
+                    RemoteNodeObjectTotalFee.StopConnection(string.Empty);
+                    RemoteNodeObjectTotalPendingTransaction.StopConnection(string.Empty);
+                    RemoteNodeObjectTotalTransaction.StopConnection(string.Empty);
                     await Task.Delay(10000);
                 }
 

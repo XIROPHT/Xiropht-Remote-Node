@@ -421,7 +421,7 @@ namespace Xiropht_RemoteNode.Api
                 case ClassApiHttpRequestEnumeration.GetCoinBlockPerHash:
                     if (selectedHash != string.Empty)
                     {
-                        int selectedBlockIndex = ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(selectedHash);
+                        long selectedBlockIndex = ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(selectedHash);
                         if (selectedBlockIndex != -1)
                         {
 
