@@ -482,6 +482,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                     {
                                                                         for (var i = 0; i < totalTransaction; i++) // Research missed tx.
                                                                         {
+                                                                            if (!RemoteNodeObjectConnectionStatus)
+                                                                            {
+                                                                                break;
+                                                                            }
                                                                             if (i < totalTransaction)
                                                                             {
                                                                                 if (!ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
@@ -847,7 +851,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     if (ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp-1))
                                                     {
                                                         ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp-1, blockSubString);
-                                                        if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
+                                                        if (ClassRemoteNodeSync.ListOfBlock.Count.ToString("F0") ==
                                                             ClassRemoteNodeSync.TotalBlockMined)
                                                         {
                                                             ClassLog.Log(
@@ -895,7 +899,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     if (ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp-1))
                                                     {
                                                         ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp-1, blockSubString);
-                                                        if (ClassRemoteNodeSync.ListOfBlock.Count.ToString() ==
+                                                        if (ClassRemoteNodeSync.ListOfBlock.Count.ToString("F0") ==
                                                             ClassRemoteNodeSync.TotalBlockMined)
                                                         {
                                                             ClassLog.Log(
@@ -1025,7 +1029,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                     if (ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(transactionIdInsert, transactionSubSplit[1]))
                                                                     {
 
-                                                                        if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
+                                                                        if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString("F0") == ClassRemoteNodeSync.TotalTransaction)
                                                                         {
                                                                             ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
                                                                             if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
@@ -1092,11 +1096,19 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                                     if (ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(transactionIdInsert, transactionSubSplit[1]))
                                                     {
-                                                        if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString() == ClassRemoteNodeSync.TotalTransaction)
+                                                        if ((ClassRemoteNodeSync.ListOfTransaction.Count).ToString("F0") == ClassRemoteNodeSync.TotalTransaction)
                                                         {
-                                                            ClassRemoteNodeKey.StartUpdateHashTransactionList();
                                                             ClassLog.Log("Transaction synced, " + (ClassRemoteNodeSync.ListOfTransaction.Count) + "/" + ClassRemoteNodeSync.TotalTransaction, 0, 1);
-
+                                                            if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
+                                                            {
+                                                                RemoteNodeObjectConnectionStatus = false;
+                                                                RemoteNodeObjectLoginStatus = false;
+                                                                RemoteNodeObjectConnectionStatus = false;
+                                                                RemoteNodeObjectInReceiveBlock = false;
+                                                                RemoteNodeObjectInReceiveTransaction = false;
+                                                                RemoteNodeObjectInSyncBlock = false;
+                                                                RemoteNodeObjectInSyncTransaction = false;
+                                                            }
                                                         }
                                                         else
                                                         {
