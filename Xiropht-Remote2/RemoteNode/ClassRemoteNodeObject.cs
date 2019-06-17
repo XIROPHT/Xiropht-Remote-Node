@@ -1173,7 +1173,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(
                                     ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration
                                         .RemoteCheckTransactionPerId + "|" +
-                                    ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionId), Program.Certificate, false,
+                                    ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionId).Item1, Program.Certificate, false,
                                     true))
                                 {
                                     RemoteNodeObjectConnectionStatus = false;

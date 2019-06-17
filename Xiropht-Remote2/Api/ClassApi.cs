@@ -795,7 +795,7 @@ namespace Xiropht_RemoteNode.Api
                                         {
                                             if (idTransactionAsk >= 0 && idTransactionAsk < ClassRemoteNodeSync.ListOfTransaction.Count)
                                             {
-                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeTransactionPerId + "|" + ClassRemoteNodeSync.ListOfTransaction.GetTransaction(idTransactionAsk)).ConfigureAwait(false))
+                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.SendRemoteNodeTransactionPerId + "|" + ClassRemoteNodeSync.ListOfTransaction.GetTransaction(idTransactionAsk).Item1).ConfigureAwait(false))
                                                 {
                                                     _incomingConnectionStatus = false;
                                                     return false;
