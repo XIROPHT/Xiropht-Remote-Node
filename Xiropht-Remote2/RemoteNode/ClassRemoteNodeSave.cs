@@ -255,15 +255,14 @@ namespace Xiropht_RemoteNode.RemoteNode
 
                                             for (var i = TotalTransactionSaved; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++)
                                             {
-                                                if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
-                                                {
-                                                    if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
-                                                    {
-                                                        var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
 
-                                                        BlockchainTransactionWriter.Write(transactionObject.Item2 + "%" + transactionObject.Item1 + "\n");
-                                                    }
+                                                if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
+                                                {
+                                                    var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
+
+                                                    BlockchainTransactionWriter.Write(transactionObject.Item2 + "%" + transactionObject.Item1 + "\n");
                                                 }
+
                                             }
 
                                             TotalTransactionSaved = ClassRemoteNodeSync.ListOfTransaction.Count;
@@ -312,15 +311,14 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     {
                                         for (var i = 0; i < ClassRemoteNodeSync.ListOfTransaction.Count; i++)
                                         {
-                                            if (i < ClassRemoteNodeSync.ListOfTransaction.Count)
-                                            {
-                                                if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
-                                                {
-                                                    var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
 
-                                                    sw.Write(transactionObject.Item2 + "%" + transactionObject.Item1 + "\n");
-                                                }
+                                            if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
+                                            {
+                                                var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
+
+                                                sw.Write(transactionObject.Item2 + "%" + transactionObject.Item1 + "\n");
                                             }
+
                                         }
                                     }
 
