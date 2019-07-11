@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -13,6 +14,8 @@ using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.Object;
 using Xiropht_RemoteNode.RemoteNode;
+using Xiropht_RemoteNode.Setting;
+using Xiropht_RemoteNode.Token;
 using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode
@@ -69,7 +72,8 @@ namespace Xiropht_RemoteNode
         /// <summary>
         /// About setting file.
         /// </summary>
-        private static string ConfigFilePath = "\\config.ini";
+        private static string ConfigFilePath = "\\config.json";
+        private static string ConfigOldFilePath = "\\config.ini";
 
         /// <summary>
         /// About api http setting.
@@ -125,68 +129,67 @@ namespace Xiropht_RemoteNode
 
             if (File.Exists(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
             {
-                ReadConfigFile();
-                if (EnableWriteLog)
+                if (ReadConfigFile())
                 {
-                    ClassLog.EnableWriteLog();
+                    if (EnableWriteLog)
+                    {
+                        ClassLog.EnableWriteLog();
+                    }
+                    if (EnableFilteringSystem)
+                    {
+                        ClassApiBan.FilterAutoCheckObject();
+                    }
                 }
-                if (EnableFilteringSystem)
+                else
                 {
-                    ClassApiBan.FilterAutoCheckObject();
+                    Console.WriteLine("Configuration file corrupted or invalid, do you want to setting up again your configuration? [Y/N]");
+                    bool initialization = Console.ReadLine().ToLower() == "y";
+                    if (initialization)
+                    {
+                        FirstInitialization();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Close remote node tool.");
+                        Process.GetCurrentProcess().Kill();
+                    }
                 }
             }
             else
             {
-                Console.WriteLine(
-                    "Welcome, please write your wallet address, in a near future public remote nodes will get reward: ");
-                RemoteNodeWalletAddress = Console.ReadLine();
-
-                Console.WriteLine("Do you want load your node as a Public Remote Node? [Y/N]");
-                var answer = Console.ReadLine();
-                if (answer == "Y" || answer == "y")
+                if (File.Exists(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigOldFilePath)))
                 {
-                    Console.WriteLine("Be carefull, you need to open the default port " +
-                                      ClassConnectorSetting.RemoteNodePort + " of your remote node in your router.");
-                    Console.WriteLine(
-                        "Your port need to be opened for everyone and not only for Seed Nodes, for proceed test of your sync.");
-                    Console.WriteLine("If everything is alright, your remote node will be listed in the public list.");
-                    Console.WriteLine(
-                        "If informations of your sync are not right, your remote node will be not listed.");
-                    Console.WriteLine(
-                        "Checking by Seed Nodes of your Remote Node work everytime for be sure your node is legit and can be rewarded.");
-                    Console.WriteLine("");
-                    Console.WriteLine("Are you sure to enable this mode? [Y/N]");
-                    answer = Console.ReadLine();
-                    if (answer == "Y" || answer == "y")
+                    if (ReadConfigFile(true))
                     {
-                        Console.WriteLine("Enabling public remote node system..");
-                        ClassRemoteNodeSync.WantToBePublicNode = true;
-                    }
-                }
-
-                Console.WriteLine("Do you to enable the HTTP API ? [Y/N]");
-                answer = Console.ReadLine();
-                if (answer == "Y" || answer == "y")
-                {
-                    EnableApiHttp = true;
-                    Console.WriteLine("Do you want to select another port for your HTTP API? [Y/N]");
-                    answer = Console.ReadLine();
-                    if (answer == "Y" || answer == "y")
-                    {
-                        Console.WriteLine("Enter your port selected for your HTTP API: (By default: " + ClassConnectorSetting.RemoteNodeHttpPort + ")");
-                        string portChoosed = Console.ReadLine();
-                        while (!int.TryParse(portChoosed, out ClassApiHttp.PersonalRemoteNodeHttpPort))
+                        if (EnableWriteLog)
                         {
-                            Console.WriteLine("Invalid port, please try another one:");
-                            portChoosed = Console.ReadLine();
+                            ClassLog.EnableWriteLog();
+                        }
+                        if (EnableFilteringSystem)
+                        {
+                            ClassApiBan.FilterAutoCheckObject();
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Configuration file corrupted or invalid, do you want to setting up again your configuration? [Y/N]");
+                        bool initialization = Console.ReadLine().ToLower() == "y";
+                        if (initialization)
+                        {
+                            FirstInitialization();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Close remote node tool.");
+                            Process.GetCurrentProcess().Kill();
                         }
                     }
                 }
-                SaveConfigFile();
-
+                else
+                {
+                    FirstInitialization();
+                }
             }
-
-
 
             Certificate = ClassUtils.GenerateCertificate();
             Console.WriteLine("Initialize Remote Node Sync Objects..");
@@ -309,12 +312,117 @@ namespace Xiropht_RemoteNode
             _threadCommandLine.Start();
         }
 
+
+        /// <summary>
+        /// Start first initialization of the tool.
+        /// </summary>
+        private static void FirstInitialization()
+        {
+            Console.WriteLine("Welcome, please write your wallet address:");
+            RemoteNodeWalletAddress = Console.ReadLine();
+
+            Console.WriteLine("Checking wallet address..");
+            bool checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+
+            while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize || RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
+            {
+                Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
+                RemoteNodeWalletAddress = Console.ReadLine();
+                RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
+                Console.WriteLine("Checking wallet address..", 4);
+                checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+            }
+            if (checkWalletAddress)
+            {
+                Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
+            }
+
+            Console.WriteLine("Do you want load your node as a Public Remote Node? [Y/N]");
+            var answer = Console.ReadLine();
+            if (answer == "Y" || answer == "y")
+            {
+                Console.WriteLine("Be carefull, you need to open the default port " +
+                                  ClassConnectorSetting.RemoteNodePort + " of your remote node in your router.");
+                Console.WriteLine(
+                    "Your port need to be opened for everyone and not only for Seed Nodes, for proceed test of your sync.");
+                Console.WriteLine("If everything is alright, your remote node will be listed in the public list.");
+                Console.WriteLine(
+                    "If informations of your sync are not right, your remote node will be not listed.");
+                Console.WriteLine(
+                    "Checking by Seed Nodes of your Remote Node work everytime for be sure your node is legit and can be rewarded.");
+                Console.WriteLine("");
+                Console.WriteLine("Are you sure to enable this mode? [Y/N]");
+                answer = Console.ReadLine();
+                if (answer == "Y" || answer == "y")
+                {
+                    Console.WriteLine("Enabling public remote node system..");
+                    ClassRemoteNodeSync.WantToBePublicNode = true;
+                }
+            }
+
+            Console.WriteLine("Do you to enable the HTTP API ? [Y/N]");
+            answer = Console.ReadLine();
+            if (answer == "Y" || answer == "y")
+            {
+                EnableApiHttp = true;
+                Console.WriteLine("Do you want to select another port for your HTTP API? [Y/N]");
+                answer = Console.ReadLine();
+                if (answer == "Y" || answer == "y")
+                {
+                    Console.WriteLine("Enter your port selected for your HTTP API: (By default: " + ClassConnectorSetting.RemoteNodeHttpPort + ")");
+                    string portChoosed = Console.ReadLine();
+                    while (!int.TryParse(portChoosed, out ClassApiHttp.PersonalRemoteNodeHttpPort))
+                    {
+                        Console.WriteLine("Invalid port, please try another one:");
+                        portChoosed = Console.ReadLine();
+                    }
+                }
+            }
+            SaveConfigFile();
+        }
+
+        /// <summary>
+        /// Save configuration file.
+        /// </summary>
         private static void SaveConfigFile()
         {
             Console.WriteLine("Save config file..");
             File.Create(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)).Close();
+
+            var remoteNodeSettingObject = new ClassRemoteNodeSetting
+            {
+                wallet_address = RemoteNodeWalletAddress,
+                api_http_port = ClassApiHttp.PersonalRemoteNodeHttpPort,
+                log_level = LogLevel,
+                write_log = false,
+                enable_filtering_system = false,
+                chain_filtering_system = string.Empty,
+                name_filtering_system = string.Empty
+            };
+            if (ClassRemoteNodeSync.WantToBePublicNode)
+            {
+                remoteNodeSettingObject.enable_public_mode = true;
+            }
+            else
+            {
+                remoteNodeSettingObject.enable_public_mode = false;
+            }
+
+            if (EnableApiHttp)
+            {
+                remoteNodeSettingObject.enable_api_http = true;
+            }
+            else
+            {
+                remoteNodeSettingObject.enable_api_http = false;
+            }
+
+            var jsonRemoteNodeSettingObject = JsonConvert.SerializeObject(remoteNodeSettingObject, Formatting.Indented);
             using (StreamWriter writer = new StreamWriter(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)) { AutoFlush = true })
             {
+                writer.Write(jsonRemoteNodeSettingObject);
+                #region old setting file
+                /*
                 writer.WriteLine("WALLET_ADDRESS=" + RemoteNodeWalletAddress);
                 if (ClassRemoteNodeSync.WantToBePublicNode)
                 {
@@ -339,81 +447,178 @@ namespace Xiropht_RemoteNode
                 writer.WriteLine("ENABLE_FILTERING_SYSTEM=N");
                 writer.WriteLine("CHAIN_FILTERING_SYSTEM=");
                 writer.WriteLine("NAME_FILTERING_SYSTEM=");
+                */
+                #endregion
             }
             Console.WriteLine("Config file saved.");
         }
 
         /// <summary>
-        /// Read config file.
+        /// Read configuration file.
         /// </summary>
-        private static void ReadConfigFile()
+        private static bool ReadConfigFile(bool oldConfigFile = false)
         {
-            StreamReader reader = new StreamReader(ClassUtilsNode.ConvertPath(System.AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath));
-
-            string line = string.Empty;
-
-            while ((line = reader.ReadLine()) != null)
+            try
             {
-                if (!line.StartsWith("/"))
+                #region Old setting file
+
+                if (oldConfigFile)
                 {
-                    if (line.Contains("WALLET_ADDRESS="))
+                    using (StreamReader reader = new StreamReader(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigOldFilePath)))
                     {
-                        RemoteNodeWalletAddress = line.Replace("WALLET_ADDRESS=", "");
-                    }
-                    if (line.Contains("ENABLE_PUBLIC_MODE="))
-                    {
-                        string option = line.Replace("ENABLE_PUBLIC_MODE=", "");
-                        if (option.ToLower() == "y")
+
+                        string line = string.Empty;
+
+                        string jsonSettingRemoteNodeObject = string.Empty;
+                        while ((line = reader.ReadLine()) != null)
                         {
-                            ClassRemoteNodeSync.WantToBePublicNode = true;
+                            if (!line.StartsWith("/"))
+                            {
+
+                                if (line.Contains("WALLET_ADDRESS="))
+                                {
+                                    RemoteNodeWalletAddress = line.Replace("WALLET_ADDRESS=", "");
+                                    Console.WriteLine("Checking wallet address..");
+                                    bool checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+
+                                    while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize || RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
+                                    {
+                                        Console.WriteLine("Invalid wallet address - Please, write your valid wallet address:");
+                                        RemoteNodeWalletAddress = Console.ReadLine();
+                                        RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
+                                        Console.WriteLine("Checking wallet address..", 4);
+                                        checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+                                    }
+                                    if (checkWalletAddress)
+                                    {
+                                        Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
+                                    }
+                                }
+                                if (line.Contains("ENABLE_PUBLIC_MODE="))
+                                {
+                                    string option = line.Replace("ENABLE_PUBLIC_MODE=", "");
+                                    if (option.ToLower() == "y")
+                                    {
+                                        ClassRemoteNodeSync.WantToBePublicNode = true;
+                                    }
+                                    else
+                                    {
+                                        ClassRemoteNodeSync.WantToBePublicNode = false;
+                                    }
+                                }
+                                if (line.Contains("ENABLE_API_HTTP="))
+                                {
+                                    string option = line.Replace("ENABLE_API_HTTP=", "");
+                                    if (option.ToLower() == "y")
+                                    {
+                                        EnableApiHttp = true;
+                                    }
+                                }
+                                if (line.Contains("API_HTTP_PORT="))
+                                {
+                                    int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
+                                }
+                                if (line.Contains("LOG_LEVEL="))
+                                {
+                                    int.TryParse(line.Replace("LOG_LEVEL=", ""), out LogLevel);
+                                }
+                                if (line.Contains("WRITE_LOG="))
+                                {
+                                    string option = line.Replace("WRITE_LOG=", "");
+                                    if (option.ToLower() == "y")
+                                    {
+                                        EnableWriteLog = true;
+                                    }
+                                }
+                                if (line.Contains("ENABLE_FILTERING_SYSTEM="))
+                                {
+                                    string option = line.Replace("ENABLE_FILTERING_SYSTEM=", "");
+                                    if (option.ToLower() == "y")
+                                    {
+                                        EnableFilteringSystem = true;
+                                    }
+                                }
+                                if (line.Contains("CHAIN_FILTERING_SYSTEM="))
+                                {
+                                    ClassApiBan.FilterChainName = line.Replace("CHAIN_FILTERING_SYSTEM=", "").ToLower();
+                                }
+                                if (line.Contains("NAME_FILTERING_SYSTEM="))
+                                {
+                                    ClassApiBan.FilterSystem = line.Replace("NAME_FILTERING_SYSTEM=", "").ToLower();
+                                }
+                            }
                         }
-                        else
+                    }
+                    SaveConfigFile();
+                    File.Delete(AppDomain.CurrentDomain.BaseDirectory + ConfigOldFilePath);
+                }
+                #endregion
+                else
+                {
+                    ClassRemoteNodeSetting remoteNodeSettingObject = null;
+                    using (StreamReader reader = new StreamReader(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
+                    {
+
+                        string line = string.Empty;
+
+                        string jsonSettingRemoteNodeObject = string.Empty;
+                        while ((line = reader.ReadLine()) != null)
                         {
-                            ClassRemoteNodeSync.WantToBePublicNode = false;
+                            if (!line.StartsWith("/"))
+                            {
+
+                                jsonSettingRemoteNodeObject += line;
+
+                            }
                         }
+
+                        remoteNodeSettingObject = JsonConvert.DeserializeObject<ClassRemoteNodeSetting>(jsonSettingRemoteNodeObject);
+
+
                     }
-                    if (line.Contains("ENABLE_API_HTTP="))
+                    if (remoteNodeSettingObject != null)
                     {
-                        string option = line.Replace("ENABLE_API_HTTP=", "");
-                        if (option.ToLower() == "y")
+                        RemoteNodeWalletAddress = remoteNodeSettingObject.wallet_address;
+                        Console.WriteLine("Checking wallet address..");
+                        bool checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+                        bool wasWrongWalletAddress = false;
+                        while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize || RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
                         {
-                            EnableApiHttp = true;
+                            wasWrongWalletAddress = true;
+                            Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
+                            RemoteNodeWalletAddress = Console.ReadLine();
+                            RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
+                            Console.WriteLine("Checking wallet address..", 4);
+                            checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
                         }
-                    }
-                    if (line.Contains("API_HTTP_PORT="))
-                    {
-                        int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
-                    }
-                    if (line.Contains("LOG_LEVEL="))
-                    {
-                        int.TryParse(line.Replace("LOG_LEVEL=", ""), out LogLevel);
-                    }
-                    if (line.Contains("WRITE_LOG="))
-                    {
-                        string option = line.Replace("WRITE_LOG=", "");
-                        if (option.ToLower() == "y")
+                        if (checkWalletAddress)
                         {
-                            EnableWriteLog = true;
+                            Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
                         }
-                    }
-                    if (line.Contains("ENABLE_FILTERING_SYSTEM="))
-                    {
-                        string option = line.Replace("ENABLE_FILTERING_SYSTEM=", "");
-                        if (option.ToLower() == "y")
+                        ClassRemoteNodeSync.WantToBePublicNode = remoteNodeSettingObject.enable_public_mode;
+                        EnableApiHttp = remoteNodeSettingObject.enable_api_http;
+                        ClassApiHttp.PersonalRemoteNodeHttpPort = remoteNodeSettingObject.api_http_port;
+                        LogLevel = remoteNodeSettingObject.log_level;
+                        EnableWriteLog = remoteNodeSettingObject.write_log;
+                        EnableFilteringSystem = remoteNodeSettingObject.enable_filtering_system;
+                        ClassApiBan.FilterChainName = remoteNodeSettingObject.chain_filtering_system;
+                        ClassApiBan.FilterSystem = remoteNodeSettingObject.name_filtering_system;
+                        if (wasWrongWalletAddress)
                         {
-                            EnableFilteringSystem = true;
+                            SaveConfigFile();
                         }
                     }
-                    if (line.Contains("CHAIN_FILTERING_SYSTEM="))
+                    else
                     {
-                        ClassApiBan.FilterChainName = line.Replace("CHAIN_FILTERING_SYSTEM=", "").ToLower();
-                    }
-                    if (line.Contains("NAME_FILTERING_SYSTEM="))
-                    {
-                        ClassApiBan.FilterSystem = line.Replace("NAME_FILTERING_SYSTEM=", "").ToLower();
+                        return false;
                     }
                 }
             }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

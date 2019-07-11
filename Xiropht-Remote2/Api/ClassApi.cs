@@ -692,7 +692,7 @@ namespace Xiropht_RemoteNode.Api
                                                             string resultTransaction = apiTransaction.GetTransactionFromWalletId(walletId, idTransactionAskFromWallet);
                                                             if (resultTransaction == "WRONG")
                                                             {
-                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                                 {
                                                                     _incomingConnectionStatus = false;
                                                                     return false;
@@ -700,7 +700,7 @@ namespace Xiropht_RemoteNode.Api
                                                             }
                                                             else
                                                             {
-                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletTransactionPerId + "|" + resultTransaction))
+                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletTransactionPerId + "|" + resultTransaction).ConfigureAwait(false))
                                                                 {
                                                                     _incomingConnectionStatus = false;
                                                                     return false;
@@ -756,7 +756,7 @@ namespace Xiropht_RemoteNode.Api
                                                             string resultTransaction = apiTransaction.GetTransactionFromWalletId(walletId, idAnonymityTransactionAskFromWallet);
                                                             if (resultTransaction == "WRONG")
                                                             {
-                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction))
+                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction).ConfigureAwait(false))
                                                                 {
                                                                     _incomingConnectionStatus = false;
                                                                     return false;
@@ -764,7 +764,7 @@ namespace Xiropht_RemoteNode.Api
                                                             }
                                                             else
                                                             {
-                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletAnonymityTransactionPerId + "|" + resultTransaction))
+                                                                if (!await SendPacketAsync(_client, ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration.WalletAnonymityTransactionPerId + "|" + resultTransaction).ConfigureAwait(false))
                                                                 {
                                                                     _incomingConnectionStatus = false;
                                                                     return false;

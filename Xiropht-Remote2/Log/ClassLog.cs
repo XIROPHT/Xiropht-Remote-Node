@@ -66,6 +66,9 @@ namespace Xiropht_RemoteNode.Log
             }
         }
 
+        /// <summary>
+        /// Stop write log system.
+        /// </summary>
         public static void StopWriteLog()
         {
             try

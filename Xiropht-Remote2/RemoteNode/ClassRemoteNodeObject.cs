@@ -85,7 +85,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         {
 
             CancellationRemoteNodeObject = new CancellationTokenSource();
-            
+
             if (RemoteNodeObjectTcpClient == null)
                 RemoteNodeObjectTcpClient = new ClassSeedNodeConnector();
             else // For be sure.
@@ -125,7 +125,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// </summary>
         public void StopConnection(string disconnectType)
         {
-            switch(disconnectType)
+            switch (disconnectType)
             {
                 case "timeout":
                     ClassLog.Log("Object sync " + RemoteNodeObjectType + " not keep alive packet received since a long time. Reconnect it.", 0, 2);
@@ -233,7 +233,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                   await RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", ""));
+                                    await RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", ""));
 
                                 }
                             }
@@ -842,15 +842,15 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         var blockSubString = splitBlock[i].Substring(0, splitBlock[i].Length - 1);
                                         var blockLineSplit = blockSubString.Split(new[] { "#" }, StringSplitOptions.None);
                                         var blockIdTmp = long.Parse(blockLineSplit[0]);
-                                        if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp-1))
+                                        if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp - 1))
                                         {
                                             if (ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(blockLineSplit[1]) == -1)
                                             {
                                                 try
                                                 {
-                                                    if (ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp-1))
+                                                    if (ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp - 1))
                                                     {
-                                                        ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp-1, blockSubString);
+                                                        ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
                                                         if (ClassRemoteNodeSync.ListOfBlock.Count.ToString("F0") ==
                                                             ClassRemoteNodeSync.TotalBlockMined)
                                                         {
@@ -890,15 +890,15 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         var blockLineSplit = blockSubString.Split(new[] { "#" }, StringSplitOptions.None);
                                         var blockIdTmp = long.Parse(blockLineSplit[0]);
 
-                                        if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp-1))
+                                        if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockIdTmp - 1))
                                         {
                                             if (ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(blockLineSplit[1]) == -1)
                                             {
                                                 try
                                                 {
-                                                    if (ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp-1))
+                                                    if (ClassRemoteNodeSync.ListOfBlockHash.InsertBlockHash(blockLineSplit[1], blockIdTmp - 1))
                                                     {
-                                                        ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp-1, blockSubString);
+                                                        ClassRemoteNodeSync.ListOfBlock.Add(blockIdTmp - 1, blockSubString);
                                                         if (ClassRemoteNodeSync.ListOfBlock.Count.ToString("F0") ==
                                                             ClassRemoteNodeSync.TotalBlockMined)
                                                         {
@@ -1161,8 +1161,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     RemoteNodeObjectInReceiveTransaction = false;
                                     RemoteNodeObjectInSyncBlock = false;
                                     RemoteNodeObjectInSyncTransaction = false;
+#if DEBUG
                                     Console.WriteLine(
                                         "Remote Node Object sync disconnected. Restart connection in a minute.");
+#endif
                                 }
 
                         break;
@@ -1183,8 +1185,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     RemoteNodeObjectInReceiveTransaction = false;
                                     RemoteNodeObjectInSyncBlock = false;
                                     RemoteNodeObjectInSyncTransaction = false;
+#if DEBUG
                                     Console.WriteLine(
                                         "Remote Node Object sync disconnected. Restart connection in a minute.");
+#endif
                                 }
 
                         break;
@@ -1203,7 +1207,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                             RemoteNodeObjectInReceiveTransaction = false;
                             RemoteNodeObjectInSyncBlock = false;
                             RemoteNodeObjectInSyncTransaction = false;
-                            Console.WriteLine("Remote Node Object sync disconnected. Restart connection in a minute.");
+#if DEBUG
+                                    Console.WriteLine(
+                                        "Remote Node Object sync disconnected. Restart connection in a minute.");
+#endif
                         }
 
                         break;
@@ -1222,7 +1229,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                             RemoteNodeObjectInReceiveTransaction = false;
                             RemoteNodeObjectInSyncBlock = false;
                             RemoteNodeObjectInSyncTransaction = false;
-                            Console.WriteLine("Remote Node Object sync disconnected. Restart connection in a minute.");
+#if DEBUG
+                                    Console.WriteLine(
+                                        "Remote Node Object sync disconnected. Restart connection in a minute.");
+#endif
                         }
 
                         break;
@@ -1241,7 +1251,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                             RemoteNodeObjectInReceiveTransaction = false;
                             RemoteNodeObjectInSyncBlock = false;
                             RemoteNodeObjectInSyncTransaction = false;
-                            Console.WriteLine("Remote Node Object sync disconnected. Restart connection in a minute.");
+#if DEBUG
+                                    Console.WriteLine(
+                                        "Remote Node Object sync disconnected. Restart connection in a minute.");
+#endif
                         }
 
                         break;
@@ -1272,6 +1285,37 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     ClassRemoteNodeSync.ListOfTransaction.Count ==
                                     long.Parse(ClassRemoteNodeSync.TotalTransaction))
                                 {
+                                    if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
+                                    {
+                                        RemoteNodeObjectConnectionStatus = false;
+                                        RemoteNodeObjectLoginStatus = false;
+                                        RemoteNodeObjectConnectionStatus = false;
+                                        RemoteNodeObjectInReceiveBlock = false;
+                                        RemoteNodeObjectInReceiveTransaction = false;
+                                        RemoteNodeObjectInSyncBlock = false;
+                                        RemoteNodeObjectInSyncTransaction = false;
+#if DEBUG
+                                    Console.WriteLine(
+                                        "Remote Node Object sync disconnected. Restart connection in a minute.");
+#endif
+                                    }
+                                    else
+                                    {
+                                        if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaBlock, Program.Certificate, false, true))
+                                        {
+                                            RemoteNodeObjectConnectionStatus = false;
+                                            RemoteNodeObjectLoginStatus = false;
+                                            RemoteNodeObjectConnectionStatus = false;
+                                            RemoteNodeObjectInReceiveBlock = false;
+                                            RemoteNodeObjectInReceiveTransaction = false;
+                                            RemoteNodeObjectInSyncBlock = false;
+                                            RemoteNodeObjectInSyncTransaction = false;
+#if DEBUG
+                                    Console.WriteLine(
+                                        "Remote Node Object sync disconnected. Restart connection in a minute.");
+#endif
+                                        }
+                                    }
                                     if (!await RemoteNodeObjectTcpClient
                                         .SendPacketToSeedNodeAsync(
                                             ClassSeedNodeCommand.ClassSendSeedEnumeration.RemoteAskToBePublic,
@@ -1285,36 +1329,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         RemoteNodeObjectInSyncBlock = false;
                                         RemoteNodeObjectInSyncTransaction = false;
                                         ClassRemoteNodeSync.ListOfPublicNodes.Clear();
-                                        Console.WriteLine(
-                                            "Remote Node Object sync disconnected. Restart connection in a minute.");
-                                    }
-                                    else
-                                    {
-                                        if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaTransaction, Program.Certificate, false, true))
-                                        {
-                                            RemoteNodeObjectConnectionStatus = false;
-                                            RemoteNodeObjectLoginStatus = false;
-                                            RemoteNodeObjectConnectionStatus = false;
-                                            RemoteNodeObjectInReceiveBlock = false;
-                                            RemoteNodeObjectInReceiveTransaction = false;
-                                            RemoteNodeObjectInSyncBlock = false;
-                                            RemoteNodeObjectInSyncTransaction = false;
-                                            Console.WriteLine("Remote Node Object sync disconnected, ask schema transaction failed. Restart connection in a minute.");
-                                        }
-                                        else
-                                        {
-                                            if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskSchemaBlock, Program.Certificate, false, true))
-                                            {
-                                                RemoteNodeObjectConnectionStatus = false;
-                                                RemoteNodeObjectLoginStatus = false;
-                                                RemoteNodeObjectConnectionStatus = false;
-                                                RemoteNodeObjectInReceiveBlock = false;
-                                                RemoteNodeObjectInReceiveTransaction = false;
-                                                RemoteNodeObjectInSyncBlock = false;
-                                                RemoteNodeObjectInSyncTransaction = false;
-                                                Console.WriteLine("Remote Node Object sync disconnected, ask schema block failed. Restart connection in a minute.");
-                                            }
-                                        }
+#if DEBUG
+                                    Console.WriteLine(
+                                        "Remote Node Object sync disconnected. Restart connection in a minute.");
+#endif
                                     }
                                 }
                                 else
@@ -1339,13 +1357,11 @@ namespace Xiropht_RemoteNode.RemoteNode
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendSchemaTransaction:
                         RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.SchemaHashTransaction = packetSplit[1];
-                        //Console.WriteLine("Schema transaction received: " + packetSplit[1]);
                         ClassRemoteNodeKey.StartUpdateHashTransactionList();
                         break;
                     case ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteSendSchemaBlock:
                         RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         ClassRemoteNodeSync.SchemaHashBlock = packetSplit[1];
-                        //Console.WriteLine("Schema block received: " + packetSplit[1]);
                         ClassRemoteNodeKey.StartUpdateHashBlockList();
                         break;
                 }
@@ -1364,10 +1380,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                     ClassRemoteNodeSync.ImPublicNode = false;
                     ClassRemoteNodeSync.ListOfPublicNodes.Clear();
                     ClassRemoteNodeSync.MyOwnIP = string.Empty;
+                    ClassRemoteNodeSync.SchemaHashBlock = string.Empty;
+                    ClassRemoteNodeSync.SchemaHashTransaction = string.Empty;
                 }
+#if DEBUG
                 ClassLog.Log("Remote Node Object sync disconnected. Restart connection in a minute.", 2, 3);
+#endif
             }
         }
-
     }
 }
