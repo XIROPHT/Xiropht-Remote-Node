@@ -47,14 +47,208 @@ Open the **config.json** file and edit the following line containing **"enable_a
 | /get_coin_transaction_per_id |  return a transaction information per a transaction id example: http://127.0.0.1:18001/get_coin_transaction_per_id=1 |
 | /get_coin_transaction_per_hash |  return a transaction information per a transaction hash, for example: http://127.0.0.1:18001/get_coin_transaction_per_hash=hash_selected |
 
+<h2>Responses informations: </h2>
 
-<h3>Example:</h3>
+__On version earlier than **0.2.8.2R**:__
 
-Get full network stats: ``` https://api.xiropht.com/get_coin_network_full_stats```
+__Every json response sent by the API, return every value in **string**.__
 
-Result: 
+-------------------------------------------------------------------------------------------------------------------
 
-```
-{"coin_name":"Xiropht","coin_min_name":"XIRO","coin_max_supply":"26000004.41048858","coin_circulating":"364182.08874191","coin_total_fee":"397.91125809","coin_total_mined":"364580.00000000","coin_blockchain_height":"36459","coin_total_block_mined":"36458","coin_total_block_left":"2563542","coin_network_difficulty":"578034378","coin_network_hashrate":"693641253.6","coin_total_transaction":"133136","version":"0.2.8.1"}
-```
+On version equal or higher than **0.2.8.2R**:
+
+<h3>1. /get_coin_name </h3>
+
+Return the coin name.
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | string | Return the coin name. |
+| version | string | Return the version of the remote node tool . |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>2. /get_coin_min_name </h3>
+
+Return the ticker name of the coin.
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | string | Return the ticker name of the coin. |
+| version | string | Return the version of the remote node tool . |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>3. /get_coin_max_supply</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | double | Return the Max Supply of the coin. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>4. /get_coin_circulating</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | double | Return the current amount of coin circulating. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>5. /get_coin_total_fee</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | double | Return the current amount of fee accumulated. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>6. /get_coin_total_mined</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | double | Return the current amount of coin mined. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>7. /get_coin_blockchain_height</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | long | Return the current blockchain height. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>8. /get_coin_total_block_mined</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | long | Return the current amount of blocks mined. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>9. /get_coin_total_block_left</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | long | Return the current amount of blocks left to mining. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>10. /get_coin_network_difficulty</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | double | Return the current network difficulty. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>11. /get_coin_network_hashrate</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| result | double | Return the current network hashrate. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>12. /get_coin_network_full_stats</h3>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| coin_name | string | Return the name of the coin. |
+| coin_min_name | string | Return the ticker name of the coin. |
+| coin_max_supply | double | Return the max supply of the coin. |
+| coin_circulating | double | Return the current amount of coin circulating. |
+| coin_total_fee | double | Return the current amount of accumulated fee. |
+| coin_total_mined | double | Return the current amount of coin mined. |
+| coin_blockchain_height | long | Return the current blockchain height. |
+| coin_total_block_mined | long | Return the current amount of blocks mined. |
+| coin_total_block_left | long | Return the current amount of blocks left to mining. |
+| coin_network_difficulty | double | Return the current network difficulty. |
+| coin_network_hashrate | double | Return the current network hashrate. |
+| coin_total_transaction | long | Return the current total transaction synced. |
+
+-------------------------------------------------------------------------------------------------------------------
+
+<h3>13. /get_coin_block_per_id</h3>
+
+Return a block information from a block id, for example: http://127.0.0.1:18001/get_coin_block_per_id=1
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| block_id | long | Return the block id. |
+| block_hash | string | Return the block hash. |
+| block_transaction_hash | string | Return the block transaction hash. |
+| block_timestamp_create | long | Return the timestamp create of the block. |
+| block_timestamp_found | long | Return the timestamp found of the block. |
+| block_difficulty | double | Return the block difficulty. |
+| block_reward | double | Return the block reward. |
+
+<h4>14. /get_coin_block_per_hash</h4>
+
+Return a block information from a block hash, for example: http://127.0.0.1:18001/get_coin_block_per_hash=block_hash
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| block_id | long | Return the block id. |
+| block_hash | string | Return the block hash. |
+| block_transaction_hash | string | Return the block transaction hash. |
+| block_timestamp_create | long | Return the timestamp create of the block. |
+| block_timestamp_found | long | Return the timestamp found of the block. |
+| block_difficulty | double | Return the block difficulty. |
+| block_reward | double | Return the block reward. |
+
+<h4>15. /get_coin_transaction_per_id</h4>
+
+Return a transaction information per a transaction id example: http://127.0.0.1:18001/get_coin_transaction_per_id=1 
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| transaction_id | long | Return the block id. |
+| transaction_id_sender | string | Return the unique of the sender. |
+| transaction_fake_amount | double | Return the fake amount of transaction. |
+| transaction_fake_fee | double | Return the fake fee of transaction. |
+| transaction_id_receiver | string | Return the unique of the receiver. |
+| transaction_timestamp_sended | long | Return the timestamp of sending of the transaction. |
+| transaction_hash | string | Return the transaction hash. |
+| transaction_timestamp_received | long | Return the timestamp of receive of the transaction. |
+
+**Note:**
+
+the result of **transaction_id_sender** can be different of a number, please follow the list of specific tag of transaction:
+
+List of specific tag of transaction:
+
+~~~text
+m = blockchain 
+f = dev fee
+r = remote node fee 
+~~~
+
+<h4>16. /get_coin_transaction_per_hash</h4>
+
+Return a transaction information per a transaction hash example: http://127.0.0.1:18001/get_coin_transaction_per_hash=transaction_hash 
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| transaction_id | long | Return the block id. |
+| transaction_id_sender | string | Return the unique of the sender. |
+| transaction_fake_amount | double | Return the fake amount of transaction. |
+| transaction_fake_fee | double | Return the fake fee of transaction. |
+| transaction_id_receiver | string | Return the unique of the receiver. |
+| transaction_timestamp_sended | long | Return the timestamp of sending of the transaction. |
+| transaction_hash | string | Return the transaction hash. |
+| transaction_timestamp_received | long | Return the timestamp of receive of the transaction. |
+
+**Note:**
+
+the result of **transaction_id_sender** can be different of a number, please follow the list of specific tag of transaction:
+
+List of specific tag of transaction:
+
+~~~text
+m = blockchain 
+f = dev fee
+r = remote node fee 
+~~~
 
