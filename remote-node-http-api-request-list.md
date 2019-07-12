@@ -51,7 +51,7 @@ Open the **config.json** file and edit the following line containing **"enable_a
 
 __On version earlier than **0.2.8.2R**:__
 
-__Every json response sent by the API, return every value in **string**.__
+__Every json responses sent by the API, return every values in **string** type.__
 
 -------------------------------------------------------------------------------------------------------------------
 
