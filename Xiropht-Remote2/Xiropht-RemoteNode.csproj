@@ -61,6 +61,10 @@
     <Compile Include="Api\ClassApiHttp.cs" />
     <Compile Include="Api\ClassApiBan.cs" />
     <Compile Include="Api\ClassApiTransaction.cs" />
+    <Compile Include="Api\Object\ClassApiBlockObject.cs" />
+    <Compile Include="Api\Object\ClassApiNetworkStatsObject.cs" />
+    <Compile Include="Api\Object\ClassApiResultObject.cs" />
+    <Compile Include="Api\Object\ClassApiTransactionObject.cs" />
     <Compile Include="Object\BigDictionaryTransaction.cs" />
     <Compile Include="Object\BigDictionaryTransactionHash.cs" />
     <Compile Include="Object\BigDictionaryTransactionSortedPerWallet.cs" />

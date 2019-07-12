@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.Setting;
+using Xiropht_RemoteNode.Api.Object;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.Object;
@@ -41,6 +42,7 @@ namespace Xiropht_RemoteNode.Api
         public const string GetCoinTransactionPerHash = "get_coin_transaction_per_hash";
         public const string PacketFavicon = "favicon.ico";
         public const string PacketNotExist = "not_exist";
+        public const string PacketError = "error";
     }
 
     public class ClassApiHttp
@@ -331,74 +333,216 @@ namespace Xiropht_RemoteNode.Api
         /// <returns></returns>
         private async Task HandlePacketHttpAsync(string packet)
         {
-            long selectedIndex = 0;
-            string selectedHash = string.Empty;
-            if (packet.Contains("="))
+            try
             {
-                var splitPacket = packet.Split(new[] { "=" }, StringSplitOptions.None);
-                if(!long.TryParse(splitPacket[1], out selectedIndex))
+                long selectedIndex = 0;
+                string selectedHash = string.Empty;
+                if (packet.Contains("="))
                 {
-                    selectedHash = splitPacket[1]; // Hash
-                }
-                packet = splitPacket[0];
-            }
-            switch (packet)
-            {
-                case ClassApiHttpRequestEnumeration.GetCoinName:
-                    await BuildAndSendHttpPacketAsync(ClassConnectorSetting.CoinName);
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinMinName:
-                    await BuildAndSendHttpPacketAsync(ClassConnectorSetting.CoinNameMin);
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinMaxSupply:
-                    await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CoinMaxSupply);
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinCirculating:
-                    await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CoinCirculating);
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinTotalFee:
-                    await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentTotalFee);
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinTotalMined:
-                    await BuildAndSendHttpPacketAsync(""+(ClassRemoteNodeSync.ListOfBlock.Count * 10));
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinBlockchainHeight:
-                    await BuildAndSendHttpPacketAsync(""+ (ClassRemoteNodeSync.ListOfBlock.Count + 1));
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinTotalBlockMined:
-                    await BuildAndSendHttpPacketAsync("" + (ClassRemoteNodeSync.ListOfBlock.Count));
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinTotalBlockLeft:
-                    await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentBlockLeft);
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinNetworkDifficulty:
-                    await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentDifficulty);
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinNetworkHashrate:
-                    await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentHashrate);
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinBlockPerId:
-                    if (selectedIndex > 0)
+                    var splitPacket = packet.Split(new[] { "=" }, StringSplitOptions.None);
+                    if (!long.TryParse(splitPacket[1], out selectedIndex))
                     {
-                        selectedIndex -= 1;
-                        if (ClassRemoteNodeSync.ListOfBlock.Count-1 >= selectedIndex)
+                        selectedHash = splitPacket[1]; // Hash
+                    }
+                    packet = splitPacket[0];
+                }
+                switch (packet)
+                {
+                    case ClassApiHttpRequestEnumeration.GetCoinName:
+                        await BuildAndSendHttpPacketAsync(ClassConnectorSetting.CoinName);
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinMinName:
+                        await BuildAndSendHttpPacketAsync(ClassConnectorSetting.CoinNameMin);
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinMaxSupply:
+                        var jsonResultObject = new ClassApiResultObject
                         {
-                            if (ClassRemoteNodeSync.ListOfBlock.ContainsKey((int)selectedIndex))
+                            result = decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo)
+                        };
+
+                        var resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CoinMaxSupply);
+
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinCirculating:
+                        jsonResultObject = new ClassApiResultObject
+                        {
+                            result = decimal.Parse(ClassRemoteNodeSync.CoinCirculating.Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo)
+                        };
+
+                        resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CoinCirculating);
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinTotalFee:
+                        jsonResultObject = new ClassApiResultObject
+                        {
+                            result = decimal.Parse(ClassRemoteNodeSync.CurrentTotalFee.Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo)
+                        };
+
+                        resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentTotalFee);
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinTotalMined:
+                        jsonResultObject = new ClassApiResultObject
+                        {
+                            result = (ClassRemoteNodeSync.ListOfBlock.Count * ClassConnectorSetting.ConstantBlockReward)
+                        };
+
+                        resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync(""+(ClassRemoteNodeSync.ListOfBlock.Count * 10));
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinBlockchainHeight:
+                        jsonResultObject = new ClassApiResultObject
+                        {
+                            result = (ClassRemoteNodeSync.ListOfBlock.Count + 1)
+                        };
+
+                        resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync(""+ (ClassRemoteNodeSync.ListOfBlock.Count + 1));
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinTotalBlockMined:
+                        jsonResultObject = new ClassApiResultObject
+                        {
+                            result = ClassRemoteNodeSync.ListOfBlock.Count
+                        };
+
+                        resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync("" + (ClassRemoteNodeSync.ListOfBlock.Count));
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinTotalBlockLeft:
+                        jsonResultObject = new ClassApiResultObject
+                        {
+                            result = long.Parse(ClassRemoteNodeSync.CurrentBlockLeft)
+                        };
+
+                        resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentBlockLeft);
+
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinNetworkDifficulty:
+                        jsonResultObject = new ClassApiResultObject
+                        {
+                            result = decimal.Parse(ClassRemoteNodeSync.CurrentDifficulty.Replace(".", ","), NumberStyles.Any, Program.GlobalCultureInfo)
+                        };
+
+                        resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentDifficulty);
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinNetworkHashrate:
+                        jsonResultObject = new ClassApiResultObject
+                        {
+                            result = decimal.Parse(ClassRemoteNodeSync.CurrentHashrate.Replace(".", ","), NumberStyles.Any, Program.GlobalCultureInfo)
+                        };
+
+                        resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
+
+                        await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
+                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentHashrate);
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinBlockPerId:
+                        if (selectedIndex > 0)
+                        {
+                            selectedIndex -= 1;
+                            if (ClassRemoteNodeSync.ListOfBlock.Count - 1 >= selectedIndex)
                             {
-                                var splitBlock = ClassRemoteNodeSync.ListOfBlock[(int)selectedIndex].Split(new[] { "#" }, StringSplitOptions.None);
-                                Dictionary<string, string> blockContent = new Dictionary<string, string>
+                                if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(selectedIndex))
                                 {
-                                    { "block_id", splitBlock[0] },
-                                    { "block_hash", splitBlock[1] },
-                                    { "block_transaction_hash", splitBlock[2] },
-                                    { "block_timestamp_create", splitBlock[3] },
-                                    { "block_timestamp_found", splitBlock[4] },
-                                    { "block_difficulty", splitBlock[5] },
-                                    { "block_reward", splitBlock[6] }
-                                };
+                                    var splitBlock = ClassRemoteNodeSync.ListOfBlock[selectedIndex].Split(new[] { "#" }, StringSplitOptions.None);
+                                    /*Dictionary<string, string> blockContent = new Dictionary<string, string>
+                                    {
+                                        { "block_id", splitBlock[0] },
+                                        { "block_hash", splitBlock[1] },
+                                        { "block_transaction_hash", splitBlock[2] },
+                                        { "block_timestamp_create", splitBlock[3] },
+                                        { "block_timestamp_found", splitBlock[4] },
+                                        { "block_difficulty", splitBlock[5] },
+                                        { "block_reward", splitBlock[6] }
+                                    };
+
+                                    await BuildAndSendHttpPacketAsync(null, true, blockContent);
+                                    blockContent.Clear();*/
+                                    var blockApiObject = new ClassApiBlockObject
+                                    {
+                                        block_id = long.Parse(splitBlock[0]),
+                                        block_hash = splitBlock[1],
+                                        block_transaction_hash = splitBlock[2],
+                                        block_timestamp_create = long.Parse(splitBlock[3]),
+                                        block_timestamp_found = long.Parse(splitBlock[4]),
+                                        block_difficulty = decimal.Parse(splitBlock[5], NumberStyles.Any, Program.GlobalCultureInfo),
+                                        block_reward = decimal.Parse(splitBlock[6].Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo)
+                                    };
+                                    var jsonBlockObject = JsonConvert.SerializeObject(blockApiObject);
+                                    await BuildAndSendHttpPacketAsync(jsonBlockObject, false, null, true);
+                                }
+                                else
+                                {
+                                    ClassApiBan.FilterInsertInvalidPacket(_ip);
+                                    await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                                }
+                            }
+                            else
+                            {
+                                ClassApiBan.FilterInsertInvalidPacket(_ip);
+                                await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                            }
+                        }
+                        else
+                        {
+                            ClassApiBan.FilterInsertInvalidPacket(_ip);
+                            await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                        }
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinBlockPerHash:
+                        if (selectedHash != string.Empty)
+                        {
+                            long selectedBlockIndex = ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(selectedHash);
+                            if (selectedBlockIndex != -1)
+                            {
+
+                                var splitBlock = ClassRemoteNodeSync.ListOfBlock[selectedBlockIndex].Split(new[] { "#" }, StringSplitOptions.None);
+                                /*Dictionary<string, string> blockContent = new Dictionary<string, string>
+                                    {
+                                        { "block_id", splitBlock[0] },
+                                        { "block_hash", splitBlock[1] },
+                                        { "block_transaction_hash", splitBlock[2] },
+                                        { "block_timestamp_create", splitBlock[3] },
+                                        { "block_timestamp_found", splitBlock[4] },
+                                        { "block_difficulty", splitBlock[5] },
+                                        { "block_reward", splitBlock[6] }
+                                    };
 
                                 await BuildAndSendHttpPacketAsync(null, true, blockContent);
-                                blockContent.Clear();
+                                blockContent.Clear();*/
+
+                                var blockApiObject = new ClassApiBlockObject
+                                {
+                                    block_id = long.Parse(splitBlock[0]),
+                                    block_hash = splitBlock[1],
+                                    block_transaction_hash = splitBlock[2],
+                                    block_timestamp_create = long.Parse(splitBlock[3]),
+                                    block_timestamp_found = long.Parse(splitBlock[4]),
+                                    block_difficulty = decimal.Parse(splitBlock[5], NumberStyles.Any, Program.GlobalCultureInfo),
+                                    block_reward = decimal.Parse(splitBlock[6].Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo)
+                                };
+                                var jsonBlockObject = JsonConvert.SerializeObject(blockApiObject);
+                                await BuildAndSendHttpPacketAsync(jsonBlockObject, false, null, true);
+
                             }
                             else
                             {
@@ -411,70 +555,98 @@ namespace Xiropht_RemoteNode.Api
                             ClassApiBan.FilterInsertInvalidPacket(_ip);
                             await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
-                    }
-                    else
-                    {
-                        ClassApiBan.FilterInsertInvalidPacket(_ip);
-                        await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
-                    }
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinBlockPerHash:
-                    if (selectedHash != string.Empty)
-                    {
-                        long selectedBlockIndex = ClassRemoteNodeSync.ListOfBlockHash.GetBlockIdFromHash(selectedHash);
-                        if (selectedBlockIndex != -1)
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinTransactionPerId:
+                        if (selectedIndex > 0)
                         {
-
-                            var splitBlock = ClassRemoteNodeSync.ListOfBlock[selectedBlockIndex].Split(new[] { "#" }, StringSplitOptions.None);
-                            Dictionary<string, string> blockContent = new Dictionary<string, string>
+                            selectedIndex -= 1;
+                            if (ClassRemoteNodeSync.ListOfTransaction.Count - 1 >= selectedIndex)
+                            {
+                                if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(selectedIndex))
                                 {
-                                    { "block_id", splitBlock[0] },
-                                    { "block_hash", splitBlock[1] },
-                                    { "block_transaction_hash", splitBlock[2] },
-                                    { "block_timestamp_create", splitBlock[3] },
-                                    { "block_timestamp_found", splitBlock[4] },
-                                    { "block_difficulty", splitBlock[5] },
-                                    { "block_reward", splitBlock[6] }
-                                };
+                                    var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(selectedIndex).Item1.Split(new[] { "-" }, StringSplitOptions.None);
+                                    /*Dictionary<string, string> transactionContent = new Dictionary<string, string>
+                                    {
+                                        { "transaction_id", "" + (selectedIndex + 1) },
+                                        { "transaction_id_sender", splitTransaction[0] },
+                                        { "transaction_fake_amount", splitTransaction[1] },
+                                        { "transaction_fake_fee", splitTransaction[2] },
+                                        { "transaction_id_receiver", splitTransaction[3] },
+                                        { "transaction_timestamp_sended", splitTransaction[4] },
+                                        { "transaction_hash", splitTransaction[5] },
+                                        { "transaction_timestamp_received", splitTransaction[6] }
+                                    };
 
-                            await BuildAndSendHttpPacketAsync(null, true, blockContent);
-                            blockContent.Clear();
+                                    await BuildAndSendHttpPacketAsync(null, true, transactionContent);*/
+
+                                    var transactionApiObject = new ClassApiTransactionObject
+                                    {
+                                        transaction_id = (selectedIndex + 1),
+                                        transaction_id_sender = splitTransaction[0],
+                                        transaction_fake_amount = decimal.Parse(splitTransaction[1].Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo),
+                                        transaction_fake_fee = decimal.Parse(splitTransaction[2].Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo),
+                                        transaction_id_receiver = splitTransaction[3],
+                                        transaction_timemstamp_sended = long.Parse(splitTransaction[4]),
+                                        transaction_hash = splitTransaction[5],
+                                        transaction_timestamp_received = long.Parse(splitTransaction[6])
+                                    };
+                                    var jsonTransactionObject = JsonConvert.SerializeObject(transactionApiObject);
+                                    await BuildAndSendHttpPacketAsync(jsonTransactionObject, false, null, true);
+
+                                }
+                                else
+                                {
+                                    ClassApiBan.FilterInsertInvalidPacket(_ip);
+                                    await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                                }
+                            }
+                            else
+                            {
+                                ClassApiBan.FilterInsertInvalidPacket(_ip);
+                                await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                            }
                         }
                         else
                         {
                             ClassApiBan.FilterInsertInvalidPacket(_ip);
                             await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
-                    }
-                    else
-                    {
-                        ClassApiBan.FilterInsertInvalidPacket(_ip);
-                        await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
-                    }
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinTransactionPerId:
-                    if (selectedIndex > 0)
-                    {
-                        selectedIndex -= 1;
-                        if (ClassRemoteNodeSync.ListOfTransaction.Count - 1 >= selectedIndex)
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinTransactionPerHash:
+                        if (selectedHash != string.Empty)
                         {
-                            if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(selectedIndex))
+                            long transactionIndex = ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(selectedHash);
+                            if (transactionIndex != -1)
                             {
-                                var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(selectedIndex).Item1.Split(new[] { "-" }, StringSplitOptions.None);
-                                Dictionary<string, string> transactionContent = new Dictionary<string, string>
-                                {
-                                    { "transaction_id", "" + (selectedIndex + 1) },
-                                    { "transaction_id_sender", splitTransaction[0] },
-                                    { "transaction_fake_amount", splitTransaction[1] },
-                                    { "transaction_fake_fee", splitTransaction[2] },
-                                    { "transaction_id_receiver", splitTransaction[3] },
-                                    { "transaction_timestamp_sended", splitTransaction[4] },
-                                    { "transaction_hash", splitTransaction[5] },
-                                    { "transaction_timestamp_received", splitTransaction[6] }
-                                };
+                                var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionIndex).Item1.Split(new[] { "-" }, StringSplitOptions.None);
+                                /*Dictionary<string, string> transactionContent = new Dictionary<string, string>
+                                    {
+                                        { "transaction_id", "" + (transactionIndex + 1) },
+                                        { "transaction_id_sender", splitTransaction[0] },
+                                        { "transaction_fake_amount", splitTransaction[1] },
+                                        { "transaction_fake_fee", splitTransaction[2] },
+                                        { "transaction_id_receiver", splitTransaction[3] },
+                                        { "transaction_timestamp_sended", splitTransaction[4] },
+                                        { "transaction_hash", splitTransaction[5] },
+                                        { "transaction_timestamp_received", splitTransaction[6] }
+                                    };
 
                                 await BuildAndSendHttpPacketAsync(null, true, transactionContent);
-                                transactionContent.Clear();
+                                transactionContent.Clear();*/
+
+                                var transactionApiObject = new ClassApiTransactionObject
+                                {
+                                    transaction_id = (transactionIndex + 1),
+                                    transaction_id_sender = splitTransaction[0],
+                                    transaction_fake_amount = decimal.Parse(splitTransaction[1].Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo),
+                                    transaction_fake_fee = decimal.Parse(splitTransaction[2].Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo),
+                                    transaction_id_receiver = splitTransaction[3],
+                                    transaction_timemstamp_sended = long.Parse(splitTransaction[4]),
+                                    transaction_hash = splitTransaction[5],
+                                    transaction_timestamp_received = long.Parse(splitTransaction[6])
+                                };
+                                var jsonTransactionObject = JsonConvert.SerializeObject(transactionApiObject);
+                                await BuildAndSendHttpPacketAsync(jsonTransactionObject, false, null, true);
                             }
                             else
                             {
@@ -487,76 +659,64 @@ namespace Xiropht_RemoteNode.Api
                             ClassApiBan.FilterInsertInvalidPacket(_ip);
                             await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
                         }
-                    }
-                    else
-                    {
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetCoinNetworkFullStats:
+                        /*Dictionary<string, string> networkStatsContent = new Dictionary<string, string>
+                        {
+                            { "coin_name", ClassConnectorSetting.CoinName },
+                            { "coin_min_name", ClassConnectorSetting.CoinNameMin },
+                            { "coin_max_supply",  decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply, NumberStyles.Any, Program.GlobalCultureInfo).ToString()  },
+                            { "coin_circulating", decimal.Parse(ClassRemoteNodeSync.CoinCirculating, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
+                            { "coin_total_fee",  decimal.Parse(ClassRemoteNodeSync.CurrentTotalFee, NumberStyles.Any, Program.GlobalCultureInfo).ToString()},
+                            { "coin_total_mined", (ClassRemoteNodeSync.ListOfBlock.Count *ClassConnectorSetting.ConstantBlockReward).ToString() },
+                            { "coin_blockchain_height", "" + (ClassRemoteNodeSync.ListOfBlock.Count + 1) },
+                            { "coin_total_block_mined", "" + ClassRemoteNodeSync.ListOfBlock.Count },
+                            { "coin_total_block_left", ClassRemoteNodeSync.CurrentBlockLeft },
+                            { "coin_network_difficulty", decimal.Parse(ClassRemoteNodeSync.CurrentDifficulty, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
+                            { "coin_network_hashrate", decimal.Parse(ClassRemoteNodeSync.CurrentHashrate, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
+                            { "coin_total_transaction", "" + ClassRemoteNodeSync.ListOfTransaction.Count }
+                        };
+
+                        await BuildAndSendHttpPacketAsync(null, true, networkStatsContent);
+                        networkStatsContent.Clear();*/
+
+                        ClassApiNetworkStatsObject networkStatsApiObject = new ClassApiNetworkStatsObject
+                        {
+                            coin_name = ClassConnectorSetting.CoinName,
+                            coin_min_name = ClassConnectorSetting.CoinNameMin,
+                            coin_max_supply = decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply.Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo),
+                            coin_circulating = decimal.Parse(ClassRemoteNodeSync.CoinCirculating.Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo),
+                            coin_total_fee = decimal.Parse(ClassRemoteNodeSync.CurrentTotalFee.Replace(".", ","), NumberStyles.Currency, Program.GlobalCultureInfo),
+                            coin_total_mined = (ClassRemoteNodeSync.ListOfBlock.Count * ClassConnectorSetting.ConstantBlockReward),
+                            coin_total_block_mined = ClassRemoteNodeSync.ListOfBlock.Count,
+                            coin_blockchain_height = (ClassRemoteNodeSync.ListOfBlock.Count + 1),
+                            coin_total_block_left = long.Parse(ClassRemoteNodeSync.CurrentBlockLeft),
+                            coin_network_difficulty = decimal.Parse(ClassRemoteNodeSync.CurrentDifficulty.Replace(".", ","), NumberStyles.Any, Program.GlobalCultureInfo),
+                            coin_network_hashrate = decimal.Parse(ClassRemoteNodeSync.CurrentHashrate.Replace(".", ","), NumberStyles.Any, Program.GlobalCultureInfo),
+                            coin_total_transaction = ClassRemoteNodeSync.ListOfTransaction.Count
+                        };
+
+                        var jsonNetworkStatsObject = JsonConvert.SerializeObject(networkStatsApiObject);
+                        await BuildAndSendHttpPacketAsync(jsonNetworkStatsObject, false, null, true);
+
+                        break;
+                    case ClassApiHttpRequestEnumeration.PacketFavicon:
+                        ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - favicon request detected and ignored.", 6, 2);
+                        await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
+                        break;
+                    default:
                         ClassApiBan.FilterInsertInvalidPacket(_ip);
                         await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
-                    }
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinTransactionPerHash:
-                    if (selectedHash != string.Empty)
-                    {
-                        long transactionIndex = ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(selectedHash);
-                        if (transactionIndex != -1)
-                        {
-                            var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionIndex).Item1.Split(new[] { "-" }, StringSplitOptions.None);
-                            Dictionary<string, string> transactionContent = new Dictionary<string, string>
-                                {
-                                    { "transaction_id", "" + (transactionIndex + 1) },
-                                    { "transaction_id_sender", splitTransaction[0] },
-                                    { "transaction_fake_amount", splitTransaction[1] },
-                                    { "transaction_fake_fee", splitTransaction[2] },
-                                    { "transaction_id_receiver", splitTransaction[3] },
-                                    { "transaction_timestamp_sended", splitTransaction[4] },
-                                    { "transaction_hash", splitTransaction[5] },
-                                    { "transaction_timestamp_received", splitTransaction[6] }
-                                };
+                        break;
+                }
+            }
+            catch(Exception error)
+            {
+#if DEBUG
+                Console.WriteLine("API HTTP - HandlePacketHttpAsync Exception: " + error.Message);
+#endif
+                await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketError);
 
-                            await BuildAndSendHttpPacketAsync(null, true, transactionContent);
-                            transactionContent.Clear();
-                        }
-                        else
-                        {
-                            ClassApiBan.FilterInsertInvalidPacket(_ip);
-                            await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
-                        }
-                    }
-                    else
-                    {
-                        ClassApiBan.FilterInsertInvalidPacket(_ip);
-                        await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
-                    }
-                    break;
-                case ClassApiHttpRequestEnumeration.GetCoinNetworkFullStats:
-                    Dictionary<string, string> networkStatsContent = new Dictionary<string, string>
-                    {
-                        { "coin_name", ClassConnectorSetting.CoinName },
-                        { "coin_min_name", ClassConnectorSetting.CoinNameMin },
-                        { "coin_max_supply", ClassRemoteNodeSync.CoinMaxSupply },
-                        { "coin_circulating", decimal.Parse(ClassRemoteNodeSync.CoinCirculating, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
-                        { "coin_total_fee",  decimal.Parse(ClassRemoteNodeSync.CurrentTotalFee, NumberStyles.Any, Program.GlobalCultureInfo).ToString()},
-                        { "coin_total_mined", (ClassRemoteNodeSync.ListOfBlock.Count *ClassConnectorSetting.ConstantBlockReward).ToString() },
-                        { "coin_blockchain_height", "" + (ClassRemoteNodeSync.ListOfBlock.Count + 1) },
-                        { "coin_total_block_mined", "" + ClassRemoteNodeSync.ListOfBlock.Count },
-                        { "coin_total_block_left", ClassRemoteNodeSync.CurrentBlockLeft },
-                        { "coin_network_difficulty", decimal.Parse(ClassRemoteNodeSync.CurrentDifficulty, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
-                        { "coin_network_hashrate", decimal.Parse(ClassRemoteNodeSync.CurrentHashrate, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
-                        { "coin_total_transaction", "" + ClassRemoteNodeSync.ListOfTransaction.Count }
-                    };
-
-                    await BuildAndSendHttpPacketAsync(null, true, networkStatsContent);
-                    networkStatsContent.Clear();
-
-                    break;
-                case ClassApiHttpRequestEnumeration.PacketFavicon:
-                    ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - favicon request detected and ignored.", 6, 2);
-                    await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
-                    break;
-                default:
-                    ClassApiBan.FilterInsertInvalidPacket(_ip);
-                    await BuildAndSendHttpPacketAsync(ClassApiHttpRequestEnumeration.PacketNotExist);
-                    break;
             }
         }
 
@@ -565,16 +725,23 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        private async Task BuildAndSendHttpPacketAsync(string content, bool multiResult = false, Dictionary<string, string> dictionaryContent = null)
+        private async Task BuildAndSendHttpPacketAsync(string content, bool multiResult = false, Dictionary<string, string> dictionaryContent = null, bool jsonDone = false)
         {
             string contentToSend = string.Empty;
-            if (!multiResult)
+            if (!jsonDone)
             {
-                contentToSend = BuildJsonString(content);
+                if (!multiResult)
+                {
+                    contentToSend = BuildJsonString(content);
+                }
+                else
+                {
+                    contentToSend = BuildFullJsonString(dictionaryContent);
+                }
             }
             else
             {
-               contentToSend = BuildFullJsonString(dictionaryContent);
+                contentToSend = content;
             }
             StringBuilder builder = new StringBuilder();
 
