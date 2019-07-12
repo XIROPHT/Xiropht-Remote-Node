@@ -42,10 +42,10 @@ Open the **config.json** file and edit the following line containing **"enable_a
 | /get_coin_network_difficulty |  return current network difficulty |
 | /get_coin_network_hashrate |  return current network hashrate |
 | /get_coin_network_full_stats |  return all stats of the network |
-| /get_coin_block_per_id |  return a block information from a block id, for example: http://remote_node_ip:default_http_api_port/get_coin_block_per_id=1 |
-| /get_coin_block_per_hash |  return a block information from a block hash selected, for example: https://remote_node_ip:default_http_api_port/get_coin_block_per_hash=hash_selected |
-| /get_coin_transaction_per_id |  return a transaction information per a transaction id example: http://remote_node_ip:default_http_api_port/get_coin_transaction_per_id=1 |
-| /get_coin_transaction_per_hash |  return a transaction information per a transaction hash, for example: http://remote_node_ip:default_http_api_port/get_coin_transaction_per_hash=hash_selected |
+| /get_coin_block_per_id |  return a block information from a block id, for example: http://127.0.0.1:18001/get_coin_block_per_id=1 |
+| /get_coin_block_per_hash |  return a block information from a block hash selected, for example: http://127.0.0.1:18001/get_coin_block_per_hash=hash_selected |
+| /get_coin_transaction_per_id |  return a transaction information per a transaction id example: http://127.0.0.1:18001/get_coin_transaction_per_id=1 |
+| /get_coin_transaction_per_hash |  return a transaction information per a transaction hash, for example: http://127.0.0.1:18001/get_coin_transaction_per_hash=hash_selected |
 
 
 <h3>Example:</h3>
