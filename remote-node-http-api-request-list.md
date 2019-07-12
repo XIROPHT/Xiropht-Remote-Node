@@ -55,6 +55,6 @@ Get full network stats: ``` https://api.xiropht.com/get_coin_network_full_stats`
 Result: 
 
 ```
-{"coin_name":"Xiropht","coin_min_name":"XIRO","coin_max_supply":"26000004,41048858","coin_circulating":"364172.08874191","coin_total_fee":"397.91125809","coin_total_mined":"364580.00000000","coin_blockchain_height":"36459","coin_total_block_mined":"36458","coin_total_block_left":"2563542","coin_network_difficulty":"578034378","coin_network_hashrate":"693641253.6","coin_total_transaction":"133136","version":"0.2.8.1"}
+{"coin_name":"Xiropht","coin_min_name":"XIRO","coin_max_supply":"26000004.41048858","coin_circulating":"364182.08874191","coin_total_fee":"397.91125809","coin_total_mined":"364580.00000000","coin_blockchain_height":"36459","coin_total_block_mined":"36458","coin_total_block_left":"2563542","coin_network_difficulty":"578034378","coin_network_hashrate":"693641253.6","coin_total_transaction":"133136","version":"0.2.8.1"}
 ```
 
