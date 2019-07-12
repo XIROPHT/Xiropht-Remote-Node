@@ -7,7 +7,7 @@
         public decimal transaction_fake_amount;
         public decimal transaction_fake_fee;
         public string transaction_id_receiver;
-        public long transaction_timemstamp_sended;
+        public long transaction_timestamp_sended;
         public string transaction_hash;
         public long transaction_timestamp_received;
     }
