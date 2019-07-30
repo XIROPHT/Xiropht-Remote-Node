@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -7,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.RPC;
 using Xiropht_Connector_All.Setting;
+using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode.Token
@@ -18,52 +20,90 @@ namespace Xiropht_RemoteNode.Token
 
         public static async Task<bool> CheckWalletAddressExistAsync(string walletAddress)
         {
-            try
+
+
+            Dictionary<string, int> ListOfSeedNodesSpeed = new Dictionary<string, int>();
+            foreach (var seedNode in ClassConnectorSetting.SeedNodeIp)
             {
-                string randomSeedNode = ClassConnectorSetting.SeedNodeIp.ElementAt(ClassUtilsNode.GetRandomBetween(0, ClassConnectorSetting.SeedNodeIp.Count - 1)).Key;
-                string request = ClassConnectorSettingEnumeration.WalletTokenType + "|" + ClassRpcWalletCommand.TokenCheckWalletAddressExist + "|" + walletAddress;
-                string result = await ProceedHttpRequest("http://" + randomSeedNode + ":" + ClassConnectorSetting.SeedNodeTokenPort + "/", request);
-                if (result == string.Empty || result == PacketNotExist)
+
+                try
                 {
-                    return false;
-                }
-                else
-                {
-                    JObject resultJson = JObject.Parse(result);
-                    if (resultJson.ContainsKey(PacketResult))
+                    int seedNodeResponseTime = -1;
+                    Task taskCheckSeedNode = Task.Run(() => seedNodeResponseTime = CheckPing.CheckPingHost(seedNode.Key, true));
+                    taskCheckSeedNode.Wait(ClassConnectorSetting.MaxPingDelay);
+                    if (seedNodeResponseTime == -1)
                     {
-                        string resultCheckWalletAddress = resultJson[PacketResult].ToString();
-                        if (resultCheckWalletAddress.Contains("|"))
+                        seedNodeResponseTime = ClassConnectorSetting.MaxSeedNodeTimeoutConnect;
+                    }
+                    ListOfSeedNodesSpeed.Add(seedNode.Key, seedNodeResponseTime);
+
+                }
+                catch
+                {
+                    ListOfSeedNodesSpeed.Add(seedNode.Key, ClassConnectorSetting.MaxSeedNodeTimeoutConnect); // Max delay.
+                }
+
+            }
+
+            ListOfSeedNodesSpeed = ListOfSeedNodesSpeed.OrderBy(u => u.Value).ToDictionary(z => z.Key, y => y.Value);
+
+
+            bool success = false;
+
+            foreach (var seedNode in ListOfSeedNodesSpeed)
+            {
+                if (!success)
+                {
+                    try
+                    {
+                        string randomSeedNode = seedNode.Key;
+                        string request = ClassConnectorSettingEnumeration.WalletTokenType + "|" + ClassRpcWalletCommand.TokenCheckWalletAddressExist + "|" + walletAddress;
+                        string result = await ProceedHttpRequest("http://" + randomSeedNode + ":" + ClassConnectorSetting.SeedNodeTokenPort + "/", request);
+                        if (result == string.Empty || result == PacketNotExist)
                         {
-                            var splitResultCheckWalletAddress = resultCheckWalletAddress.Split(new[] { "|" }, StringSplitOptions.None);
-                            if (splitResultCheckWalletAddress[0] == ClassRpcWalletCommand.SendTokenCheckWalletAddressInvalid)
-                            {
-                                return false;
-                            }
-                            else if (splitResultCheckWalletAddress[0] == ClassRpcWalletCommand.SendTokenCheckWalletAddressValid)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
+                            success = false;
                         }
                         else
                         {
-                            return false;
+                            JObject resultJson = JObject.Parse(result);
+                            if (resultJson.ContainsKey(PacketResult))
+                            {
+                                string resultCheckWalletAddress = resultJson[PacketResult].ToString();
+                                if (resultCheckWalletAddress.Contains("|"))
+                                {
+                                    var splitResultCheckWalletAddress = resultCheckWalletAddress.Split(new[] { "|" }, StringSplitOptions.None);
+                                    if (splitResultCheckWalletAddress[0] == ClassRpcWalletCommand.SendTokenCheckWalletAddressInvalid)
+                                    {
+                                        success = false;
+                                    }
+                                    else if (splitResultCheckWalletAddress[0] == ClassRpcWalletCommand.SendTokenCheckWalletAddressValid)
+                                    {
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        success = false;
+                                    }
+                                }
+                                else
+                                {
+                                    success = false;
+                                }
+                            }
+                            else
+                            {
+                                success = false;
+                            }
                         }
                     }
-                    else
+                    catch
                     {
-                        return false;
+                        success = false;
                     }
                 }
             }
-            catch
-            {
-                return false;
-            }
+            return success;
+
         }
 
         private static async Task<string> ProceedHttpRequest(string url, string requestString)
