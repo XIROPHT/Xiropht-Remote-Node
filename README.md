@@ -1,5 +1,5 @@
 # Xiropht-Remote-Node
-<h3>Xiropht Remote Node version 0.2.8.2R compatible with Windows with Netframework 4.6.1 or higher or other OS like Linux who need to use Mono.</h3>
+<h3>Xiropht Remote Node version 0.2.8.3R compatible with Windows with Netframework 4.6.1 or higher or other OS like Linux who need to use Mono.</h3>
 
 **In production, we suggest to compile source in Release Mode to disable log files and debug mode.**
 
@@ -19,21 +19,21 @@ https://github.com/XIROPHT/Xiropht-Remote-Node/wiki
 
 On Linux OS (Work also Raspbian OS for Raspberry):
 
-- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.8.2R/Xiropht-RemoteNode-0.2.8.2R-Linux-64bit.zip
+- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.8.3R/Xiropht-RemoteNode-0.2.8.3R-Linux-64bit.zip
 
 or:
 
-- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.8.2R/Xiropht-RemoteNode-0.2.8.2R-Raspberry.zip
+- sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.2.8.3R/Xiropht-RemoteNode-0.2.8.3R-Raspberry.zip
 
-- sudo unzip Xiropht-RemoteNode-0.2.8.2R-Linux.zip
+- sudo unzip Xiropht-RemoteNode-0.2.8.3R-Linux.zip
 
 or:
 
-- sudo unzip Xiropht-RemoteNode-0.2.8.2R-Raspberry.zip
+- sudo unzip Xiropht-RemoteNode-0.2.8.3R-Raspberry.zip
 
-- sudo chmod 0777 Xiropht-RemoteNode-Linux or Xiropht-RemoteNode-Raspberry
+- sudo chmod 0777 Xiropht-RemoteNode-Ubuntu-18.04-x64 or Xiropht-RemoteNode-Raspberry
 
-- sudo ./Xiropht-RemoteNode-Linux or sudo ./Xiropht-RemoteNode-Raspberry
+- sudo ./Xiropht-RemoteNode-Ubuntu-18.04-x64 or sudo ./Xiropht-RemoteNode-Raspberry
 
 **Newtonsoft.Json library is used since version 0.2.2.8b for the API HTTP/HTTPS system: https://github.com/JamesNK/Newtonsoft.Json**
 
