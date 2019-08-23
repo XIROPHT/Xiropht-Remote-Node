@@ -8,7 +8,6 @@ using Xiropht_Connector_All.Setting;
 using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
-using Xiropht_RemoteNode.Object;
 
 namespace Xiropht_RemoteNode.RemoteNode
 {
@@ -43,7 +42,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         private const int RemoteNodeObjectLoopSendRequestInterval = 1;
         private const int RemoteNodeObjectLoopSendRequestInterval2 = 1000;
 
-        private long LastKeepAlivePacketSent; // Last keep alive packet sent.
+        private long _lastKeepAlivePacketSent; // Last keep alive packet sent.
         private const int KeepAlivePacketDelay = 5; // Send keep alive packet every 1 second.
 
         /// <summary>
@@ -127,10 +126,10 @@ namespace Xiropht_RemoteNode.RemoteNode
         {
             switch (disconnectType)
             {
-                case "timeout":
+                case ClassRemoteNodeObjectStopConnectionEnumeration.Timeout:
                     ClassLog.Log("Object sync " + RemoteNodeObjectType + " not keep alive packet received since a long time. Reconnect it.", 0, 2);
                     break;
-                case "end":
+                case ClassRemoteNodeObjectStopConnectionEnumeration.End:
                     ClassLog.Log("Object sync " + RemoteNodeObjectType + " disconnected from exit command line.", 0, 2);
                     break;
             }
@@ -198,42 +197,41 @@ namespace Xiropht_RemoteNode.RemoteNode
                             }
 
 
-                            if (packetReceived.Contains("*"))
+                            if (packetReceived.Contains(ClassConnectorSetting.PacketSplitSeperator))
                             {
-                                var splitPacketReceived = packetReceived.Split(new[] { "*" }, StringSplitOptions.None);
+                                var splitPacketReceived = packetReceived.Split(new[] { ClassConnectorSetting.PacketSplitSeperator }, StringSplitOptions.None);
                                 if (splitPacketReceived.Length > 1)
                                 {
                                     foreach (var packet in splitPacketReceived)
-                                        if (packet != null)
-                                            if (!string.IsNullOrEmpty(packet))
-                                                if (packet.Length > 1)
+                                        if (!string.IsNullOrEmpty(packet))
+                                            if (packet.Length > 1)
+                                            {
+                                                var packetRecv = packet.Replace(ClassConnectorSetting.PacketSplitSeperator, "");
+                                                ClassLog.Log("Packet received from blockchain: " + packet, 4, 0);
+
+                                                if (packetRecv == ClassSeedNodeStatus.SeedError)
                                                 {
-                                                    var packetRecv = packet.Replace("*", "");
-                                                    ClassLog.Log("Packet received from blockchain: " + packet, 4, 0);
-
-                                                    if (packetRecv == ClassSeedNodeStatus.SeedError)
-                                                    {
-                                                        RemoteNodeObjectConnectionStatus = false;
-                                                        RemoteNodeObjectThreadStatus = false;
-                                                        break;
-                                                    }
-
-                                                    await RemoteNodeHandlePacketNetworkAsync(packetRecv);
+                                                    RemoteNodeObjectConnectionStatus = false;
+                                                    RemoteNodeObjectThreadStatus = false;
+                                                    break;
                                                 }
+
+                                                await RemoteNodeHandlePacketNetworkAsync(packetRecv);
+                                            }
                                 }
                                 else
                                 {
                                     ClassLog.Log("Packet received from blockchain: " + packetReceived, 4, 0);
 
 
-                                    if (packetReceived.Replace("*", "") == ClassSeedNodeStatus.SeedError)
+                                    if (packetReceived.Replace(ClassConnectorSetting.PacketSplitSeperator, "") == ClassSeedNodeStatus.SeedError)
                                     {
                                         RemoteNodeObjectConnectionStatus = false;
                                         RemoteNodeObjectThreadStatus = false;
                                         break;
                                     }
 
-                                    await RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace("*", ""));
+                                    await RemoteNodeHandlePacketNetworkAsync(packetReceived.Replace(ClassConnectorSetting.PacketSplitSeperator, ""));
 
                                 }
                             }
@@ -733,9 +731,9 @@ namespace Xiropht_RemoteNode.RemoteNode
                         {
                             if (!RemoteNodeObjectInSyncTransaction && !RemoteNodeObjectInSyncBlock && !RemoteNodeObjectInReceiveTransaction && !RemoteNodeObjectInReceiveBlock)
                             {
-                                if (LastKeepAlivePacketSent + KeepAlivePacketDelay < DateTimeOffset.Now.ToUnixTimeSeconds())
+                                if (_lastKeepAlivePacketSent + KeepAlivePacketDelay < DateTimeOffset.Now.ToUnixTimeSeconds())
                                 {
-                                    LastKeepAlivePacketSent = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                    _lastKeepAlivePacketSent = DateTimeOffset.Now.ToUnixTimeSeconds();
                                     if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteKeepAlive, Program.Certificate, false, true))
                                     {
                                         RemoteNodeObjectConnectionStatus = false;
@@ -1014,7 +1012,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     var transactionSubSplit = transactionSubString.Split(new[] { "%" }, StringSplitOptions.None);
                                                     var dataTransactionSplit = transactionSubSplit[1].Split(new[] { "-" }, StringSplitOptions.None);
 
-                                                    long transactionIdInsert = 0;
+                                                    long transactionIdInsert;
                                                     if (long.TryParse(transactionSubSplit[0], out transactionIdInsert))
                                                     {
                                                         ClassLog.Log("Transaction Received: " + transactionSubSplit[1], 2, 2);
@@ -1080,7 +1078,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     var transactionSubString = packetSplit[1].Replace("$", "");
                                     var transactionSubSplit = transactionSubString.Split(new[] { "%" }, StringSplitOptions.None); // Format : id transaction | content
                                     var dataTransactionSplit = transactionSubSplit[1].Split(new[] { "-" }, StringSplitOptions.None);
-                                    long transactionIdInsert = 0;
+                                    long transactionIdInsert;
 
                                     if (long.TryParse(transactionSubSplit[0], out transactionIdInsert))
                                     {
@@ -1366,7 +1364,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         break;
                 }
             }
-            catch (Exception error)
+            catch 
             {
 
                 RemoteNodeObjectConnectionStatus = false;

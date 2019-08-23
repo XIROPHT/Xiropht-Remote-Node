@@ -191,7 +191,6 @@ namespace Xiropht_RemoteNode.Api
             {
                 checkBanResult = ClassApiBan.FilterCheckIp(_ip);
             }
-            int totalWhile = 0;
             if (checkBanResult)
             {
                 if (_ip != "127.0.0.1")
@@ -234,14 +233,6 @@ namespace Xiropht_RemoteNode.Api
                                         await HandlePacketHttpAsync(packet);
                                         break;
                                     }
-                                    else
-                                    {
-                                        totalWhile++;
-                                    }
-                                    if (totalWhile >= 8)
-                                    {
-                                        break;
-                                    }
                                 }
                             }
                         }
@@ -268,31 +259,32 @@ namespace Xiropht_RemoteNode.Api
             var splitPacket = packet.Split(new[] { "\n" }, StringSplitOptions.None);
             foreach (var packetEach in splitPacket)
             {
-                if (packetEach != null)
+                if (!string.IsNullOrEmpty(packetEach))
                 {
-                    if (!string.IsNullOrEmpty(packetEach))
+                    if (packetEach.ToLower().Contains("x-forwarded-for: "))
                     {
-                        if (packetEach.ToLower().Contains("x-forwarded-for: "))
+                        string newIp = packetEach.ToLower().Replace("x-forwarded-for: ", "");
+                        _ip = newIp;
+                        ClassLog.Log("HTTP/HTTPS API - X-Forwarded-For ip of the client is: " + newIp, 7, 2);
+                        var checkBanResult = ClassApiBan.FilterCheckIp(_ip);
+                        if (!checkBanResult) // Is Banned
                         {
-                            string newIp = packetEach.ToLower().Replace("x-forwarded-for: ", "");
-                            _ip = newIp;
-                            ClassLog.Log("HTTP/HTTPS API - X-Forwarded-For ip of the client is: " + newIp, 7, 2);
-                            var checkBanResult = ClassApiBan.FilterCheckIp(_ip);
-                            if (!checkBanResult) // Is Banned
+                            return false;
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(newIp))
                             {
-                                return false;
+                                ClassApiBan.FilterInsertIp(newIp);
                             }
                             else
                             {
-                                if (!string.IsNullOrEmpty(newIp))
-                                {
-                                    ClassApiBan.FilterInsertIp(newIp);
-                                }
-                                return true;
+                                return false;
                             }
+                            return true;
                         }
-
                     }
+
                 }
             }
 
@@ -363,7 +355,6 @@ namespace Xiropht_RemoteNode.Api
                         var resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CoinMaxSupply);
 
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinCirculating:
@@ -375,7 +366,6 @@ namespace Xiropht_RemoteNode.Api
                         resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CoinCirculating);
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinTotalFee:
                         jsonResultObject = new ClassApiResultObject
@@ -386,7 +376,6 @@ namespace Xiropht_RemoteNode.Api
                         resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentTotalFee);
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinTotalMined:
                         jsonResultObject = new ClassApiResultObject
@@ -397,7 +386,6 @@ namespace Xiropht_RemoteNode.Api
                         resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync(""+(ClassRemoteNodeSync.ListOfBlock.Count * 10));
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinBlockchainHeight:
                         jsonResultObject = new ClassApiResultObject
@@ -408,7 +396,6 @@ namespace Xiropht_RemoteNode.Api
                         resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync(""+ (ClassRemoteNodeSync.ListOfBlock.Count + 1));
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinTotalBlockMined:
                         jsonResultObject = new ClassApiResultObject
@@ -419,7 +406,6 @@ namespace Xiropht_RemoteNode.Api
                         resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync("" + (ClassRemoteNodeSync.ListOfBlock.Count));
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinTotalBlockLeft:
                         jsonResultObject = new ClassApiResultObject
@@ -430,7 +416,6 @@ namespace Xiropht_RemoteNode.Api
                         resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentBlockLeft);
 
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinNetworkDifficulty:
@@ -442,7 +427,6 @@ namespace Xiropht_RemoteNode.Api
                         resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentDifficulty);
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinNetworkHashrate:
                         jsonResultObject = new ClassApiResultObject
@@ -453,7 +437,6 @@ namespace Xiropht_RemoteNode.Api
                         resultJsonObject = JsonConvert.SerializeObject(jsonResultObject);
 
                         await BuildAndSendHttpPacketAsync(resultJsonObject, false, null, true);
-                        //await BuildAndSendHttpPacketAsync(ClassRemoteNodeSync.CurrentHashrate);
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinBlockPerId:
                         if (selectedIndex > 0)
@@ -464,19 +447,6 @@ namespace Xiropht_RemoteNode.Api
                                 if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(selectedIndex))
                                 {
                                     var splitBlock = ClassRemoteNodeSync.ListOfBlock[selectedIndex].Split(new[] { "#" }, StringSplitOptions.None);
-                                    /*Dictionary<string, string> blockContent = new Dictionary<string, string>
-                                    {
-                                        { "block_id", splitBlock[0] },
-                                        { "block_hash", splitBlock[1] },
-                                        { "block_transaction_hash", splitBlock[2] },
-                                        { "block_timestamp_create", splitBlock[3] },
-                                        { "block_timestamp_found", splitBlock[4] },
-                                        { "block_difficulty", splitBlock[5] },
-                                        { "block_reward", splitBlock[6] }
-                                    };
-
-                                    await BuildAndSendHttpPacketAsync(null, true, blockContent);
-                                    blockContent.Clear();*/
                                     var blockApiObject = new ClassApiBlockObject
                                     {
                                         block_id = long.Parse(splitBlock[0]),
@@ -516,19 +486,6 @@ namespace Xiropht_RemoteNode.Api
                             {
 
                                 var splitBlock = ClassRemoteNodeSync.ListOfBlock[selectedBlockIndex].Split(new[] { "#" }, StringSplitOptions.None);
-                                /*Dictionary<string, string> blockContent = new Dictionary<string, string>
-                                    {
-                                        { "block_id", splitBlock[0] },
-                                        { "block_hash", splitBlock[1] },
-                                        { "block_transaction_hash", splitBlock[2] },
-                                        { "block_timestamp_create", splitBlock[3] },
-                                        { "block_timestamp_found", splitBlock[4] },
-                                        { "block_difficulty", splitBlock[5] },
-                                        { "block_reward", splitBlock[6] }
-                                    };
-
-                                await BuildAndSendHttpPacketAsync(null, true, blockContent);
-                                blockContent.Clear();*/
 
                                 var blockApiObject = new ClassApiBlockObject
                                 {
@@ -565,19 +522,6 @@ namespace Xiropht_RemoteNode.Api
                                 if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(selectedIndex))
                                 {
                                     var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(selectedIndex).Item1.Split(new[] { "-" }, StringSplitOptions.None);
-                                    /*Dictionary<string, string> transactionContent = new Dictionary<string, string>
-                                    {
-                                        { "transaction_id", "" + (selectedIndex + 1) },
-                                        { "transaction_id_sender", splitTransaction[0] },
-                                        { "transaction_fake_amount", splitTransaction[1] },
-                                        { "transaction_fake_fee", splitTransaction[2] },
-                                        { "transaction_id_receiver", splitTransaction[3] },
-                                        { "transaction_timestamp_sended", splitTransaction[4] },
-                                        { "transaction_hash", splitTransaction[5] },
-                                        { "transaction_timestamp_received", splitTransaction[6] }
-                                    };
-
-                                    await BuildAndSendHttpPacketAsync(null, true, transactionContent);*/
 
                                     var transactionApiObject = new ClassApiTransactionObject
                                     {
@@ -619,20 +563,6 @@ namespace Xiropht_RemoteNode.Api
                             if (transactionIndex != -1)
                             {
                                 var splitTransaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionIndex).Item1.Split(new[] { "-" }, StringSplitOptions.None);
-                                /*Dictionary<string, string> transactionContent = new Dictionary<string, string>
-                                    {
-                                        { "transaction_id", "" + (transactionIndex + 1) },
-                                        { "transaction_id_sender", splitTransaction[0] },
-                                        { "transaction_fake_amount", splitTransaction[1] },
-                                        { "transaction_fake_fee", splitTransaction[2] },
-                                        { "transaction_id_receiver", splitTransaction[3] },
-                                        { "transaction_timestamp_sended", splitTransaction[4] },
-                                        { "transaction_hash", splitTransaction[5] },
-                                        { "transaction_timestamp_received", splitTransaction[6] }
-                                    };
-
-                                await BuildAndSendHttpPacketAsync(null, true, transactionContent);
-                                transactionContent.Clear();*/
 
                                 var transactionApiObject = new ClassApiTransactionObject
                                 {
@@ -661,24 +591,7 @@ namespace Xiropht_RemoteNode.Api
                         }
                         break;
                     case ClassApiHttpRequestEnumeration.GetCoinNetworkFullStats:
-                        /*Dictionary<string, string> networkStatsContent = new Dictionary<string, string>
-                        {
-                            { "coin_name", ClassConnectorSetting.CoinName },
-                            { "coin_min_name", ClassConnectorSetting.CoinNameMin },
-                            { "coin_max_supply",  decimal.Parse(ClassRemoteNodeSync.CoinMaxSupply, NumberStyles.Any, Program.GlobalCultureInfo).ToString()  },
-                            { "coin_circulating", decimal.Parse(ClassRemoteNodeSync.CoinCirculating, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
-                            { "coin_total_fee",  decimal.Parse(ClassRemoteNodeSync.CurrentTotalFee, NumberStyles.Any, Program.GlobalCultureInfo).ToString()},
-                            { "coin_total_mined", (ClassRemoteNodeSync.ListOfBlock.Count *ClassConnectorSetting.ConstantBlockReward).ToString() },
-                            { "coin_blockchain_height", "" + (ClassRemoteNodeSync.ListOfBlock.Count + 1) },
-                            { "coin_total_block_mined", "" + ClassRemoteNodeSync.ListOfBlock.Count },
-                            { "coin_total_block_left", ClassRemoteNodeSync.CurrentBlockLeft },
-                            { "coin_network_difficulty", decimal.Parse(ClassRemoteNodeSync.CurrentDifficulty, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
-                            { "coin_network_hashrate", decimal.Parse(ClassRemoteNodeSync.CurrentHashrate, NumberStyles.Any, Program.GlobalCultureInfo).ToString() },
-                            { "coin_total_transaction", "" + ClassRemoteNodeSync.ListOfTransaction.Count }
-                        };
 
-                        await BuildAndSendHttpPacketAsync(null, true, networkStatsContent);
-                        networkStatsContent.Clear();*/
 
                         ClassApiNetworkStatsObject networkStatsApiObject = new ClassApiNetworkStatsObject
                         {
@@ -724,10 +637,13 @@ namespace Xiropht_RemoteNode.Api
         /// build and send http packet to client.
         /// </summary>
         /// <param name="content"></param>
+        /// <param name="multiResult"></param>
+        /// <param name="dictionaryContent"></param>
+        /// <param name="jsonDone"></param>
         /// <returns></returns>
         private async Task BuildAndSendHttpPacketAsync(string content, bool multiResult = false, Dictionary<string, string> dictionaryContent = null, bool jsonDone = false)
         {
-            string contentToSend = string.Empty;
+            string contentToSend;
             if (!jsonDone)
             {
                 if (!multiResult)
@@ -753,7 +669,6 @@ namespace Xiropht_RemoteNode.Api
             builder.AppendLine(@"" + contentToSend);
             await SendPacketAsync(builder.ToString());
             builder.Clear();
-            contentToSend = string.Empty;
         }
 
         /// <summary>
@@ -774,7 +689,7 @@ namespace Xiropht_RemoteNode.Api
         /// <summary>
         /// Return content converted for json.
         /// </summary>
-        /// <param name="content"></param>
+        /// <param name="dictionaryContent"></param>
         /// <returns></returns>
         private string BuildFullJsonString(Dictionary<string, string> dictionaryContent)
         {

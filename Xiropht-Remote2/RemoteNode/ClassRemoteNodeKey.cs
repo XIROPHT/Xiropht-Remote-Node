@@ -13,8 +13,8 @@ namespace Xiropht_RemoteNode.RemoteNode
 
         public static string DataTransactionRead;
         public static string DataBlockRead;
-        private static bool InGenerateTransactionKey;
-        private static bool InGenerateBlockKey;
+        private static bool _inGenerateTransactionKey;
+        private static bool _inGenerateBlockKey;
 
         public static void StartUpdateTrustedKey()
         {
@@ -54,13 +54,12 @@ namespace Xiropht_RemoteNode.RemoteNode
         public static void StartUpdateHashTransactionList()
         {
 
-            if (!InGenerateTransactionKey)
+            if (!_inGenerateTransactionKey)
             {
-                InGenerateTransactionKey = true;
+                _inGenerateTransactionKey = true;
 
                 try
                 {
-                    //ClassRemoteNodeSync.HashTransactionList = Utils.ClassUtilsNode.ConvertStringToSha512(string.Join(string.Empty, ClassRemoteNodeSync.ListOfTransaction.Values()));
                     string transactionBlock = string.Empty;
                     string schema = ClassRemoteNodeSync.SchemaHashTransaction;
 
@@ -69,16 +68,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                         var splitSchema = schema.Split(new[] { ";" }, StringSplitOptions.None);
                         foreach (var transaction in splitSchema)
                         {
-                            if (transaction != null)
+                            if (!string.IsNullOrEmpty(transaction))
                             {
-                                if (!string.IsNullOrEmpty(transaction))
+                                if (long.TryParse(transaction, out var transactionId))
                                 {
-                                    if (long.TryParse(transaction, out var transactionId))
+                                    if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(transactionId))
                                     {
-                                        if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(transactionId))
-                                        {
-                                            transactionBlock += ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionId);
-                                        }
+                                        transactionBlock += ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionId);
                                     }
                                 }
                             }
@@ -91,20 +87,20 @@ namespace Xiropht_RemoteNode.RemoteNode
                 }
                 catch
                 {
-
+                    //
                 }
                 ClassLog.Log(
                     "Hash key from transaction list generated: " + ClassRemoteNodeSync.HashTransactionList + " ", 1, 1);
-                InGenerateTransactionKey = false;
+                _inGenerateTransactionKey = false;
 
             }
         }
 
         public static void StartUpdateHashBlockList()
         {
-            if (!InGenerateBlockKey)
+            if (!_inGenerateBlockKey)
             {
-                InGenerateBlockKey = true;
+                _inGenerateBlockKey = true;
 
                 try
                 {
@@ -117,16 +113,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                         var splitSchema = schema.Split(new[] { ";" }, StringSplitOptions.None);
                         foreach (var block in splitSchema)
                         {
-                            if (block != null)
+                            if (!string.IsNullOrEmpty(block))
                             {
-                                if (!string.IsNullOrEmpty(block))
+                                if (int.TryParse(block, out var blockId))
                                 {
-                                    if (int.TryParse(block, out var blockId))
+                                    if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockId))
                                     {
-                                        if (ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockId))
-                                        {
-                                            blockBLock += ClassRemoteNodeSync.ListOfBlock[blockId];
-                                        }
+                                        blockBLock += ClassRemoteNodeSync.ListOfBlock[blockId];
                                     }
                                 }
                             }
@@ -139,10 +132,10 @@ namespace Xiropht_RemoteNode.RemoteNode
                 }
                 catch
                 {
-
+                    //
                 }
                 ClassLog.Log("Hash key from block list generated: " + ClassRemoteNodeSync.HashBlockList + " ", 1, 1);
-                InGenerateBlockKey = false;
+                _inGenerateBlockKey = false;
 
             }
         }

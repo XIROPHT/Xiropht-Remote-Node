@@ -1,5 +1,6 @@
 ﻿using System;
 using Xiropht_RemoteNode.Data;
+using Xiropht_RemoteNode.RemoteNode;
 
 namespace Xiropht_RemoteNode.Api
 {
@@ -57,7 +58,8 @@ namespace Xiropht_RemoteNode.Api
         /// <returns></returns>
         public string GetTransactionFromWalletId(float walletId, int transactionId)
         {
-            TupleTransaction = ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, transactionId);
+            TupleTransaction =
+                ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionPerId(walletId, transactionId);
             if (TupleTransaction.Item1 != "WRONG")
             {
                 long getTransactionId = ClassRemoteNodeSync.ListOfTransactionHash.ContainsKey(TupleTransaction.Item1);
@@ -67,9 +69,9 @@ namespace Xiropht_RemoteNode.Api
                     Transaction = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(getTransactionId).Item1;
                     if (Transaction != "WRONG")
                     {
-                        var dataTransactionSplit = Transaction.Split(new[] { "-" }, StringSplitOptions.None);
+                        var dataTransactionSplit = Transaction.Split(new[] {"-"}, StringSplitOptions.None);
 
-                        if (TupleTransaction.Item2 == "SEND")
+                        if (TupleTransaction.Item2 == ClassRemoteNodeTransactionPerWalletType.TypeSend)
                         {
                             decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
                             decimal amount = 0; // Amount.
@@ -77,17 +79,21 @@ namespace Xiropht_RemoteNode.Api
                             string timestampRecv = dataTransactionSplit[6];
                             string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
 
-                            var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" }, StringSplitOptions.None);
+                            var splitTransactionInformation =
+                                dataTransactionSplit[7].Split(new[] {"#"}, StringSplitOptions.None);
 
                             // Real crypted fee, amount sender.
                             string blockHeight = splitTransactionInformation[0];
                             string realFeeAmountSend = splitTransactionInformation[1];
                             string realFeeAmountRecv = splitTransactionInformation[2];
-                            return "SEND#" + amount + "#" + fee + "#" + timestamp + "#" + hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" + realFeeAmountRecv + "#";
+                            return ClassRemoteNodeTransactionPerWalletType.TypeSend + "#" + amount + "#" + fee + "#" +
+                                   timestamp + "#" + hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" +
+                                   realFeeAmountSend + "#" + realFeeAmountRecv + "#";
 
 
                         }
-                        else if (TupleTransaction.Item2 == "RECV")
+
+                        if (TupleTransaction.Item2 == ClassRemoteNodeTransactionPerWalletType.TypeRecv)
                         {
                             decimal timestamp = decimal.Parse(dataTransactionSplit[4]); // timestamp CEST.
                             decimal amount = 0; // Amount.
@@ -95,35 +101,25 @@ namespace Xiropht_RemoteNode.Api
                             string timestampRecv = dataTransactionSplit[6];
                             string hashTransaction = dataTransactionSplit[5]; // Transaction hash.
 
-                            var splitTransactionInformation = dataTransactionSplit[7].Split(new[] { "#" }, StringSplitOptions.None);
+                            var splitTransactionInformation =
+                                dataTransactionSplit[7].Split(new[] {"#"}, StringSplitOptions.None);
 
                             // Real crypted fee, amount sender.
                             string blockHeight = splitTransactionInformation[0];
                             string realFeeAmountSend = splitTransactionInformation[1];
                             string realFeeAmountRecv = splitTransactionInformation[2];
 
-                            return "RECV#" + amount + "#" + fee + "#" + timestamp + "#" + hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" + realFeeAmountSend + "#" + realFeeAmountRecv + "#";
+                            return ClassRemoteNodeTransactionPerWalletType.TypeRecv + "#" + amount + "#" + fee + "#" +
+                                   timestamp + "#" + hashTransaction + "#" + timestampRecv + "#" + blockHeight + "#" +
+                                   realFeeAmountSend + "#" + realFeeAmountRecv + "#";
 
                         }
-                        else
-                        {
-                            return "WRONG";
-                        }
-                    }
-                    else
-                    {
-                        return "WRONG";
                     }
                 }
-                else
-                {
-                    return "WRONG";
-                }
             }
-            else
-            {
-                return "WRONG";
-            }
+
+            return "WRONG";
+
         }
 
     }

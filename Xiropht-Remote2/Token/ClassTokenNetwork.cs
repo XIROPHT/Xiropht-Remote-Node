@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Xiropht_Connector_All.RPC;
 using Xiropht_Connector_All.Setting;
 using Xiropht_Connector_All.Utils;
-using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode.Token
 {
@@ -21,8 +20,7 @@ namespace Xiropht_RemoteNode.Token
         public static async Task<bool> CheckWalletAddressExistAsync(string walletAddress)
         {
 
-
-            Dictionary<string, int> ListOfSeedNodesSpeed = new Dictionary<string, int>();
+            Dictionary<string, int> listOfSeedNodesSpeed = new Dictionary<string, int>();
             foreach (var seedNode in ClassConnectorSetting.SeedNodeIp)
             {
 
@@ -35,96 +33,70 @@ namespace Xiropht_RemoteNode.Token
                     {
                         seedNodeResponseTime = ClassConnectorSetting.MaxSeedNodeTimeoutConnect;
                     }
-                    ListOfSeedNodesSpeed.Add(seedNode.Key, seedNodeResponseTime);
+                    listOfSeedNodesSpeed.Add(seedNode.Key, seedNodeResponseTime);
 
                 }
                 catch
                 {
-                    ListOfSeedNodesSpeed.Add(seedNode.Key, ClassConnectorSetting.MaxSeedNodeTimeoutConnect); // Max delay.
+                    listOfSeedNodesSpeed.Add(seedNode.Key, ClassConnectorSetting.MaxSeedNodeTimeoutConnect); // Max delay.
                 }
 
             }
 
-            ListOfSeedNodesSpeed = ListOfSeedNodesSpeed.OrderBy(u => u.Value).ToDictionary(z => z.Key, y => y.Value);
+            listOfSeedNodesSpeed = listOfSeedNodesSpeed.OrderBy(u => u.Value).ToDictionary(z => z.Key, y => y.Value);
 
 
-            bool success = false;
-
-            foreach (var seedNode in ListOfSeedNodesSpeed)
+            foreach (var seedNode in listOfSeedNodesSpeed)
             {
-                if (!success)
+                try
                 {
-                    try
+                    string randomSeedNode = seedNode.Key;
+                    string request = ClassConnectorSettingEnumeration.WalletTokenType + "|" + ClassRpcWalletCommand.TokenCheckWalletAddressExist + "|" + walletAddress;
+                    string result = await ProceedHttpRequest("http://" + randomSeedNode + ":" + ClassConnectorSetting.SeedNodeTokenPort + "/", request);
+                    if (result != string.Empty && result != PacketNotExist)
                     {
-                        string randomSeedNode = seedNode.Key;
-                        string request = ClassConnectorSettingEnumeration.WalletTokenType + "|" + ClassRpcWalletCommand.TokenCheckWalletAddressExist + "|" + walletAddress;
-                        string result = await ProceedHttpRequest("http://" + randomSeedNode + ":" + ClassConnectorSetting.SeedNodeTokenPort + "/", request);
-                        if (result == string.Empty || result == PacketNotExist)
+                        JObject resultJson = JObject.Parse(result);
+                        if (resultJson.ContainsKey(PacketResult))
                         {
-                            success = false;
-                        }
-                        else
-                        {
-                            JObject resultJson = JObject.Parse(result);
-                            if (resultJson.ContainsKey(PacketResult))
+                            string resultCheckWalletAddress = resultJson[PacketResult].ToString();
+                            if (resultCheckWalletAddress.Contains("|"))
                             {
-                                string resultCheckWalletAddress = resultJson[PacketResult].ToString();
-                                if (resultCheckWalletAddress.Contains("|"))
+                                var splitResultCheckWalletAddress = resultCheckWalletAddress.Split(new[] { "|" }, StringSplitOptions.None);
+
+                                if (splitResultCheckWalletAddress[0] == ClassRpcWalletCommand.SendTokenCheckWalletAddressValid)
                                 {
-                                    var splitResultCheckWalletAddress = resultCheckWalletAddress.Split(new[] { "|" }, StringSplitOptions.None);
-                                    if (splitResultCheckWalletAddress[0] == ClassRpcWalletCommand.SendTokenCheckWalletAddressInvalid)
-                                    {
-                                        success = false;
-                                    }
-                                    else if (splitResultCheckWalletAddress[0] == ClassRpcWalletCommand.SendTokenCheckWalletAddressValid)
-                                    {
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        success = false;
-                                    }
-                                }
-                                else
-                                {
-                                    success = false;
+                                    return true;
                                 }
                             }
-                            else
-                            {
-                                success = false;
-                            }
                         }
-                    }
-                    catch
-                    {
-                        success = false;
                     }
                 }
+                catch
+                {
+                    // ignored
+                }
             }
-            return success;
+            return false;
 
         }
 
         private static async Task<string> ProceedHttpRequest(string url, string requestString)
         {
-            string result = string.Empty;
-
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url + requestString);
             request.AutomaticDecompression = DecompressionMethods.GZip;
             request.ServicePoint.Expect100Continue = false;
             request.KeepAlive = false;
             request.Timeout = 10000;
-            request.UserAgent = ClassConnectorSetting.CoinName + "Solo Miner - " + Assembly.GetExecutingAssembly().GetName().Version + "R";
-            string responseContent = string.Empty;
+            request.UserAgent = ClassConnectorSetting.CoinName + "Remote Node - " + Assembly.GetExecutingAssembly().GetName().Version + "R";
             using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
             using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                result = await reader.ReadToEndAsync();
-            }
+                if (stream != null)
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        return await reader.ReadToEndAsync();
+                    }
 
-            return result;
+            return string.Empty;
         }
     }
 }

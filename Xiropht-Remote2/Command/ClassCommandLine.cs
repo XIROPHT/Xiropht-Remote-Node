@@ -217,16 +217,16 @@ namespace Xiropht_RemoteNode.Command
                         ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop each connection of the remote node.");
-                        Program.RemoteNodeObjectBlock.StopConnection("end");
-                        Program.RemoteNodeObjectTransaction.StopConnection("end");
-                        Program.RemoteNodeObjectTotalTransaction.StopConnection("end");
-                        Program.RemoteNodeObjectCoinCirculating.StopConnection("end");
-                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection("end");
-                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection("end");
-                        Program.RemoteNodeObjectCurrentRate.StopConnection("end");
-                        Program.RemoteNodeObjectTotalBlockMined.StopConnection("end");
-                        Program.RemoteNodeObjectTotalFee.StopConnection("end");
-                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection("end");
+                        Program.RemoteNodeObjectBlock.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectTotalTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectCoinCirculating.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectCurrentRate.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectTotalBlockMined.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectTotalFee.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
                         ClassLog.StopWriteLog();
 
                         Thread.Sleep(1000);
