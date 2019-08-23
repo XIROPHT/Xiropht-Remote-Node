@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Xiropht_RemoteNode.Data;
@@ -13,21 +14,27 @@ namespace Xiropht_RemoteNode.RemoteNode
         private static readonly string BlockchainDirectory = "\\Blockchain\\";
         private static readonly string BlockchainTransactionDirectory = "\\Blockchain\\Transaction\\";
         private static readonly string BlockchainBlockDirectory = "\\Blockchain\\Block\\";
+        private static readonly string BlockchainWalletCacheDirectory = "\\Blockchain\\Wallet\\";
+        private static readonly string BlockchainWalletCacheDatabase = "wallet-cache.xirdb";
+
         private static StreamWriter BlockchainTransactionWriter;
         private static StreamWriter BlockchainBlockWriter;
+        private static StreamWriter BlockchainWalletCacheWriter;
 
         public static bool InSaveTransactionDatabase;
         public static bool InSaveBlockDatabase;
+        public static bool InSaveWalletCacheDatabase;
 
         public static long TotalTransactionSaved;
         public static int TotalBlockSaved;
-        public static string DataTransactionSaved;
-        public static string DataBlockSaved;
+        public static int TotalWalletCacheSaved;
 
 
         private static Thread _threadAutoSaveTransaction;
 
         private static Thread _threadAutoSaveBlock;
+
+        private static Thread _threadAutoSaveWalletCache;
 
         /// <summary>
         ///     Initialize Path make them if they not exist.
@@ -40,6 +47,8 @@ namespace Xiropht_RemoteNode.RemoteNode
                 Directory.CreateDirectory(GetCurrentPath() + GetBlockchainBlockPath());
             if (!Directory.Exists(GetCurrentPath() + GetBlockchainTransactionPath()))
                 Directory.CreateDirectory(GetCurrentPath() + GetBlockchainTransactionPath());
+            if (!Directory.Exists(GetCurrentPath() + GetBlockchainWalletCachePath()))
+                Directory.CreateDirectory(GetCurrentPath() + GetBlockchainWalletCachePath());
         }
 
 
@@ -72,6 +81,17 @@ namespace Xiropht_RemoteNode.RemoteNode
         private static string GetBlockchainTransactionPath()
         {
             var path = BlockchainTransactionDirectory;
+            if (Environment.OSVersion.Platform == PlatformID.Unix) path = path.Replace("\\", "/");
+            return path;
+        }
+
+        /// <summary>
+        ///     Get blockchain path of wallet cache database.
+        /// </summary>
+        /// <returns></returns>
+        private static string GetBlockchainWalletCachePath()
+        {
+            var path = BlockchainWalletCacheDirectory;
             if (Environment.OSVersion.Platform == PlatformID.Unix) path = path.Replace("\\", "/");
             return path;
         }
@@ -194,7 +214,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             while ((line = sr.ReadLine()) != null)
                             {
                                 counter++;
-                                var splitLineBlock = line.Split(new[] {"#"}, StringSplitOptions.None);
+                                var splitLineBlock = line.Split(new[] { "#" }, StringSplitOptions.None);
                                 string blockHash = splitLineBlock[1];
                                 long blockId = long.Parse(splitLineBlock[0]);
                                 if (!ClassRemoteNodeSync.ListOfBlock.ContainsKey(blockId - 1))
@@ -216,6 +236,50 @@ namespace Xiropht_RemoteNode.RemoteNode
             else
             {
                 File.Create(GetCurrentPath() + GetBlockchainBlockPath() + BlockchainBlockDatabase).Close();
+            }
+        }
+
+        /// <summary>
+        ///     Load wallet cache database file.
+        /// </summary>
+        public static void LoadBlockchainWalletCache()
+        {
+            if (File.Exists(GetCurrentPath() + GetBlockchainWalletCachePath() + BlockchainWalletCacheDatabase))
+            {
+                Console.WriteLine("Load block database file..");
+
+
+                var counter = 0;
+
+
+                using (FileStream fs = File.Open(GetCurrentPath() + GetBlockchainWalletCachePath() + BlockchainWalletCacheDatabase, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    using (BufferedStream bs = new BufferedStream(fs))
+                    {
+                        using (StreamReader sr = new StreamReader(bs))
+                        {
+                            string line;
+                            while ((line = sr.ReadLine()) != null)
+                            {
+                                counter++;
+                                if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Count < int.MaxValue - 1)
+                                {
+                                    if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(line))
+                                    {
+                                        ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Add(line, line);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                TotalWalletCacheSaved = counter;
+                Console.WriteLine(counter + " wallet cache successfully loaded and included on memory..");
+            }
+            else
+            {
+                File.Create(GetCurrentPath() + GetBlockchainWalletCachePath() + BlockchainWalletCacheDatabase).Close();
             }
         }
 
@@ -472,6 +536,142 @@ namespace Xiropht_RemoteNode.RemoteNode
             return true;
         }
 
+
+        /// <summary>
+        /// Force to save wallet cache.
+        /// </summary>
+        public static bool SaveWalletCache(bool auto = true)
+        {
+
+            if (!InSaveWalletCacheDatabase)
+            {
+                if (_threadAutoSaveWalletCache != null &&
+                    (_threadAutoSaveWalletCache.IsAlive || _threadAutoSaveWalletCache != null))
+                {
+                    _threadAutoSaveWalletCache.Abort();
+                    GC.SuppressFinalize(_threadAutoSaveWalletCache);
+                }
+
+                if (auto)
+                {
+                    _threadAutoSaveWalletCache = new Thread(delegate ()
+                    {
+                        while (!Program.Closed)
+                        {
+                            try
+                            {
+                                if (!File.Exists(GetCurrentPath() + GetBlockchainWalletCachePath() +
+                                                 BlockchainWalletCacheDatabase))
+                                {
+                                    File.Create(GetCurrentPath() + GetBlockchainWalletCachePath() +
+                                                BlockchainWalletCacheDatabase).Close();
+                                }
+
+                                if (BlockchainWalletCacheWriter == null)
+                                {
+                                    BlockchainWalletCacheWriter =
+                                        new StreamWriter(
+                                                GetCurrentPath() + GetBlockchainWalletCachePath() +
+                                                BlockchainWalletCacheDatabase, true, Encoding.UTF8, 8192)
+                                        { AutoFlush = true };
+                                }
+
+
+                                InSaveWalletCacheDatabase = true;
+                                if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress != null)
+                                {
+                                    if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Count > 0)
+                                    {
+
+                                        if (TotalWalletCacheSaved != ClassRemoteNodeSync
+                                                .DictionaryCacheValidWalletAddress.Count)
+                                        {
+                                            var walletCache = ClassRemoteNodeSync.DictionaryCacheValidWalletAddress
+                                                .ToArray();
+                                            for (var i = TotalWalletCacheSaved;
+                                                i < walletCache.Length;
+                                                i++)
+                                            {
+
+                                                BlockchainWalletCacheWriter.Write(
+                                                    walletCache[i].Key + "\n");
+
+                                            }
+
+                                            TotalWalletCacheSaved = walletCache.Length;
+                                            Array.Clear(walletCache, 0, walletCache.Length);
+                                        }
+                                    }
+                                }
+
+                                InSaveWalletCacheDatabase = false;
+
+                            }
+                            catch (Exception error)
+                            {
+#if DEBUG
+                            Console.WriteLine("Can't save wallet cache to database file: " + error.Message);
+#endif
+                                ClearWalletCacheSave();
+
+                            }
+
+                            Thread.Sleep(1000);
+                        }
+                    });
+                    _threadAutoSaveWalletCache.Start();
+                }
+                else
+                {
+                    try
+                    {
+
+                        ClearWalletCacheSave();
+
+                        File.Create(GetCurrentPath() + GetBlockchainWalletCachePath() +
+                                    BlockchainWalletCacheDatabase).Close();
+
+
+
+                        InSaveWalletCacheDatabase = true;
+                        if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress != null)
+                        {
+                            if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Count > 0)
+                            {
+
+                                var walletCache = ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ToArray();
+                                using (var sw = new StreamWriter(GetCurrentPath() + GetBlockchainWalletCachePath() +
+                                                                 BlockchainWalletCacheDatabase, true, Encoding.UTF8,
+                                        8192)
+                                { AutoFlush = true })
+                                {
+                                    foreach (var wallet in walletCache)
+                                    {
+                                        sw.Write(wallet.Key + "\n");
+                                    }
+                                }
+
+                                TotalWalletCacheSaved = walletCache.Length;
+                                Array.Clear(walletCache, 0, walletCache.Length);
+                            }
+                        }
+
+                        InSaveWalletCacheDatabase = false;
+
+                    }
+                    catch (Exception error)
+                    {
+#if DEBUG
+                        Console.WriteLine("Can't save wallet cache to database file: " + error.Message);
+#endif
+                        ClearWalletCacheSave();
+                    }
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>
         ///     Force to clear blocks saved.
         /// </summary>
@@ -516,6 +716,29 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
             catch
             {
+            }
+        }
+
+        /// <summary>
+        /// Force to clear wallet cache saved.
+        /// </summary>
+        public static void ClearWalletCacheSave()
+        {
+            try
+            {
+                if (BlockchainWalletCacheWriter != null)
+                {
+                    BlockchainWalletCacheWriter?.Close();
+                    BlockchainWalletCacheWriter?.Dispose();
+                    BlockchainWalletCacheWriter = null;
+                }
+                TotalWalletCacheSaved = 0;
+                File.Create(GetCurrentPath() + GetBlockchainWalletCachePath() + BlockchainWalletCacheDatabase).Close();
+                InSaveWalletCacheDatabase = false;
+            }
+            catch
+            {
+
             }
         }
     }

@@ -12,6 +12,8 @@ namespace Xiropht_RemoteNode.Data
         public static BigDictionaryTransactionHash ListOfTransactionHash = new BigDictionaryTransactionHash(); // List of transaction hash of the blockchain.
         public static Dictionary<long, string> ListOfBlock = new Dictionary<long, string>(); // List of block mined of the blockchain.
         public static DictionaryBlockHash ListOfBlockHash = new DictionaryBlockHash(); // List of block mined hash of the blockchain.
+        public static Dictionary<string, string> DictionaryCacheValidWalletAddress = new Dictionary<string, string>();
+
         public static string CoinMaxSupply; // Max Supply of the coin in the blockchain.
         public static string CoinCirculating; // Current amount of coin circulating in the blockchain.
         public static string CurrentTotalFee; // Current amount of fee in the blockchain.

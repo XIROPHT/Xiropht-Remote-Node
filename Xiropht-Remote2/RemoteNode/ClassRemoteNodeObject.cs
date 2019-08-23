@@ -88,7 +88,7 @@ namespace Xiropht_RemoteNode.RemoteNode
             if (RemoteNodeObjectTcpClient == null)
                 RemoteNodeObjectTcpClient = new ClassSeedNodeConnector();
             else // For be sure.
-                StopConnection(string.Empty);
+                await StopConnection(string.Empty);
 
             if (RemoteNodeObjectType == SyncEnumerationObject.ObjectToBePublic)
             {
@@ -122,12 +122,14 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// <summary>
         ///     Stop sync connection, close every thread.
         /// </summary>
-        public void StopConnection(string disconnectType)
+        public async Task StopConnection(string disconnectType)
         {
             switch (disconnectType)
             {
                 case ClassRemoteNodeObjectStopConnectionEnumeration.Timeout:
-                    ClassLog.Log("Object sync " + RemoteNodeObjectType + " not keep alive packet received since a long time. Reconnect it.", 0, 2);
+                    ClassLog.Log(
+                        "Object sync " + RemoteNodeObjectType +
+                        " not keep alive packet received since a long time. Reconnect it.", 0, 2);
                     break;
                 case ClassRemoteNodeObjectStopConnectionEnumeration.End:
                     ClassLog.Log("Object sync " + RemoteNodeObjectType + " disconnected from exit command line.", 0, 2);
@@ -141,25 +143,42 @@ namespace Xiropht_RemoteNode.RemoteNode
             RemoteNodeObjectInReceiveTransaction = false;
             RemoteNodeObjectInSyncBlock = false;
             RemoteNodeObjectInSyncTransaction = false;
-            RemoteNodeObjectTcpClient?.DisconnectToSeed();
+            try
+            {
+                RemoteNodeObjectTcpClient?.DisconnectToSeed();
+                RemoteNodeObjectTcpClient?.Dispose();
+            }
+            catch
+            {
+
+            }
+
             if (RemoteNodeObjectType == SyncEnumerationObject.ObjectToBePublic)
             {
                 ClassRemoteNodeSync.ImPublicNode = false;
                 ClassRemoteNodeSync.ListOfPublicNodes.Clear();
                 ClassRemoteNodeSync.MyOwnIP = string.Empty;
             }
+
+            if (!string.IsNullOrEmpty(disconnectType))
+            {
+                await Task.Delay(100);
+            }
+
+
             try
             {
                 if (!CancellationRemoteNodeObject.IsCancellationRequested)
                 {
                     CancellationRemoteNodeObject.Cancel();
                 }
-                CancellationRemoteNodeObject = new CancellationTokenSource();
             }
             catch
             {
 
             }
+
+            CancellationRemoteNodeObject = new CancellationTokenSource();
         }
 
         /// <summary>
@@ -259,7 +278,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         }
                     }
                     RemoteNodeObjectThreadStatus = false;
-                }, CancellationRemoteNodeObject.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+                }, CancellationRemoteNodeObject.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
             catch (Exception error)
             {
@@ -473,7 +492,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                         ClassRemoteNodeSync.ListOfTransactionHash.Clear();
                                                                         ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
                                                                         ClassRemoteNodeKey.DataTransactionRead = string.Empty;
-                                                                        StopConnection(string.Empty);
+                                                                        await StopConnection(string.Empty);
                                                                         break;
                                                                     }
                                                                     else
@@ -750,11 +769,11 @@ namespace Xiropht_RemoteNode.RemoteNode
                     RemoteNodeObjectInReceiveTransaction = false;
                     RemoteNodeObjectInSyncBlock = false;
                     RemoteNodeObjectInSyncTransaction = false;
-                }, CancellationRemoteNodeObject.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+                }, CancellationRemoteNodeObject.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
             catch
             {
-                StopConnection(string.Empty);
+                await StopConnection(string.Empty);
             }
         }
 
@@ -876,7 +895,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 }
                                                 catch
                                                 {
-                                                    StopConnection(string.Empty);
+                                                    await StopConnection(string.Empty);
                                                     return;
                                                 }
                                             }
@@ -924,7 +943,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                 }
                                                 catch
                                                 {
-                                                    StopConnection(string.Empty);
+                                                    await StopConnection(string.Empty);
                                                     return;
                                                 }
                                             }
@@ -1012,7 +1031,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     var transactionSubSplit = transactionSubString.Split(new[] { "%" }, StringSplitOptions.None);
                                                     var dataTransactionSplit = transactionSubSplit[1].Split(new[] { "-" }, StringSplitOptions.None);
 
-                                                    long transactionIdInsert;
+                                                    long transactionIdInsert = 0;
                                                     if (long.TryParse(transactionSubSplit[0], out transactionIdInsert))
                                                     {
                                                         ClassLog.Log("Transaction Received: " + transactionSubSplit[1], 2, 2);
@@ -1078,7 +1097,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     var transactionSubString = packetSplit[1].Replace("$", "");
                                     var transactionSubSplit = transactionSubString.Split(new[] { "%" }, StringSplitOptions.None); // Format : id transaction | content
                                     var dataTransactionSplit = transactionSubSplit[1].Split(new[] { "-" }, StringSplitOptions.None);
-                                    long transactionIdInsert;
+                                    long transactionIdInsert = 0;
 
                                     if (long.TryParse(transactionSubSplit[0], out transactionIdInsert))
                                     {

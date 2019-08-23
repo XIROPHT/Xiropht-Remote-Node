@@ -114,6 +114,7 @@ namespace Xiropht_RemoteNode
             if (ClassRemoteNodeSave.LoadBlockchainTransaction())
             {
                 ClassRemoteNodeSave.LoadBlockchainBlock();
+                ClassRemoteNodeSave.LoadBlockchainWalletCache();
             }
             else
             {
@@ -280,6 +281,7 @@ namespace Xiropht_RemoteNode
                 Console.WriteLine("Enable Auto save system..");
                 ClassRemoteNodeSave.SaveTransaction();
                 ClassRemoteNodeSave.SaveBlock();
+                ClassRemoteNodeSave.SaveWalletCache();
 
                 Console.WriteLine("Enable API..");
                 ClassApi.StartApiRemoteNode();
@@ -291,7 +293,7 @@ namespace Xiropht_RemoteNode
             }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Current).ConfigureAwait(true);
 
 
-            _threadCommandLine = new Thread(delegate()
+            _threadCommandLine = new Thread(async delegate()
             {
                 while (!ClassApi.ApiReceiveConnectionStatus)
                 {
@@ -304,7 +306,7 @@ namespace Xiropht_RemoteNode
                 {
                     try
                     {
-                        if (!ClassCommandLine.CommandLine(Console.ReadLine()))
+                        if (!await ClassCommandLine.CommandLine(Console.ReadLine()))
                         {
                             break;
                         }
@@ -327,20 +329,31 @@ namespace Xiropht_RemoteNode
             Console.WriteLine("Welcome, please write your wallet address:");
             RemoteNodeWalletAddress = Console.ReadLine();
 
-            Console.WriteLine("Checking wallet address..");
-            bool checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+            if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(RemoteNodeWalletAddress))
+            {
+                Console.WriteLine("Checking wallet address..");
+                bool checkWalletAddress =
+                    ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
 
-            while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize || RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
-            {
-                Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
-                RemoteNodeWalletAddress = Console.ReadLine();
-                RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
-                Console.WriteLine("Checking wallet address..", 4);
-                checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-            }
-            if (checkWalletAddress)
-            {
-                Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
+                while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize ||
+                       RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize ||
+                       !checkWalletAddress)
+                {
+                    Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
+                    RemoteNodeWalletAddress = Console.ReadLine();
+                    RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
+                    Console.WriteLine("Checking wallet address..", 4);
+                    checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+                }
+
+                if (checkWalletAddress)
+                {
+                    Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
+                    if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(RemoteNodeWalletAddress))
+                    {
+                        ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Add(RemoteNodeWalletAddress, string.Empty);
+                    }
+                }
             }
 
             Console.WriteLine("Do you want load your node as a Public Remote Node? [Y/N]");
@@ -455,20 +468,38 @@ namespace Xiropht_RemoteNode
                                 if (line.Contains("WALLET_ADDRESS="))
                                 {
                                     RemoteNodeWalletAddress = line.Replace("WALLET_ADDRESS=", "");
-                                    Console.WriteLine("Checking wallet address..");
-                                    bool checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-
-                                    while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize || RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
+                                    if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
+                                        RemoteNodeWalletAddress))
                                     {
-                                        Console.WriteLine("Invalid wallet address - Please, write your valid wallet address:");
-                                        RemoteNodeWalletAddress = Console.ReadLine();
-                                        RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
                                         Console.WriteLine("Checking wallet address..");
-                                        checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-                                    }
-                                    if (checkWalletAddress)
-                                    {
-                                        Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.");
+                                        bool checkWalletAddress = ClassTokenNetwork
+                                            .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+
+                                        while (RemoteNodeWalletAddress.Length <
+                                               ClassConnectorSetting.MinWalletAddressSize ||
+                                               RemoteNodeWalletAddress.Length >
+                                               ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
+                                        {
+                                            Console.WriteLine(
+                                                "Invalid wallet address - Please, write your valid wallet address:");
+                                            RemoteNodeWalletAddress = Console.ReadLine();
+                                            RemoteNodeWalletAddress =
+                                                ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
+                                            Console.WriteLine("Checking wallet address..");
+                                            checkWalletAddress = ClassTokenNetwork
+                                                .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+                                        }
+
+                                        if (checkWalletAddress)
+                                        {
+                                            Console.WriteLine(
+                                                "Wallet address: " + RemoteNodeWalletAddress + " is valid.");
+                                            if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
+                                                RemoteNodeWalletAddress))
+                                            {
+                                                ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Add(RemoteNodeWalletAddress, string.Empty);
+                                            }
+                                        }
                                     }
                                 }
                                 if (line.Contains("ENABLE_PUBLIC_MODE="))
@@ -556,22 +587,37 @@ namespace Xiropht_RemoteNode
                     if (remoteNodeSettingObject != null)
                     {
                         RemoteNodeWalletAddress = remoteNodeSettingObject.wallet_address;
-                        Console.WriteLine("Checking wallet address..");
-                        bool checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
                         bool wasWrongWalletAddress = false;
-                        while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize || RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
+                        if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(RemoteNodeWalletAddress))
                         {
-                            wasWrongWalletAddress = true;
-                            Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
-                            RemoteNodeWalletAddress = Console.ReadLine();
-                            RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
-                            Console.WriteLine("Checking wallet address..", 4);
-                            checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+                            Console.WriteLine("Checking wallet address..");
+                            bool checkWalletAddress = ClassTokenNetwork
+                                .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+                            while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize ||
+                                   RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize ||
+                                   !checkWalletAddress)
+                            {
+                                wasWrongWalletAddress = true;
+                                Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
+                                RemoteNodeWalletAddress = Console.ReadLine();
+                                RemoteNodeWalletAddress =
+                                    ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
+                                Console.WriteLine("Checking wallet address..", 4);
+                                checkWalletAddress = ClassTokenNetwork
+                                    .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+                            }
+
+                            if (checkWalletAddress)
+                            {
+                                Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
+                                if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
+                                    RemoteNodeWalletAddress))
+                                {
+                                    ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Add(RemoteNodeWalletAddress, string.Empty);
+                                }
+                            }
                         }
-                        if (checkWalletAddress)
-                        {
-                            Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
-                        }
+
                         ClassRemoteNodeSync.WantToBePublicNode = remoteNodeSettingObject.enable_public_mode;
                         EnableApiHttp = remoteNodeSettingObject.enable_api_http;
                         ClassApiHttp.PersonalRemoteNodeHttpPort = remoteNodeSettingObject.api_http_port;

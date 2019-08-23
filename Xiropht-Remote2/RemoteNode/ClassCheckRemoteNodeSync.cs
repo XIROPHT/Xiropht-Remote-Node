@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
@@ -18,54 +17,29 @@ namespace Xiropht_RemoteNode.RemoteNode
 
     public class ClassCheckRemoteNodeSync
     {
-        private static Thread _threadLoopCheckRemoteNode;
         private static int ThreadLoopCheckRemoteNodeInterval = 5 * 1000; // Check every 5 seconds.
         private static int ThreadLoopCheckBlockchainNetworkInterval = 60 * 1000; // Check every 60 seconds.
         public static bool BlockchainNetworkStatus;
+        private static CancellationTokenSource _cancellationTokenSourceCheckRemoteNode;
 
         /// <summary>
         /// Check every remote node object sync connection.
         /// </summary>
         public static void EnableCheckRemoteNodeSync()
         {
-            _threadLoopCheckRemoteNode = new Thread(delegate ()
+            _cancellationTokenSourceCheckRemoteNode = new CancellationTokenSource();
+            try
             {
-                while (!Program.Closed)
+                Task.Factory.StartNew(async delegate()
                 {
-                    Thread.Sleep(ThreadLoopCheckRemoteNodeInterval); // Make a pause for the next check.
-
-                    try
+                    while (!Program.Closed)
                     {
-                        if (!Program.RemoteNodeObjectBlock.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectBlock.RemoteNodeObjectTcpClient.ReturnStatus())
+                        Thread.Sleep(ThreadLoopCheckRemoteNodeInterval); // Make a pause for the next check.
+
+                        try
                         {
-                            while (!BlockchainNetworkStatus)
-                            {
-                                if (Program.Closed)
-                                {
-                                    break;
-                                }
-
-                                Thread.Sleep(1000);
-                            }
-
-                            Program.RemoteNodeObjectBlock.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration
-                                .Reconnect);
-                            Task.Factory.StartNew(() => Program.RemoteNodeObjectBlock.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var lastPacketReceivedTimeStamp =
-                                Program.RemoteNodeObjectBlock.RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectBlock.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectBlock.RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -74,65 +48,66 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectBlock.StopConnection(
-                                    ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory.StartNew(() => Program.RemoteNodeObjectBlock.StartConnectionAsync())
+                                await Program.RemoteNodeObjectBlock.StopConnection(
+                                    ClassRemoteNodeObjectStopConnectionEnumeration
+                                        .Reconnect);
+                                await Task.Factory.StartNew(() => Program.RemoteNodeObjectBlock.StartConnectionAsync())
                                     .ConfigureAwait(false);
+
                                 if (Program.Closed)
                                 {
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectCoinCirculating.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectCoinCirculating.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-                                if (Program.Closed)
+                                var lastPacketReceivedTimeStamp =
+                                    Program.RemoteNodeObjectBlock.RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
-                                }
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
 
-                                Thread.Sleep(1000);
-                            }
+                                        await Task.Delay(1000);
+                                    }
 
-                            Program.RemoteNodeObjectCoinCirculating.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory
-                                .StartNew(() => Program.RemoteNodeObjectCoinCirculating.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-
-                            var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCoinCirculating
-                                .RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
-                            {
-                                while (!BlockchainNetworkStatus)
-                                {
-                                    Thread.Sleep(1000);
+                                    await Program.RemoteNodeObjectBlock.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectBlock.StartConnectionAsync())
+                                        .ConfigureAwait(false);
                                     if (Program.Closed)
                                     {
                                         break;
                                     }
                                 }
+                            }
 
-                                Program.RemoteNodeObjectCoinCirculating.StopConnection(
+                            if (!Program.RemoteNodeObjectCoinCirculating.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectCoinCirculating.RemoteNodeObjectTcpClient.ReturnStatus())
+                            {
+                                while (!BlockchainNetworkStatus)
+                                {
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
+
+                                    await Task.Delay(1000);
+                                }
+
+                                await Program.RemoteNodeObjectCoinCirculating.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
+                                await Task.Factory
                                     .StartNew(() => Program.RemoteNodeObjectCoinCirculating.StartConnectionAsync())
                                     .ConfigureAwait(false);
 
@@ -141,39 +116,39 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectCoinMaxSupply.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectCoinMaxSupply.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-                                if (Program.Closed)
+
+                                var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCoinCirculating
+                                    .RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        await Task.Delay(1000);
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    await Program.RemoteNodeObjectCoinCirculating.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectCoinCirculating.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
-
-                                Thread.Sleep(1000);
                             }
 
-                            Program.RemoteNodeObjectCoinMaxSupply.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory
-                                .StartNew(() => Program.RemoteNodeObjectCoinMaxSupply.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCoinMaxSupply
-                                .RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectCoinMaxSupply.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectCoinMaxSupply.RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -182,12 +157,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectCoinMaxSupply.StopConnection(
+                                await Program.RemoteNodeObjectCoinMaxSupply.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
+                                await Task.Factory
                                     .StartNew(() => Program.RemoteNodeObjectCoinMaxSupply.StartConnectionAsync())
                                     .ConfigureAwait(false);
 
@@ -196,39 +171,39 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectCurrentDifficulty.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectCurrentDifficulty.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-                                if (Program.Closed)
+                                var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCoinMaxSupply
+                                    .RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    await Program.RemoteNodeObjectCoinMaxSupply.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectCoinMaxSupply.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
-
-                                Thread.Sleep(1000);
                             }
 
-                            Program.RemoteNodeObjectCurrentDifficulty.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory
-                                .StartNew(() => Program.RemoteNodeObjectCurrentDifficulty.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCurrentDifficulty
-                                .RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectCurrentDifficulty.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectCurrentDifficulty.RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -237,12 +212,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectCurrentDifficulty.StopConnection(
+                                await Program.RemoteNodeObjectCurrentDifficulty.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
+                                await Task.Factory
                                     .StartNew(() => Program.RemoteNodeObjectCurrentDifficulty.StartConnectionAsync())
                                     .ConfigureAwait(false);
 
@@ -251,39 +226,40 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectCurrentRate.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectCurrentRate.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-                                if (Program.Closed)
+                                var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectCurrentDifficulty
+                                    .RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    await Program.RemoteNodeObjectCurrentDifficulty.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(
+                                            () => Program.RemoteNodeObjectCurrentDifficulty.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
-
-                                Thread.Sleep(1000);
                             }
 
-                            Program.RemoteNodeObjectCurrentRate.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory
-                                .StartNew(() => Program.RemoteNodeObjectCurrentRate.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var lastPacketReceivedTimeStamp =
-                                Program.RemoteNodeObjectCurrentRate.RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectCurrentRate.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectCurrentRate.RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -292,12 +268,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectCurrentRate.StopConnection(
+                                await Program.RemoteNodeObjectCurrentRate.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
+                                await Task.Factory
                                     .StartNew(() => Program.RemoteNodeObjectCurrentRate.StartConnectionAsync())
                                     .ConfigureAwait(false);
 
@@ -306,93 +282,94 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectTotalBlockMined.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectTotalBlockMined.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-
-                                if (Program.Closed)
+                                var lastPacketReceivedTimeStamp =
+                                    Program.RemoteNodeObjectCurrentRate.RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    await Program.RemoteNodeObjectCurrentRate.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectCurrentRate.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
-
-                                Thread.Sleep(1000);
                             }
 
-                            Program.RemoteNodeObjectTotalBlockMined.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory
-                                .StartNew(() => Program.RemoteNodeObjectTotalBlockMined.StartConnectionAsync())
-                                .ConfigureAwait(false);
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTotalBlockMined
-                                .RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectTotalBlockMined.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectTotalBlockMined.RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
+
                                     if (Program.Closed)
                                     {
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectTotalBlockMined.StopConnection(
+                                await Program.RemoteNodeObjectTotalBlockMined.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
+                                await Task.Factory
                                     .StartNew(() => Program.RemoteNodeObjectTotalBlockMined.StartConnectionAsync())
                                     .ConfigureAwait(false);
-
                                 if (Program.Closed)
                                 {
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectTotalFee.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectTotalFee.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-                                if (Program.Closed)
+                                var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTotalBlockMined
+                                    .RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    await Program.RemoteNodeObjectTotalBlockMined.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectTotalBlockMined.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
-
-                                Thread.Sleep(1000);
                             }
 
-                            Program.RemoteNodeObjectTotalFee.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory.StartNew(() => Program.RemoteNodeObjectTotalFee.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var lastPacketReceivedTimeStamp =
-                                Program.RemoteNodeObjectTotalFee.RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectTotalFee.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectTotalFee.RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -401,12 +378,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectTotalFee.StopConnection(
+                                await Program.RemoteNodeObjectTotalFee.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
+                                await Task.Factory
                                     .StartNew(() => Program.RemoteNodeObjectTotalFee.StartConnectionAsync())
                                     .ConfigureAwait(false);
 
@@ -415,39 +392,40 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectTotalPendingTransaction.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectTotalPendingTransaction.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-                                if (Program.Closed)
+                                var lastPacketReceivedTimeStamp =
+                                    Program.RemoteNodeObjectTotalFee.RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    await Program.RemoteNodeObjectTotalFee.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectTotalFee.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
-
-                                Thread.Sleep(1000);
                             }
 
-                            Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory
-                                .StartNew(() => Program.RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTotalPendingTransaction
-                                .RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectTotalPendingTransaction.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectTotalPendingTransaction.RemoteNodeObjectTcpClient
+                                    .ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -456,12 +434,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(
+                                await Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory.StartNew(() =>
+                                await Task.Factory
+                                    .StartNew(() =>
                                         Program.RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync())
                                     .ConfigureAwait(false);
 
@@ -470,39 +449,39 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectTransaction.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectTransaction.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-                                if (Program.Closed)
+                                var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTotalPendingTransaction
+                                    .RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    await Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory.StartNew(() =>
+                                            Program.RemoteNodeObjectTotalPendingTransaction.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
-
-                                Thread.Sleep(1000);
                             }
 
-                            Program.RemoteNodeObjectTransaction.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory
-                                .StartNew(() => Program.RemoteNodeObjectTransaction.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var lastPacketReceivedTimeStamp =
-                                Program.RemoteNodeObjectTransaction.RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectTransaction.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectTransaction.RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -511,12 +490,12 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectTransaction.StopConnection(
+                                await Program.RemoteNodeObjectTransaction.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
+                                await Task.Factory
                                     .StartNew(() => Program.RemoteNodeObjectTransaction.StartConnectionAsync())
                                     .ConfigureAwait(false);
 
@@ -525,42 +504,39 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                        }
-
-                        if (!Program.RemoteNodeObjectTotalTransaction.RemoteNodeObjectConnectionStatus ||
-                            !Program.RemoteNodeObjectTotalTransaction.RemoteNodeObjectTcpClient.ReturnStatus())
-                        {
-                            while (!BlockchainNetworkStatus)
+                            else
                             {
-                                if (Program.Closed)
+                                var lastPacketReceivedTimeStamp =
+                                    Program.RemoteNodeObjectTransaction.RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    await Program.RemoteNodeObjectTransaction.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectTransaction.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
-
-                                Thread.Sleep(1000);
                             }
 
-
-                            Program.RemoteNodeObjectTotalTransaction.StopConnection(
-                                ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                            Task.Factory
-                                .StartNew(() => Program.RemoteNodeObjectTotalTransaction.StartConnectionAsync())
-                                .ConfigureAwait(false);
-
-                            if (Program.Closed)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-
-
-                            var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTotalTransaction
-                                .RemoteNodeObjectLastPacketReceived;
-                            var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                            if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
-                                currentTimestamp)
+                            if (!Program.RemoteNodeObjectTotalTransaction.RemoteNodeObjectConnectionStatus ||
+                                !Program.RemoteNodeObjectTotalTransaction.RemoteNodeObjectTcpClient.ReturnStatus())
                             {
                                 while (!BlockchainNetworkStatus)
                                 {
@@ -569,12 +545,13 @@ namespace Xiropht_RemoteNode.RemoteNode
                                         break;
                                     }
 
-                                    Thread.Sleep(1000);
+                                    await Task.Delay(1000);
                                 }
 
-                                Program.RemoteNodeObjectTotalTransaction.StopConnection(
+
+                                await Program.RemoteNodeObjectTotalTransaction.StopConnection(
                                     ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
+                                await Task.Factory
                                     .StartNew(() => Program.RemoteNodeObjectTotalTransaction.StartConnectionAsync())
                                     .ConfigureAwait(false);
 
@@ -583,59 +560,106 @@ namespace Xiropht_RemoteNode.RemoteNode
                                     break;
                                 }
                             }
-                        }
-
-                        if (ClassRemoteNodeSync.WantToBePublicNode)
-                        {
-                            if (!Program.RemoteNodeObjectToBePublic.RemoteNodeObjectConnectionStatus ||
-                                !Program.RemoteNodeObjectToBePublic.RemoteNodeObjectTcpClient.ReturnStatus())
+                            else
                             {
-                                while (!BlockchainNetworkStatus)
+
+
+                                var lastPacketReceivedTimeStamp = Program.RemoteNodeObjectTotalTransaction
+                                    .RemoteNodeObjectLastPacketReceived;
+                                var currentTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
+                                if (lastPacketReceivedTimeStamp + ClassConnectorSetting.MaxDelayRemoteNodeWaitResponse <
+                                    currentTimestamp)
                                 {
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    await Program.RemoteNodeObjectTotalTransaction.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectTotalTransaction.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+
                                     if (Program.Closed)
                                     {
                                         break;
                                     }
-
-                                    Thread.Sleep(1000);
                                 }
+                            }
 
-                                ClassRemoteNodeSync.ImPublicNode = false;
-                                ClassRemoteNodeSync.ListOfPublicNodes.Clear();
-                                ClassRemoteNodeSync.MyOwnIP = string.Empty;
-                                Program.RemoteNodeObjectToBePublic.StopConnection(
-                                    ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
-                                Task.Factory
-                                    .StartNew(() => Program.RemoteNodeObjectToBePublic.StartConnectionAsync())
-                                    .ConfigureAwait(false);
-                                if (Program.Closed)
+                            if (ClassRemoteNodeSync.WantToBePublicNode)
+                            {
+                                if (!Program.RemoteNodeObjectToBePublic.RemoteNodeObjectConnectionStatus ||
+                                    !Program.RemoteNodeObjectToBePublic.RemoteNodeObjectTcpClient.ReturnStatus())
                                 {
-                                    break;
+                                    while (!BlockchainNetworkStatus)
+                                    {
+                                        if (Program.Closed)
+                                        {
+                                            break;
+                                        }
+
+                                        await Task.Delay(1000);
+                                    }
+
+                                    ClassRemoteNodeSync.ImPublicNode = false;
+                                    ClassRemoteNodeSync.ListOfPublicNodes.Clear();
+                                    ClassRemoteNodeSync.MyOwnIP = string.Empty;
+                                    await Program.RemoteNodeObjectToBePublic.StopConnection(
+                                        ClassRemoteNodeObjectStopConnectionEnumeration.Reconnect);
+                                    await Task.Factory
+                                        .StartNew(() => Program.RemoteNodeObjectToBePublic.StartConnectionAsync())
+                                        .ConfigureAwait(false);
+                                    if (Program.Closed)
+                                    {
+                                        break;
+                                    }
                                 }
                             }
                         }
+                        catch
+                        {
+                            // Ignored
+                        }
                     }
-                    catch
-                    {
-                        // Ignored
-                    }
-                }
-            });
-            _threadLoopCheckRemoteNode.Start();
+                }, _cancellationTokenSourceCheckRemoteNode.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+            }
+            catch
+            {
+
+            }
         }
 
+        /// <summary>
+        /// Disable check of remote node sync.
+        /// </summary>
         public static void DisableCheckRemoteNodeSync()
         {
-            if (_threadLoopCheckRemoteNode != null && (_threadLoopCheckRemoteNode.IsAlive || _threadLoopCheckRemoteNode != null))
+            try
             {
-                _threadLoopCheckRemoteNode.Abort();
-                GC.SuppressFinalize(_threadLoopCheckRemoteNode);
+                if (_cancellationTokenSourceCheckRemoteNode != null)
+                {
+                    if (!_cancellationTokenSourceCheckRemoteNode.IsCancellationRequested)
+                    {
+                        _cancellationTokenSourceCheckRemoteNode.Cancel();
+                    }
+                }
+            }
+            catch
+            {
+
             }
         }
 
         public static void AutoCheckBlockchainNetwork()
         {
-            var threadCheckBlockchainNetwork = new Thread(delegate ()
+            var threadCheckBlockchainNetwork = new Thread(async delegate ()
             {
                 while (!Program.Closed)
                 {
@@ -643,7 +667,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                     {
                         break;
                     }
-                    CheckBlockchainNetwork();
+                    await CheckBlockchainNetwork();
                    
                     Thread.Sleep(ThreadLoopCheckBlockchainNetworkInterval);
                 }
@@ -656,7 +680,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// Check blockchain connection.
         /// </summary>
         /// <returns></returns>
-        public static void CheckBlockchainNetwork()
+        public static async Task CheckBlockchainNetwork()
         {
             try
             {
@@ -680,16 +704,16 @@ namespace Xiropht_RemoteNode.RemoteNode
             catch
             {
                 BlockchainNetworkStatus = false;
-                Program.RemoteNodeObjectBlock.StopConnection(string.Empty);
-                Program.RemoteNodeObjectTransaction.StopConnection(string.Empty);
-                Program.RemoteNodeObjectTotalTransaction.StopConnection(string.Empty);
-                Program.RemoteNodeObjectCoinCirculating.StopConnection(string.Empty);
-                Program.RemoteNodeObjectCoinMaxSupply.StopConnection(string.Empty);
-                Program.RemoteNodeObjectCurrentDifficulty.StopConnection(string.Empty);
-                Program.RemoteNodeObjectCurrentRate.StopConnection(string.Empty);
-                Program.RemoteNodeObjectTotalBlockMined.StopConnection(string.Empty);
-                Program.RemoteNodeObjectTotalFee.StopConnection(string.Empty);
-                Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectBlock.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectTransaction.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectTotalTransaction.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectCoinCirculating.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectCoinMaxSupply.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectCurrentDifficulty.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectCurrentRate.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectTotalBlockMined.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectTotalFee.StopConnection(string.Empty);
+                await Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(string.Empty);
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Api;
 using Xiropht_RemoteNode.Data;
@@ -25,7 +26,7 @@ namespace Xiropht_RemoteNode.Command
 
     public class ClassCommandLine
     {
-        public static bool CommandLine(string command)
+        public static async Task<bool> CommandLine(string command)
         {
             var splitCommand = command.Split(new char[0], StringSplitOptions.None);
             try
@@ -142,9 +143,7 @@ namespace Xiropht_RemoteNode.Command
                             ClassRemoteNodeKey.DataTransactionRead = string.Empty;
                             ClassRemoteNodeSave.TotalBlockSaved = 0;
                             ClassRemoteNodeSave.TotalTransactionSaved = 0;
-                            ClassRemoteNodeSave.DataTransactionSaved = string.Empty;
-                            ClassRemoteNodeSave.DataBlockSaved = string.Empty;
-
+                            
 
                             Console.WriteLine("Clear finish, restart sync..");
                             ClassRemoteNodeKey.StartUpdateHashTransactionList();
@@ -191,25 +190,27 @@ namespace Xiropht_RemoteNode.Command
                         }
                         break;
                     case ClassCommandLineEnumeration.CommandLineSave:
-                        Console.WriteLine("Stop auto save system. Start manual save sync..");
+                        Console.WriteLine("Starting save sync manually..");
                         while (ClassRemoteNodeSave.InSaveTransactionDatabase)
                         {
-                            Thread.Sleep(1000);
+                            Thread.Sleep(250);
                         }
                         ClassRemoteNodeSave.TotalTransactionSaved = 0;
-                        ClassRemoteNodeSave.DataTransactionSaved = string.Empty;
                         ClassRemoteNodeSave.SaveTransaction(false);
                         while (ClassRemoteNodeSave.InSaveBlockDatabase)
                         {
-                            Thread.Sleep(1000);
+                            Thread.Sleep(250);
                         }
                         ClassRemoteNodeSave.TotalBlockSaved = 0;
-                        ClassRemoteNodeSave.DataBlockSaved = string.Empty;
                         ClassRemoteNodeSave.SaveBlock(false);
+
+                        while (ClassRemoteNodeSave.InSaveWalletCacheDatabase)
+                        {
+                            Thread.Sleep(1000);
+                        }
+                        ClassRemoteNodeSave.TotalWalletCacheSaved = 0;
+                        ClassRemoteNodeSave.SaveWalletCache(false);
                         Console.WriteLine("Sync saved.");
-                        Console.WriteLine("Restart auto save system.");
-                        ClassRemoteNodeSave.SaveTransaction();
-                        ClassRemoteNodeSave.SaveBlock();
                         break;
                     case ClassCommandLineEnumeration.CommandLineExit:
                         Program.Closed = true;
@@ -217,16 +218,16 @@ namespace Xiropht_RemoteNode.Command
                         ClassCheckRemoteNodeSync.DisableCheckRemoteNodeSync();
                         Thread.Sleep(1000);
                         Console.WriteLine("Stop each connection of the remote node.");
-                        Program.RemoteNodeObjectBlock.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectTotalTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectCoinCirculating.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectCoinMaxSupply.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectCurrentDifficulty.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectCurrentRate.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectTotalBlockMined.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectTotalFee.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
-                        Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectBlock.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectTotalTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectCoinCirculating.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectCoinMaxSupply.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectCurrentDifficulty.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectCurrentRate.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectTotalBlockMined.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectTotalFee.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
+                        await Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(ClassRemoteNodeObjectStopConnectionEnumeration.End);
                         ClassLog.StopWriteLog();
 
                         Thread.Sleep(1000);
@@ -238,15 +239,20 @@ namespace Xiropht_RemoteNode.Command
                             Thread.Sleep(1000);
                         }
                         ClassRemoteNodeSave.TotalTransactionSaved = 0;
-                        ClassRemoteNodeSave.DataTransactionSaved = string.Empty;
                         ClassRemoteNodeSave.SaveTransaction(false);
                         while (ClassRemoteNodeSave.InSaveBlockDatabase)
                         {
                             Thread.Sleep(1000);
                         }
                         ClassRemoteNodeSave.TotalBlockSaved = 0;
-                        ClassRemoteNodeSave.DataBlockSaved = string.Empty;
                         ClassRemoteNodeSave.SaveBlock(false);
+
+                        while (ClassRemoteNodeSave.InSaveWalletCacheDatabase)
+                        {
+                            Thread.Sleep(1000);
+                        }
+                        ClassRemoteNodeSave.TotalWalletCacheSaved = 0;
+                        ClassRemoteNodeSave.SaveWalletCache(false);
                         Console.WriteLine("Sync saved.");
                         Process.GetCurrentProcess().Kill();
                         return false;
