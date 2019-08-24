@@ -1,14 +1,18 @@
 ﻿using System;
-using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.Seed;
 using Xiropht_Connector_All.Setting;
 using Xiropht_Connector_All.Utils;
 using Xiropht_Connector_All.Wallet;
+using Xiropht_RemoteNode.Log;
 
 namespace Xiropht_RemoteNode.Api
 {
+    public class ClapiApiProxyLimitation
+    {
+        public const int MaxNonePacket = 20;
+    }
+
     public class ClassApiProxyNetwork : IDisposable
     {
 
@@ -55,16 +59,19 @@ namespace Xiropht_RemoteNode.Api
         private string _walletAddress;
         private string _certificate;
         public bool ConnectionAlive;
+        private int _maxNonePacket;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="walletAddress"></param>
         /// <param name="apiObjectConnection"></param>
-        public ClassApiProxyNetwork(string walletAddress, ClassApiObjectConnection apiObjectConnection)
+        /// <param name="certificate"></param>
+        public ClassApiProxyNetwork(string walletAddress, ClassApiObjectConnection apiObjectConnection, string certificate)
         {
             _walletAddress = walletAddress;
             _apiObjectConnection = apiObjectConnection;
+            _certificate = certificate;
         }
 
         /// <summary>
@@ -77,30 +84,38 @@ namespace Xiropht_RemoteNode.Api
 
             try
             {
+                ClassLog.Log("API Proxy - Attempt to connect wallet address: " + _walletAddress + " with certificate: " + _certificate, 5, 0);
+
                 _seedNodeConnector = new ClassSeedNodeConnector();
                 if (!await _seedNodeConnector.StartConnectToSeedAsync(string.Empty))
                 {
                     ConnectionAlive = false;
+                    ClassLog.Log("API Proxy - Connection to the network unsuccessfully done for wallet address: " + _walletAddress, 5, 0);
+
                     return false;
                 }
 
-                _certificate = ClassUtils.GenerateCertificate();
 
                 if (!await _seedNodeConnector.SendPacketToSeedNodeAsync(_certificate, string.Empty))
                 {
                     ConnectionAlive = false;
+                    ClassLog.Log("API Proxy - Connection to the network can't send certificate for wallet address: " + _walletAddress, 5, 0);
                     return false;
                 }
 
                 if (!ListenNetwork())
                 {
                     ConnectionAlive = false;
+                    ClassLog.Log("API Proxy - Connection to the network can't enable listen packet for wallet address: " + _walletAddress, 5, 0);
                     return false;
                 }
 
-                if (!await _seedNodeConnector.SendPacketToSeedNodeAsync(ClassConnectorSettingEnumeration.WalletLoginType + ClassConnectorSetting.PacketContentSeperator + _walletAddress, _certificate, false, true))
+
+
+                if (!await _seedNodeConnector.SendPacketToSeedNodeAsync(ClassConnectorSettingEnumeration.WalletLoginType + ClassConnectorSetting.PacketContentSeperator + _walletAddress + ClassConnectorSetting.PacketSplitSeperator, _certificate, false, true))
                 {
                     ConnectionAlive = false;
+                    ClassLog.Log("API Proxy - Connection to the network can't send login packet for wallet address: " + _walletAddress, 5, 0);
                     return false;
                 }
 
@@ -112,6 +127,7 @@ namespace Xiropht_RemoteNode.Api
                 return false;
             }
 
+            ClassLog.Log("API Proxy - Connection to the network propertly enabled for wallet address: "+_walletAddress, 5, 0);
 
             return true;
         }
@@ -169,12 +185,17 @@ namespace Xiropht_RemoteNode.Api
         {
             try
             {
-                return await _seedNodeConnector.SendPacketToSeedNodeAsync(packet, _certificate, false, true);
+                if (!await _seedNodeConnector.SendPacketToSeedNodeAsync(packet, string.Empty))
+                {
+                    return false;
+                }
             }
             catch
             {
                 return false;
             }
+
+            return true;
         }
 
         /// <summary>
@@ -196,6 +217,9 @@ namespace Xiropht_RemoteNode.Api
                                 string packetReceived =
                                     await _seedNodeConnector.ReceivePacketFromSeedNodeAsync(_certificate, false,
                                         true);
+
+
+                                ClassLog.Log("API Proxy - Packet Received from network: " + packetReceived, 5, 1);
                                 if (packetReceived.Contains(ClassConnectorSetting.PacketSplitSeperator))
                                 {
                                     var splitPacketReceived = packetReceived.Split(
@@ -205,24 +229,20 @@ namespace Xiropht_RemoteNode.Api
                                     {
                                         if (!string.IsNullOrEmpty(packet))
                                         {
-                                            if (!FilteringPacket(packet))
-                                            {
-                                                break;
-                                            }
-
-                                            if (!await _apiObjectConnection.SendPacketAsync(packet))
-                                            {
-                                                break;
-                                            }
+                                            FilteringPacket(packet);
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    if (!FilteringPacket(packetReceived))
-                                    {
-                                        break;
-                                    }
+                                    FilteringPacket(packetReceived);
+                                }
+
+                                if (packetReceived != ClassSeedNodeStatus.SeedNone)
+                                {
+                                    packetReceived = ClassAlgo.GetEncryptedResult(ClassAlgoEnumeration.Rijndael,
+                                        packetReceived,
+                                        ClassConnectorSetting.MAJOR_UPDATE_1_SECURITY_CERTIFICATE_SIZE, _seedNodeConnector.AesIvCertificate, _seedNodeConnector.AesSaltCertificate);
                                     if (!await _apiObjectConnection.SendPacketAsync(packetReceived))
                                     {
                                         break;
@@ -249,8 +269,11 @@ namespace Xiropht_RemoteNode.Api
             return true;
         }
 
-
-        private bool FilteringPacket(string packet)
+        /// <summary>
+        /// Filtering packets received from the network.
+        /// </summary>
+        /// <param name="packet"></param>
+        private void FilteringPacket(string packet)
         {
             packet = packet.Replace(ClassConnectorSetting.PacketSplitSeperator, "");
 
@@ -260,12 +283,20 @@ namespace Xiropht_RemoteNode.Api
                 case ClassWalletCommand.ClassWalletReceiveEnumeration.WalletInvalidAsk:
                     ClassApiBan.FilterInsertIp(_apiObjectConnection.Ip);
                     ClassApiBan.FilterInsertInvalidPacket(_apiObjectConnection.Ip);
-                    return false;
+                    break;
+                case ClassSeedNodeStatus.SeedError:
                 case ClassWalletCommand.ClassWalletReceiveEnumeration.DisconnectPacket:
-                    return false;
+                    ConnectionAlive = false;
+                    break;
+                case ClassSeedNodeStatus.SeedNone:
+                    _maxNonePacket++;
+                    if (_maxNonePacket >= ClapiApiProxyLimitation.MaxNonePacket)
+                    {
+                        ConnectionAlive = false;
+                    }
+                    break;
             }
 
-            return true;
         }
 
 

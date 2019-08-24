@@ -22,7 +22,7 @@ namespace Xiropht_RemoteNode.Api
     /// </summary>
     public class ClassApi
     {
-        private static CancellationTokenSource CancellationTokenApi;
+        private static CancellationTokenSource _cancellationTokenApi;
         private static TcpListener _tcpListenerApiReceiveConnection;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         public static void StartApiRemoteNode()
         {
-            CancellationTokenApi = new CancellationTokenSource();
+            _cancellationTokenApi = new CancellationTokenSource();
 
             _tcpListenerApiReceiveConnection = new TcpListener(IPAddress.Any, ClassConnectorSetting.RemoteNodePort);
             _tcpListenerApiReceiveConnection.Start();
@@ -73,14 +73,14 @@ namespace Xiropht_RemoteNode.Api
                                     {
 
                                     }
-                                }, CancellationTokenApi.Token);
+                                }, _cancellationTokenApi.Token);
                         }
                         catch
                         {
                         }
                     }
 
-                }, CancellationTokenApi.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+                }, _cancellationTokenApi.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
             catch
             {
@@ -97,11 +97,11 @@ namespace Xiropht_RemoteNode.Api
         {
             try
             {
-                if (CancellationTokenApi != null)
+                if (_cancellationTokenApi != null)
                 {
-                    if (!CancellationTokenApi.IsCancellationRequested)
+                    if (!_cancellationTokenApi.IsCancellationRequested)
                     {
-                        CancellationTokenApi.Cancel();
+                        _cancellationTokenApi.Cancel();
                     }
                 }
             }
@@ -392,87 +392,108 @@ namespace Xiropht_RemoteNode.Api
 
                                                 _totalPacketPerSecond++;
 
-                                                if (bufferPacket.Packet.Contains(ClassConnectorSetting.PacketSplitSeperator))
+                                                if (!EnableProxyMode)
                                                 {
-                                                    if (!string.IsNullOrEmpty(_malformedPacket))
-                                                    {
-                                                        bufferPacket.Packet = _malformedPacket + bufferPacket.Packet;
-                                                        _malformedPacket = string.Empty;
-                                                    }
 
-                                                    var splitPacket = bufferPacket.Packet.Split(new[] {ClassConnectorSetting.PacketSplitSeperator},
-                                                        StringSplitOptions.None);
-                                                    if (splitPacket.Length > 1)
+                                                    if (bufferPacket.Packet.Contains(ClassConnectorSetting
+                                                        .PacketSplitSeperator))
                                                     {
-                                                        foreach (var packetMerged in splitPacket)
+                                                        if (!string.IsNullOrEmpty(_malformedPacket))
                                                         {
-                                                            if (IncomingConnectionStatus)
-                                                            {
-                                                                if (!string.IsNullOrEmpty(packetMerged))
-                                                                {
-                                                                    if (packetMerged.Length > 1)
-                                                                    {
+                                                            bufferPacket.Packet =
+                                                                _malformedPacket + bufferPacket.Packet;
+                                                            _malformedPacket = string.Empty;
+                                                        }
 
-                                                                        var packetReplace =
-                                                                            packetMerged.Replace(ClassConnectorSetting.PacketSplitSeperator, "");
-                                                                        ClassLog.Log(
-                                                                            "API - Packet received from IP: " +
-                                                                            Ip + " is: " + packetReplace, 5, 2);
-                                                                        if (IncomingConnectionStatus)
+                                                        var splitPacket = bufferPacket.Packet.Split(
+                                                            new[] {ClassConnectorSetting.PacketSplitSeperator},
+                                                            StringSplitOptions.None);
+                                                        if (splitPacket.Length > 1)
+                                                        {
+                                                            foreach (var packetMerged in splitPacket)
+                                                            {
+                                                                if (IncomingConnectionStatus)
+                                                                {
+                                                                    if (!string.IsNullOrEmpty(packetMerged))
+                                                                    {
+                                                                        if (packetMerged.Length > 1)
                                                                         {
-                                                                            if (!await HandleIncomingPacketAsync(
-                                                                                packetReplace))
+
+                                                                            var packetReplace =
+                                                                                packetMerged.Replace(
+                                                                                    ClassConnectorSetting
+                                                                                        .PacketSplitSeperator, "");
+                                                                            ClassLog.Log(
+                                                                                "API - Packet received from IP: " +
+                                                                                Ip + " is: " + packetReplace, 5, 2);
+                                                                            if (IncomingConnectionStatus)
                                                                             {
-                                                                                ClassLog.Log(
-                                                                                    "API - Cannot send packet to IP: " +
-                                                                                    Ip + "", 5, 2);
-                                                                                IncomingConnectionStatus = false;
-                                                                                break;
+                                                                                if (!await HandleIncomingPacketAsync(
+                                                                                    packetReplace))
+                                                                                {
+                                                                                    ClassLog.Log(
+                                                                                        "API - Cannot send packet to IP: " +
+                                                                                        Ip + "", 5, 2);
+                                                                                    IncomingConnectionStatus = false;
+                                                                                    break;
+                                                                                }
                                                                             }
                                                                         }
                                                                     }
                                                                 }
                                                             }
                                                         }
+                                                        else
+                                                        {
+                                                            if (IncomingConnectionStatus)
+                                                            {
+                                                                var packetReplace =
+                                                                    bufferPacket.Packet.Replace(
+                                                                        ClassConnectorSetting.PacketSplitSeperator, "");
+                                                                ClassLog.Log(
+                                                                    "API - Packet received from IP: " + Ip + " is: " +
+                                                                    packetReplace, 5, 2);
+
+                                                                if (!await HandleIncomingPacketAsync(packetReplace))
+                                                                {
+                                                                    ClassLog.Log(
+                                                                        "API - Cannot send packet to IP: " + Ip + "", 5,
+                                                                        2);
+                                                                    IncomingConnectionStatus = false;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
                                                     }
                                                     else
                                                     {
-                                                        if (IncomingConnectionStatus)
-                                                        {
-                                                            var packetReplace = bufferPacket.Packet.Replace(ClassConnectorSetting.PacketSplitSeperator, "");
-                                                            ClassLog.Log(
-                                                                "API - Packet received from IP: " + Ip + " is: " +
-                                                                packetReplace, 5, 2);
 
-                                                            if (!await HandleIncomingPacketAsync(packetReplace))
+
+                                                        if (_malformedPacket.Length >= int.MaxValue ||
+                                                            (long) (_malformedPacket.Length + bufferPacket.Packet.Length
+                                                            ) >=
+                                                            int.MaxValue)
+                                                        {
+                                                            _malformedPacket = string.Empty;
+                                                        }
+                                                        else
+                                                        {
+                                                            if (IncomingConnectionStatus)
                                                             {
-                                                                ClassLog.Log(
-                                                                    "API - Cannot send packet to IP: " + Ip + "", 5,
-                                                                    2);
-                                                                IncomingConnectionStatus = false;
-                                                                break;
+                                                                _malformedPacket += bufferPacket.Packet;
                                                             }
                                                         }
+
                                                     }
                                                 }
                                                 else
                                                 {
-
-                                                    ClassLog.Log(
-                                                        "API - Packet received from IP: " + Ip + " is: " +
-                                                        bufferPacket.Packet, 5, 2);
-
-                                                    if (_malformedPacket.Length >= int.MaxValue ||
-                                                        (long) (_malformedPacket.Length + bufferPacket.Packet.Length) >=
-                                                        int.MaxValue)
+                                                    if (_apiProxyNetwork != null)
                                                     {
-                                                        _malformedPacket = string.Empty;
-                                                    }
-                                                    else
-                                                    {
-                                                        if (IncomingConnectionStatus)
+                                                        if (!await _apiProxyNetwork.SendPacketToNetwork(bufferPacket.Packet))
                                                         {
-                                                            _malformedPacket += bufferPacket.Packet;
+                                                            IncomingConnectionStatus = false;
+                                                            break;
                                                         }
                                                     }
                                                 }
@@ -561,13 +582,63 @@ namespace Xiropht_RemoteNode.Api
 
             if (IncomingConnectionStatus)
             {
-                if (!EnableProxyMode)
-                {
-                    try
-                    {
 
-                        var splitPacket = packet.Split(new[] {"|"}, StringSplitOptions.RemoveEmptyEntries);
-                        if (!string.IsNullOrEmpty(splitPacket[0]))
+                try
+                {
+
+                    var splitPacket = packet.Split(new[] {ClassConnectorSetting.PacketContentSeperator},
+                        StringSplitOptions.RemoveEmptyEntries);
+                    if (!string.IsNullOrEmpty(splitPacket[0]))
+                    {
+                        if (splitPacket[0] == ClassConnectorSettingEnumeration.WalletLoginProxy)
+                        {
+                            ClassLog.Log(
+                                "API - Attempt to connect wallet address: " + splitPacket[1] +
+                                " by proxy mode to the network.", 5, 0);
+
+                            if (splitPacket[1].Length >= ClassConnectorSetting.MinWalletAddressSize &&
+                                splitPacket[1].Length <= ClassConnectorSetting.MaxWalletAddressSize)
+                            {
+                                if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
+                                    splitPacket[1]))
+                                {
+                                    EnableProxyMode = true;
+                                    _apiProxyNetwork =
+                                        new ClassApiProxyNetwork(splitPacket[1], this, splitPacket[2]);
+                                    if (!await _apiProxyNetwork.StartProxyNetwork())
+                                    {
+                                        IncomingConnectionStatus = false;
+                                        return false;
+                                    }
+                                }
+                                else
+                                {
+                                    if (await ClassTokenNetwork.CheckWalletAddressExistAsync(splitPacket[1]))
+                                    {
+                                        EnableProxyMode = true;
+                                        _apiProxyNetwork =
+                                            new ClassApiProxyNetwork(splitPacket[1], this, splitPacket[2]);
+                                        if (!await _apiProxyNetwork.StartProxyNetwork())
+                                        {
+                                            IncomingConnectionStatus = false;
+                                            return false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        IncomingConnectionStatus = false;
+                                        return false;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                                IncomingConnectionStatus = false;
+                                return false;
+                            }
+                        }
+                        else
                         {
                             if (float.TryParse(splitPacket[1], NumberStyles.Any, Program.GlobalCultureInfo,
                                 out var walletId))
@@ -1151,87 +1222,35 @@ namespace Xiropht_RemoteNode.Api
                             }
                             else
                             {
-                                if (splitPacket[0] == ClassConnectorSettingEnumeration.WalletLoginProxy)
+
+                                if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                        .RemoteNodeRecvPacketEnumeration.WalletIdWrong)
+                                    .ConfigureAwait(false)) // Wrong Wallet ID
                                 {
-                                    if (splitPacket[1].Length < ClassConnectorSetting.MinWalletAddressSize ||
-                                        splitPacket[1].Length > ClassConnectorSetting.MaxWalletAddressSize)
-                                    {
-                                        if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
-                                            splitPacket[1]))
-                                        {
-                                            EnableProxyMode = true;
-                                            _apiProxyNetwork = new ClassApiProxyNetwork(splitPacket[1], this);
-                                            if (!await _apiProxyNetwork.StartProxyNetwork())
-                                            {
-                                                IncomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (await ClassTokenNetwork.CheckWalletAddressExistAsync(splitPacket[1]))
-                                            {
-                                                EnableProxyMode = true;
-                                                _apiProxyNetwork = new ClassApiProxyNetwork(splitPacket[1], this);
-                                                if (!await _apiProxyNetwork.StartProxyNetwork())
-                                                {
-                                                    IncomingConnectionStatus = false;
-                                                    return false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                IncomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
-                                        IncomingConnectionStatus = false;
-                                        return false;
-                                    }
+                                    IncomingConnectionStatus = false;
+                                    return false;
                                 }
-                                else
-                                {
-                                    if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                            .RemoteNodeRecvPacketEnumeration.WalletIdWrong)
-                                        .ConfigureAwait(false)) // Wrong Wallet ID
-                                    {
-                                        IncomingConnectionStatus = false;
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
-                            if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                .EmptyPacket).ConfigureAwait(false)) // Empty Packet
-                            {
-                                IncomingConnectionStatus = false;
-                                return false;
                             }
                         }
 
                     }
-                    catch
+                    else
                     {
                         ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
-                    }
-                }
-                else
-                {
-                    if (_apiProxyNetwork != null)
-                    {
-                        if (!await _apiProxyNetwork.SendPacketToNetwork(packet))
+                        if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                            .EmptyPacket).ConfigureAwait(false)) // Empty Packet
                         {
+                            IncomingConnectionStatus = false;
                             return false;
                         }
                     }
+
                 }
+                catch
+                {
+                    ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                }
+
 
                 return true;
             }
