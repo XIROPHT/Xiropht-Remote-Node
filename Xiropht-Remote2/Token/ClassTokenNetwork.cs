@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Xiropht_Connector_All.RPC;
 using Xiropht_Connector_All.Setting;
 using Xiropht_Connector_All.Utils;
+using Xiropht_RemoteNode.Data;
 
 namespace Xiropht_RemoteNode.Token
 {
@@ -17,33 +18,62 @@ namespace Xiropht_RemoteNode.Token
         public const string PacketNotExist = "not_exist";
         public const string PacketResult = "result";
 
+        private static Dictionary<string, int> _listOfSeedNodesSpeed;
+
         public static async Task<bool> CheckWalletAddressExistAsync(string walletAddress)
         {
 
-            Dictionary<string, int> listOfSeedNodesSpeed = new Dictionary<string, int>();
-            foreach (var seedNode in ClassConnectorSetting.SeedNodeIp)
+            if (_listOfSeedNodesSpeed == null)
             {
-
-                try
+                _listOfSeedNodesSpeed = new Dictionary<string, int>();
+            }
+            else
+            {
+                if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(walletAddress))
                 {
-                    int seedNodeResponseTime = -1;
-                    Task taskCheckSeedNode = Task.Run(() => seedNodeResponseTime = CheckPing.CheckPingHost(seedNode.Key, true));
-                    taskCheckSeedNode.Wait(ClassConnectorSetting.MaxPingDelay);
-                    if (seedNodeResponseTime == -1)
-                    {
-                        seedNodeResponseTime = ClassConnectorSetting.MaxSeedNodeTimeoutConnect;
-                    }
-                    listOfSeedNodesSpeed.Add(seedNode.Key, seedNodeResponseTime);
-
+                    return true;
                 }
-                catch
-                {
-                    listOfSeedNodesSpeed.Add(seedNode.Key, ClassConnectorSetting.MaxSeedNodeTimeoutConnect); // Max delay.
-                }
-
+            }
+            if (_listOfSeedNodesSpeed.Count != ClassConnectorSetting.SeedNodeIp.Count)
+            {
+                _listOfSeedNodesSpeed.Clear();
             }
 
-            listOfSeedNodesSpeed = listOfSeedNodesSpeed.OrderBy(u => u.Value).ToDictionary(z => z.Key, y => y.Value);
+            if (_listOfSeedNodesSpeed.Count == 0)
+            {
+                foreach (var seedNode in ClassConnectorSetting.SeedNodeIp.ToArray())
+                {
+
+                    try
+                    {
+                        int seedNodeResponseTime = -1;
+                        Task taskCheckSeedNode = Task.Run(() =>
+                            seedNodeResponseTime = CheckPing.CheckPingHost(seedNode.Key, true));
+                        taskCheckSeedNode.Wait(ClassConnectorSetting.MaxPingDelay);
+                        if (seedNodeResponseTime == -1)
+                        {
+                            seedNodeResponseTime = ClassConnectorSetting.MaxSeedNodeTimeoutConnect;
+                        }
+
+                        if (!_listOfSeedNodesSpeed.ContainsKey(seedNode.Key))
+                        {
+                            _listOfSeedNodesSpeed.Add(seedNode.Key, seedNodeResponseTime);
+                        }
+
+                    }
+                    catch
+                    {
+                        if (!_listOfSeedNodesSpeed.ContainsKey(seedNode.Key))
+                        {
+                            _listOfSeedNodesSpeed.Add(seedNode.Key,
+                                ClassConnectorSetting.MaxSeedNodeTimeoutConnect); // Max delay.
+                        }
+                    }
+
+                }
+            }
+
+            var  listOfSeedNodesSpeed = _listOfSeedNodesSpeed.OrderBy(u => u.Value).ToDictionary(z => z.Key, y => y.Value);
 
 
             foreach (var seedNode in listOfSeedNodesSpeed)
@@ -65,6 +95,18 @@ namespace Xiropht_RemoteNode.Token
 
                                 if (splitResultCheckWalletAddress[0] == ClassRpcWalletCommand.SendTokenCheckWalletAddressValid)
                                 {
+                                    try
+                                    {
+                                        if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
+                                            walletAddress))
+                                        {
+                                            ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Add(walletAddress, string.Empty);
+                                        }
+                                    }
+                                    catch
+                                    {
+
+                                    }
                                     return true;
                                 }
                             }
@@ -86,7 +128,7 @@ namespace Xiropht_RemoteNode.Token
             request.AutomaticDecompression = DecompressionMethods.GZip;
             request.ServicePoint.Expect100Continue = false;
             request.KeepAlive = false;
-            request.Timeout = 10000;
+            request.Timeout = ClassConnectorSetting.MaxTimeoutConnect;
             request.UserAgent = ClassConnectorSetting.CoinName + "Remote Node - " + Assembly.GetExecutingAssembly().GetName().Version + "R";
             using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
             using (Stream stream = response.GetResponseStream())

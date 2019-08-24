@@ -10,6 +10,7 @@ using Xiropht_Connector_All.Remote;
 using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
+using Xiropht_RemoteNode.Token;
 using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode.Api
@@ -21,30 +22,70 @@ namespace Xiropht_RemoteNode.Api
     /// </summary>
     public class ClassApi
     {
-        private static Thread _threadApiReceiveConnection;
+        private static CancellationTokenSource CancellationTokenApi;
         private static TcpListener _tcpListenerApiReceiveConnection;
-        public static bool ApiReceiveConnectionStatus;
 
         /// <summary>
         /// Start to listen incoming connection to API.
         /// </summary>
         public static void StartApiRemoteNode()
         {
-            ApiReceiveConnectionStatus = true;
+            CancellationTokenApi = new CancellationTokenSource();
+
             _tcpListenerApiReceiveConnection = new TcpListener(IPAddress.Any, ClassConnectorSetting.RemoteNodePort);
             _tcpListenerApiReceiveConnection.Start();
 
-
-
-            // Async
-            _threadApiReceiveConnection = new Thread(async delegate ()
+            try
             {
-                await MainAsync();
-            })
+                // Async
+                Task.Factory.StartNew(async delegate()
+                {
+                    while (!Program.Closed)
+                    {
+                        try
+                        {
+
+                            await _tcpListenerApiReceiveConnection.AcceptTcpClientAsync().ContinueWith(
+                                async clientTask =>
+                                {
+                                    var client = await clientTask;
+                                    try
+                                    {
+                                        CancellationTokenSource cancellationTokenApi = new CancellationTokenSource();
+                                        await Task.Factory.StartNew(async () =>
+                                                {
+                                                    string ip = ((IPEndPoint) (client.Client.RemoteEndPoint)).Address
+                                                        .ToString();
+
+                                                    ClassLog.Log("API Receive incoming connection from IP: " + ip, 5,
+                                                        2);
+                                                    using (var clientApiObjectConnection =
+                                                        new ClassApiObjectConnection(client, ip, cancellationTokenApi))
+                                                    {
+                                                        await clientApiObjectConnection
+                                                            .StartHandleIncomingConnectionAsync();
+                                                    }
+                                                }, cancellationTokenApi.Token, TaskCreationOptions.LongRunning,
+                                                TaskScheduler.Current)
+                                            .ConfigureAwait(false);
+                                    }
+                                    catch
+                                    {
+
+                                    }
+                                }, CancellationTokenApi.Token);
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                }, CancellationTokenApi.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+            }
+            catch
             {
-                IsBackground = true
-            };
-            _threadApiReceiveConnection.Start();
+
+            }
 
 
         }
@@ -54,50 +95,23 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         public static void StopApi()
         {
-            ApiReceiveConnectionStatus = false;
-            if (_threadApiReceiveConnection != null && (_threadApiReceiveConnection.IsAlive || _threadApiReceiveConnection != null))
+            try
             {
-                _threadApiReceiveConnection.Abort();
+                if (CancellationTokenApi != null)
+                {
+                    if (!CancellationTokenApi.IsCancellationRequested)
+                    {
+                        CancellationTokenApi.Cancel();
+                    }
+                }
+            }
+            catch
+            {
+
             }
             _tcpListenerApiReceiveConnection.Stop();
         }
 
-        private static async Task MainAsync()
-        {
-            while (ApiReceiveConnectionStatus)
-            {
-                try
-                {
-
-                    await _tcpListenerApiReceiveConnection.AcceptTcpClientAsync().ContinueWith(async clientTask =>
-                    {
-                        var client = await clientTask;
-                        try
-                        {
-                            CancellationTokenSource cancellationTokenApi = new CancellationTokenSource();
-                            await Task.Factory.StartNew(async () =>
-                            {
-                                string ip = ((IPEndPoint)(client.Client.RemoteEndPoint)).Address.ToString();
-
-                                ClassLog.Log("API Receive incoming connection from IP: " + ip, 5, 2);
-                                using (var clientApiObjectConnection = new ClassApiObjectConnection(client, ip, cancellationTokenApi))
-                                {
-                                    await clientApiObjectConnection.StartHandleIncomingConnectionAsync();
-                                }
-                            }, cancellationTokenApi.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
-                        }
-                        catch
-                        {
-
-                        }
-                    });
-                }
-                catch
-                {
-                }
-            }
-            ApiReceiveConnectionStatus = false;
-        }
     }
 
 
@@ -181,20 +195,21 @@ namespace Xiropht_RemoteNode.Api
     /// </summary>
     public class ClassApiObjectConnection : IDisposable
     {
-        private bool _incomingConnectionStatus;
+        public bool IncomingConnectionStatus;
 
         private TcpClient _client;
-        private string _ip;
+        public string Ip;
         private int _totalPacketPerSecond;
         private bool _disposed;
         private string _malformedPacket;
-        private CancellationTokenSource CancellationTokenApi;
-        private bool _enableProxyMode;
+        public CancellationTokenSource CancellationTokenApi;
+        private bool EnableProxyMode;
+        private ClassApiProxyNetwork _apiProxyNetwork;
 
         public ClassApiObjectConnection(TcpClient clientTmp, string ipTmp, CancellationTokenSource cancellationTokenApi)
         {
             _client = clientTmp;
-            _ip = ipTmp;
+            Ip = ipTmp;
             _malformedPacket = string.Empty;
             CancellationTokenApi = cancellationTokenApi;
         }
@@ -221,7 +236,7 @@ namespace Xiropht_RemoteNode.Api
                 _client = null;
             }
 
-            _incomingConnectionStatus = false;
+            IncomingConnectionStatus = false;
 
 
             _disposed = true;
@@ -232,19 +247,19 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         private async Task CheckPacketSpeedAsync()
         {
-            while (_incomingConnectionStatus)
+            while (IncomingConnectionStatus)
             {
                 try
                 {
 
                     if (_totalPacketPerSecond >= ClassApiBan.MaxPacketPerSecond)
                     {
-                        ClassApiBan.ListFilterObjects[_ip].LastBanDate = DateTimeOffset.Now.ToUnixTimeSeconds() + ClassApiBan.BanDelay;
-                        ClassApiBan.ListFilterObjects[_ip].Banned = true;
-                        _incomingConnectionStatus = false;
+                        ClassApiBan.ListFilterObjects[Ip].LastBanDate = DateTimeOffset.Now.ToUnixTimeSeconds() + ClassApiBan.BanDelay;
+                        ClassApiBan.ListFilterObjects[Ip].Banned = true;
+                        IncomingConnectionStatus = false;
                         break;
                     }
-                    ClassLog.Log("API - Total packets received from IP: " + _ip + " is: " + _totalPacketPerSecond, 5, 2);
+                    ClassLog.Log("API - Total packets received from IP: " + Ip + " is: " + _totalPacketPerSecond, 5, 2);
                     _totalPacketPerSecond = 0;
                     await Task.Delay(1000);
                 }
@@ -261,30 +276,42 @@ namespace Xiropht_RemoteNode.Api
         private async Task CheckConnection()
         {
 
-            while (_incomingConnectionStatus)
+            while (IncomingConnectionStatus)
             {
 
                 try
                 {
-                    if (!ClassApiBan.FilterCheckIp(_ip))
+                    if (!ClassApiBan.FilterCheckIp(Ip))
                     {
-                        _incomingConnectionStatus = false;
+                        IncomingConnectionStatus = false;
                         break;
                     }
-                    if (!_incomingConnectionStatus)
+                    if (!IncomingConnectionStatus)
                     {
-                        _incomingConnectionStatus = false;
+                        IncomingConnectionStatus = false;
                         break;
                     }
                     if (!ClassUtilsNode.SocketIsConnected(_client))
                     {
-                        _incomingConnectionStatus = false;
+                        IncomingConnectionStatus = false;
                         break;
+                    }
+
+                    if (EnableProxyMode)
+                    {
+                        if (_apiProxyNetwork != null)
+                        {
+                            if (!_apiProxyNetwork.ConnectionAlive)
+                            {
+                                IncomingConnectionStatus = false;
+                                break;
+                            }
+                        }
                     }
                 }
                 catch
                 {
-                    _incomingConnectionStatus = false;
+                    IncomingConnectionStatus = false;
                     break;
                 }
                 await Task.Delay(1000);
@@ -296,7 +323,7 @@ namespace Xiropht_RemoteNode.Api
         public async Task StartHandleIncomingConnectionAsync()
         {
 
-            var checkBanResult = ClassApiBan.FilterCheckIp(_ip);
+            var checkBanResult = ClassApiBan.FilterCheckIp(Ip);
 
             if (!checkBanResult)
             {
@@ -305,7 +332,7 @@ namespace Xiropht_RemoteNode.Api
             }
             else
             {
-                ClassApiBan.FilterInsertIp(_ip);
+                ClassApiBan.FilterInsertIp(Ip);
                 await HandleIncomingConnectionAsync();
             }
 
@@ -316,25 +343,25 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         public async Task HandleIncomingConnectionAsync()
         {
-            _incomingConnectionStatus = true;
+            IncomingConnectionStatus = true;
             await Task.Factory.StartNew(CheckConnection, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             await Task.Factory.StartNew(CheckPacketSpeedAsync, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
 
             try
             {
-                while (_incomingConnectionStatus)
+                while (IncomingConnectionStatus)
                 {
-                    if (!ClassApi.ApiReceiveConnectionStatus)
+                    if (Program.Closed)
                     {
-                        _incomingConnectionStatus = false;
+                        IncomingConnectionStatus = false;
                         break;
                     }
                     if (!ClassUtilsNode.SocketIsConnected(_client))
                     {
-                        _incomingConnectionStatus = false;
+                        IncomingConnectionStatus = false;
                         break;
                     }
-                    if (!_incomingConnectionStatus)
+                    if (!IncomingConnectionStatus)
                     {
                         break;
                     }
@@ -379,7 +406,7 @@ namespace Xiropht_RemoteNode.Api
                                                     {
                                                         foreach (var packetMerged in splitPacket)
                                                         {
-                                                            if (_incomingConnectionStatus)
+                                                            if (IncomingConnectionStatus)
                                                             {
                                                                 if (!string.IsNullOrEmpty(packetMerged))
                                                                 {
@@ -390,16 +417,16 @@ namespace Xiropht_RemoteNode.Api
                                                                             packetMerged.Replace(ClassConnectorSetting.PacketSplitSeperator, "");
                                                                         ClassLog.Log(
                                                                             "API - Packet received from IP: " +
-                                                                            _ip + " is: " + packetReplace, 5, 2);
-                                                                        if (_incomingConnectionStatus)
+                                                                            Ip + " is: " + packetReplace, 5, 2);
+                                                                        if (IncomingConnectionStatus)
                                                                         {
                                                                             if (!await HandleIncomingPacketAsync(
                                                                                 packetReplace))
                                                                             {
                                                                                 ClassLog.Log(
                                                                                     "API - Cannot send packet to IP: " +
-                                                                                    _ip + "", 5, 2);
-                                                                                _incomingConnectionStatus = false;
+                                                                                    Ip + "", 5, 2);
+                                                                                IncomingConnectionStatus = false;
                                                                                 break;
                                                                             }
                                                                         }
@@ -410,19 +437,19 @@ namespace Xiropht_RemoteNode.Api
                                                     }
                                                     else
                                                     {
-                                                        if (_incomingConnectionStatus)
+                                                        if (IncomingConnectionStatus)
                                                         {
                                                             var packetReplace = bufferPacket.Packet.Replace(ClassConnectorSetting.PacketSplitSeperator, "");
                                                             ClassLog.Log(
-                                                                "API - Packet received from IP: " + _ip + " is: " +
+                                                                "API - Packet received from IP: " + Ip + " is: " +
                                                                 packetReplace, 5, 2);
 
                                                             if (!await HandleIncomingPacketAsync(packetReplace))
                                                             {
                                                                 ClassLog.Log(
-                                                                    "API - Cannot send packet to IP: " + _ip + "", 5,
+                                                                    "API - Cannot send packet to IP: " + Ip + "", 5,
                                                                     2);
-                                                                _incomingConnectionStatus = false;
+                                                                IncomingConnectionStatus = false;
                                                                 break;
                                                             }
                                                         }
@@ -432,7 +459,7 @@ namespace Xiropht_RemoteNode.Api
                                                 {
 
                                                     ClassLog.Log(
-                                                        "API - Packet received from IP: " + _ip + " is: " +
+                                                        "API - Packet received from IP: " + Ip + " is: " +
                                                         bufferPacket.Packet, 5, 2);
 
                                                     if (_malformedPacket.Length >= int.MaxValue ||
@@ -443,7 +470,7 @@ namespace Xiropht_RemoteNode.Api
                                                     }
                                                     else
                                                     {
-                                                        if (_incomingConnectionStatus)
+                                                        if (IncomingConnectionStatus)
                                                         {
                                                             _malformedPacket += bufferPacket.Packet;
                                                         }
@@ -455,30 +482,30 @@ namespace Xiropht_RemoteNode.Api
                                     }
                                 }
                             }
-                            if (!_incomingConnectionStatus)
+                            if (!IncomingConnectionStatus)
                             {
                                 break;
                             }
                         }
                         catch (Exception error)
                         {
-                            _incomingConnectionStatus = false;
-                            ClassLog.Log("API Incoming connection from IP: " + _ip + " closed by exception: " + error.Message, 5, 2);
+                            IncomingConnectionStatus = false;
+                            ClassLog.Log("API Incoming connection from IP: " + Ip + " closed by exception: " + error.Message, 5, 2);
                             break;
                         }
                     }
                     catch (Exception error)
                     {
-                        _incomingConnectionStatus = false;
-                        ClassLog.Log("API Incoming connection from IP: " + _ip + " closed by exception: " + error.Message, 5, 2);
+                        IncomingConnectionStatus = false;
+                        ClassLog.Log("API Incoming connection from IP: " + Ip + " closed by exception: " + error.Message, 5, 2);
                         break;
                     }
                 }
             }
             catch (Exception error)
             {
-                _incomingConnectionStatus = false;
-                ClassLog.Log("API Incoming connection from IP: " + _ip + " closed by exception: " + error.Message, 5, 2);
+                IncomingConnectionStatus = false;
+                ClassLog.Log("API Incoming connection from IP: " + Ip + " closed by exception: " + error.Message, 5, 2);
             }
 
             StopClientApiConnection();
@@ -507,6 +534,18 @@ namespace Xiropht_RemoteNode.Api
             {
 
             }
+
+            try
+            {
+                if (EnableProxyMode)
+                {
+                    _apiProxyNetwork?.Dispose();
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         /// <summary>
@@ -515,625 +554,683 @@ namespace Xiropht_RemoteNode.Api
         /// <param name="packet"></param>
         private async Task<bool> HandleIncomingPacketAsync(string packet)
         {
-            if (!_incomingConnectionStatus)
+            if (!IncomingConnectionStatus)
             {
                 return false;
             }
 
-            if (_incomingConnectionStatus)
+            if (IncomingConnectionStatus)
             {
-                try
+                if (!EnableProxyMode)
                 {
-
-                    var splitPacket = packet.Split(new[] {"|"}, StringSplitOptions.RemoveEmptyEntries);
-                    if (!string.IsNullOrEmpty(splitPacket[0]))
+                    try
                     {
-                        if (float.TryParse(splitPacket[1], NumberStyles.Any, Program.GlobalCultureInfo,
-                            out var walletId))
+
+                        var splitPacket = packet.Split(new[] {"|"}, StringSplitOptions.RemoveEmptyEntries);
+                        if (!string.IsNullOrEmpty(splitPacket[0]))
                         {
-                            if (walletId < 0)
+                            if (float.TryParse(splitPacket[1], NumberStyles.Any, Program.GlobalCultureInfo,
+                                out var walletId))
                             {
-                                if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                        .RemoteNodeRecvPacketEnumeration.WalletIdWrong)
-                                    .ConfigureAwait(false)) // Wrong Wallet ID
+                                if (walletId < 0)
                                 {
-                                    _incomingConnectionStatus = false;
-                                    return false;
+                                    if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                            .RemoteNodeRecvPacketEnumeration.WalletIdWrong)
+                                        .ConfigureAwait(false)) // Wrong Wallet ID
+                                    {
+                                        IncomingConnectionStatus = false;
+                                        return false;
+                                    }
+                                }
+                                else
+                                {
+                                    switch (splitPacket[0])
+                                    {
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .WalletAskHisNumberTransaction:
+                                            if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId) !=
+                                                -1)
+                                            {
+                                                if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .WalletYourNumberTransaction + "|" +
+                                                    ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionCount(
+                                                        walletId)).ConfigureAwait(false))
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .WalletYourNumberTransaction + "|0").ConfigureAwait(false))
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .WalletAskHisAnonymityNumberTransaction:
+                                            if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId) !=
+                                                -1)
+                                            {
+                                                if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .WalletYourAnonymityNumberTransaction + "|" +
+                                                    ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionCount(
+                                                        walletId)).ConfigureAwait(false))
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (!await SendPacketAsync(
+                                                        ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                            .WalletYourAnonymityNumberTransaction + "|0")
+                                                    .ConfigureAwait(false))
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .WalletAskNumberTransaction:
+                                            if (!await SendPacketAsync(
+                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                    .WalletTotalNumberTransaction + "|" +
+                                                ClassRemoteNodeSync.ListOfTransaction.Count).ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskTotalFee:
+                                            if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .SendRemoteNodeTotalFee + "|" +
+                                                    ClassRemoteNodeSync.CurrentTotalFee)
+                                                .ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskTotalBlockMined:
+                                            if (!await SendPacketAsync(
+                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                    .SendRemoteNodeTotalBlockMined + "|" +
+                                                ClassRemoteNodeSync.ListOfBlock.Count).ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskCoinCirculating:
+                                            if (!await SendPacketAsync(
+                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                    .SendRemoteNodeCoinCirculating + "|" +
+                                                ClassRemoteNodeSync.CoinCirculating).ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskCoinMaxSupply:
+                                            if (!await SendPacketAsync(
+                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                    .SendRemoteNodeCoinMaxSupply + "|" +
+                                                ClassRemoteNodeSync.CoinMaxSupply).ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskTotalPendingTransaction:
+                                            if (!await SendPacketAsync(
+                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                    .SendRemoteNodeTotalPendingTransaction + "|" +
+                                                ClassRemoteNodeSync.TotalPendingTransaction).ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskCurrentDifficulty:
+                                            if (!await SendPacketAsync(
+                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                    .SendRemoteNodeCurrentDifficulty + "|" +
+                                                ClassRemoteNodeSync.CurrentDifficulty).ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskCurrentRate:
+                                            if (!await SendPacketAsync(
+                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                    .SendRemoteNodeCurrentRate + "|" +
+                                                ClassRemoteNodeSync.CurrentHashrate).ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskTotalBlockLeft:
+                                            if (!string.IsNullOrEmpty(ClassRemoteNodeSync.CurrentBlockLeft))
+                                            {
+                                                if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .SendRemoteNodeTotalBlockLeft + "|" +
+                                                    ClassRemoteNodeSync.CurrentBlockLeft).ConfigureAwait(false))
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskTrustedKey:
+                                            if (!string.IsNullOrEmpty(ClassRemoteNodeSync.TrustedKey))
+                                            {
+                                                if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .SendRemoteNodeTrustedKey + "|" +
+                                                    ClassRemoteNodeSync.TrustedKey).ConfigureAwait(false))
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskHashListTransaction:
+                                            if (!string.IsNullOrEmpty(ClassRemoteNodeSync.HashTransactionList))
+                                            {
+                                                if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .SendRemoteNodeTransactionHashList + "|" +
+                                                    ClassRemoteNodeSync.HashTransactionList).ConfigureAwait(false))
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .WalletAskTransactionPerId:
+                                            if (int.TryParse(splitPacket[2], out var idTransactionAskFromWallet))
+                                            {
+                                                if (idTransactionAskFromWallet < 0)
+                                                {
+                                                    if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                                            .RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction)
+                                                        .ConfigureAwait(false))
+                                                    {
+                                                        IncomingConnectionStatus = false;
+                                                        return false;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(
+                                                            walletId) != -1)
+                                                    {
+                                                        if (ClassRemoteNodeSync.ListTransactionPerWallet
+                                                                .GetTransactionCount(walletId) <=
+                                                            idTransactionAskFromWallet)
+                                                        {
+                                                            if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                                                .RemoteNodeRecvPacketEnumeration
+                                                                .WalletWrongIdTransaction).ConfigureAwait(false))
+                                                            {
+                                                                IncomingConnectionStatus = false;
+                                                                return false;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+
+                                                            using (var apiTransaction = new ClassApiTransaction())
+                                                            {
+                                                                string resultTransaction =
+                                                                    apiTransaction.GetTransactionFromWalletId(walletId,
+                                                                        idTransactionAskFromWallet);
+                                                                if (resultTransaction == "WRONG")
+                                                                {
+                                                                    if (!await SendPacketAsync(
+                                                                            ClassRemoteNodeCommandForWallet
+                                                                                .RemoteNodeRecvPacketEnumeration
+                                                                                .WalletWrongIdTransaction)
+                                                                        .ConfigureAwait(false))
+                                                                    {
+                                                                        IncomingConnectionStatus = false;
+                                                                        return false;
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (!await SendPacketAsync(
+                                                                        ClassRemoteNodeCommandForWallet
+                                                                            .RemoteNodeRecvPacketEnumeration
+                                                                            .WalletTransactionPerId + "|" +
+                                                                        resultTransaction).ConfigureAwait(false))
+                                                                    {
+                                                                        IncomingConnectionStatus = false;
+                                                                        return false;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                                                .RemoteNodeRecvPacketEnumeration
+                                                                .WalletWrongIdTransaction)
+                                                            .ConfigureAwait(false))
+                                                        {
+                                                            IncomingConnectionStatus = false;
+                                                            return false;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .WalletAskAnonymityTransactionPerId:
+                                            if (int.TryParse(splitPacket[2],
+                                                out var idAnonymityTransactionAskFromWallet))
+                                            {
+                                                if (idAnonymityTransactionAskFromWallet < 0)
+                                                {
+                                                    if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                                            .RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction)
+                                                        .ConfigureAwait(false))
+                                                    {
+                                                        IncomingConnectionStatus = false;
+                                                        return false;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(
+                                                            walletId) != -1)
+                                                    {
+                                                        if (ClassRemoteNodeSync.ListTransactionPerWallet
+                                                                .GetTransactionCount(walletId) <=
+                                                            idAnonymityTransactionAskFromWallet)
+                                                        {
+                                                            if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                                                .RemoteNodeRecvPacketEnumeration
+                                                                .WalletWrongIdTransaction).ConfigureAwait(false))
+                                                            {
+                                                                IncomingConnectionStatus = false;
+                                                                return false;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            using (var apiTransaction = new ClassApiTransaction())
+                                                            {
+                                                                string resultTransaction =
+                                                                    apiTransaction.GetTransactionFromWalletId(walletId,
+                                                                        idAnonymityTransactionAskFromWallet);
+                                                                if (resultTransaction == "WRONG")
+                                                                {
+                                                                    if (!await SendPacketAsync(
+                                                                            ClassRemoteNodeCommandForWallet
+                                                                                .RemoteNodeRecvPacketEnumeration
+                                                                                .WalletWrongIdTransaction)
+                                                                        .ConfigureAwait(false))
+                                                                    {
+                                                                        IncomingConnectionStatus = false;
+                                                                        return false;
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (!await SendPacketAsync(
+                                                                        ClassRemoteNodeCommandForWallet
+                                                                            .RemoteNodeRecvPacketEnumeration
+                                                                            .WalletAnonymityTransactionPerId + "|" +
+                                                                        resultTransaction).ConfigureAwait(false))
+                                                                    {
+                                                                        IncomingConnectionStatus = false;
+                                                                        return false;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                                                .RemoteNodeRecvPacketEnumeration
+                                                                .WalletWrongIdTransaction)
+                                                            .ConfigureAwait(false))
+                                                        {
+                                                            IncomingConnectionStatus = false;
+                                                            return false;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskTransactionPerId:
+                                            if (long.TryParse(splitPacket[2], out var idTransactionAsk))
+                                            {
+                                                if (idTransactionAsk >= 0 && idTransactionAsk <
+                                                    ClassRemoteNodeSync.ListOfTransaction.Count)
+                                                {
+                                                    if (!await SendPacketAsync(
+                                                            ClassRemoteNodeCommandForWallet
+                                                                .RemoteNodeRecvPacketEnumeration
+                                                                .SendRemoteNodeTransactionPerId + "|" +
+                                                            ClassRemoteNodeSync.ListOfTransaction
+                                                                .GetTransaction(idTransactionAsk).Item1)
+                                                        .ConfigureAwait(false))
+                                                    {
+                                                        IncomingConnectionStatus = false;
+                                                        return false;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskTransactionHashPerId:
+                                            if (int.TryParse(splitPacket[2], out var idTransactionAskTmp))
+                                            {
+                                                if (idTransactionAskTmp >= 0 && idTransactionAskTmp <
+                                                    ClassRemoteNodeSync.ListOfTransaction.Count)
+                                                {
+                                                    if (!await SendPacketAsync(
+                                                        ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                            .SendRemoteNodeAskTransactionHashPerId + "|" +
+                                                        ClassUtilsNode.ConvertStringToSha512(ClassRemoteNodeSync
+                                                            .ListOfTransaction.GetTransaction(idTransactionAskTmp)
+                                                            .Item1)).ConfigureAwait(false))
+                                                    {
+                                                        IncomingConnectionStatus = false;
+                                                        return false;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskBlockHashPerId:
+                                            if (int.TryParse(splitPacket[2], out var idBlockAskTmp))
+                                            {
+                                                if (idBlockAskTmp >= 0 && idBlockAskTmp <
+                                                    ClassRemoteNodeSync.ListOfTransaction.Count)
+                                                {
+                                                    if (!await SendPacketAsync(
+                                                            ClassRemoteNodeCommandForWallet
+                                                                .RemoteNodeRecvPacketEnumeration
+                                                                .SendRemoteNodeAskBlockHashPerId + "|" +
+                                                            ClassUtilsNode.ConvertStringToSha512(
+                                                                ClassRemoteNodeSync.ListOfBlock[idBlockAskTmp]))
+                                                        .ConfigureAwait(false))
+                                                    {
+                                                        IncomingConnectionStatus = false;
+                                                        return false;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskLastBlockFoundTimestamp:
+                                            if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .SendRemoteNodeLastBlockFoundTimestamp + "|" +
+                                                    ClassRemoteNodeSync
+                                                        .ListOfBlock[ClassRemoteNodeSync.ListOfBlock.Count - 1]
+                                                        .Split(new[] {"#"}, StringSplitOptions.None)[4])
+                                                .ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskBlockPerId:
+                                            if (int.TryParse(splitPacket[2], out var idBlockAsk))
+                                            {
+                                                if (idBlockAsk >= 0 &&
+                                                    idBlockAsk < ClassRemoteNodeSync.ListOfBlock.Count)
+                                                {
+                                                    if (!await SendPacketAsync(
+                                                            ClassRemoteNodeCommandForWallet
+                                                                .RemoteNodeRecvPacketEnumeration
+                                                                .SendRemoteNodeBlockPerId + "|" +
+                                                            ClassRemoteNodeSync.ListOfBlock[idBlockAsk])
+                                                        .ConfigureAwait(false))
+                                                    {
+                                                        IncomingConnectionStatus = false;
+                                                        return false;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
+                                            .AskHashListBlock:
+                                            if (!string.IsNullOrEmpty(ClassRemoteNodeSync.HashBlockList))
+                                            {
+                                                if (!await SendPacketAsync(
+                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                                        .SendRemoteNodeBlockHashList + "|" +
+                                                    ClassRemoteNodeSync.HashBlockList).ConfigureAwait(false))
+                                                {
+                                                    IncomingConnectionStatus = false;
+                                                    return false;
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.KeepAlive:
+
+                                            if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                                    .RemoteNodeRecvPacketEnumeration.SendRemoteNodeKeepAlive)
+                                                .ConfigureAwait(false))
+                                            {
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            break;
+                                        default: // Invalid packet
+                                            ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                                            break;
+                                    }
                                 }
                             }
                             else
                             {
-                                switch (splitPacket[0])
+                                if (splitPacket[0] == ClassConnectorSettingEnumeration.WalletLoginProxy)
                                 {
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .WalletAskHisNumberTransaction:
-                                        if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId) !=
-                                            -1)
+                                    if (splitPacket[1].Length < ClassConnectorSetting.MinWalletAddressSize ||
+                                        splitPacket[1].Length > ClassConnectorSetting.MaxWalletAddressSize)
+                                    {
+                                        if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
+                                            splitPacket[1]))
                                         {
-                                            if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .WalletYourNumberTransaction + "|" +
-                                                ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionCount(
-                                                    walletId)).ConfigureAwait(false))
+                                            EnableProxyMode = true;
+                                            _apiProxyNetwork = new ClassApiProxyNetwork(splitPacket[1], this);
+                                            if (!await _apiProxyNetwork.StartProxyNetwork())
                                             {
-                                                _incomingConnectionStatus = false;
+                                                IncomingConnectionStatus = false;
                                                 return false;
                                             }
                                         }
                                         else
                                         {
-                                            if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .WalletYourNumberTransaction + "|0").ConfigureAwait(false))
+                                            if (await ClassTokenNetwork.CheckWalletAddressExistAsync(splitPacket[1]))
                                             {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .WalletAskHisAnonymityNumberTransaction:
-                                        if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(walletId) !=
-                                            -1)
-                                        {
-                                            if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .WalletYourAnonymityNumberTransaction + "|" +
-                                                ClassRemoteNodeSync.ListTransactionPerWallet.GetTransactionCount(
-                                                    walletId)).ConfigureAwait(false))
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (!await SendPacketAsync(
-                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                        .WalletYourAnonymityNumberTransaction + "|0")
-                                                .ConfigureAwait(false))
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .WalletAskNumberTransaction:
-                                        if (!await SendPacketAsync(
-                                            ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                .WalletTotalNumberTransaction + "|" +
-                                            ClassRemoteNodeSync.ListOfTransaction.Count).ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskTotalFee:
-                                        if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .SendRemoteNodeTotalFee + "|" +
-                                                ClassRemoteNodeSync.CurrentTotalFee)
-                                            .ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskTotalBlockMined:
-                                        if (!await SendPacketAsync(
-                                            ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                .SendRemoteNodeTotalBlockMined + "|" +
-                                            ClassRemoteNodeSync.ListOfBlock.Count).ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskCoinCirculating:
-                                        if (!await SendPacketAsync(
-                                            ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                .SendRemoteNodeCoinCirculating + "|" +
-                                            ClassRemoteNodeSync.CoinCirculating).ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskCoinMaxSupply:
-                                        if (!await SendPacketAsync(
-                                            ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                .SendRemoteNodeCoinMaxSupply + "|" +
-                                            ClassRemoteNodeSync.CoinMaxSupply).ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskTotalPendingTransaction:
-                                        if (!await SendPacketAsync(
-                                            ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                .SendRemoteNodeTotalPendingTransaction + "|" +
-                                            ClassRemoteNodeSync.TotalPendingTransaction).ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskCurrentDifficulty:
-                                        if (!await SendPacketAsync(
-                                            ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                .SendRemoteNodeCurrentDifficulty + "|" +
-                                            ClassRemoteNodeSync.CurrentDifficulty).ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskCurrentRate:
-                                        if (!await SendPacketAsync(
-                                            ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                .SendRemoteNodeCurrentRate + "|" +
-                                            ClassRemoteNodeSync.CurrentHashrate).ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskTotalBlockLeft:
-                                        if (!string.IsNullOrEmpty(ClassRemoteNodeSync.CurrentBlockLeft))
-                                        {
-                                            if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .SendRemoteNodeTotalBlockLeft + "|" +
-                                                ClassRemoteNodeSync.CurrentBlockLeft).ConfigureAwait(false))
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskTrustedKey:
-                                        if (!string.IsNullOrEmpty(ClassRemoteNodeSync.TrustedKey))
-                                        {
-                                            if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .SendRemoteNodeTrustedKey + "|" +
-                                                ClassRemoteNodeSync.TrustedKey).ConfigureAwait(false))
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskHashListTransaction:
-                                        if (!string.IsNullOrEmpty(ClassRemoteNodeSync.HashTransactionList))
-                                        {
-                                            if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .SendRemoteNodeTransactionHashList + "|" +
-                                                ClassRemoteNodeSync.HashTransactionList).ConfigureAwait(false))
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .WalletAskTransactionPerId:
-                                        if (int.TryParse(splitPacket[2], out var idTransactionAskFromWallet))
-                                        {
-                                            if (idTransactionAskFromWallet < 0)
-                                            {
-                                                if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                                        .RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction)
-                                                    .ConfigureAwait(false))
+                                                EnableProxyMode = true;
+                                                _apiProxyNetwork = new ClassApiProxyNetwork(splitPacket[1], this);
+                                                if (!await _apiProxyNetwork.StartProxyNetwork())
                                                 {
-                                                    _incomingConnectionStatus = false;
+                                                    IncomingConnectionStatus = false;
                                                     return false;
                                                 }
                                             }
                                             else
                                             {
-                                                if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(
-                                                        walletId) != -1)
-                                                {
-                                                    if (ClassRemoteNodeSync.ListTransactionPerWallet
-                                                            .GetTransactionCount(walletId) <=
-                                                        idTransactionAskFromWallet)
-                                                    {
-                                                        if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                                            .RemoteNodeRecvPacketEnumeration
-                                                            .WalletWrongIdTransaction).ConfigureAwait(false))
-                                                        {
-                                                            _incomingConnectionStatus = false;
-                                                            return false;
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-
-                                                        using (var apiTransaction = new ClassApiTransaction())
-                                                        {
-                                                            string resultTransaction =
-                                                                apiTransaction.GetTransactionFromWalletId(walletId,
-                                                                    idTransactionAskFromWallet);
-                                                            if (resultTransaction == "WRONG")
-                                                            {
-                                                                if (!await SendPacketAsync(
-                                                                        ClassRemoteNodeCommandForWallet
-                                                                            .RemoteNodeRecvPacketEnumeration
-                                                                            .WalletWrongIdTransaction)
-                                                                    .ConfigureAwait(false))
-                                                                {
-                                                                    _incomingConnectionStatus = false;
-                                                                    return false;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                if (!await SendPacketAsync(
-                                                                    ClassRemoteNodeCommandForWallet
-                                                                        .RemoteNodeRecvPacketEnumeration
-                                                                        .WalletTransactionPerId + "|" +
-                                                                    resultTransaction).ConfigureAwait(false))
-                                                                {
-                                                                    _incomingConnectionStatus = false;
-                                                                    return false;
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                                            .RemoteNodeRecvPacketEnumeration
-                                                            .WalletWrongIdTransaction)
-                                                        .ConfigureAwait(false))
-                                                    {
-                                                        _incomingConnectionStatus = false;
-                                                        return false;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .WalletAskAnonymityTransactionPerId:
-                                        if (int.TryParse(splitPacket[2],
-                                            out var idAnonymityTransactionAskFromWallet))
-                                        {
-                                            if (idAnonymityTransactionAskFromWallet < 0)
-                                            {
-                                                if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                                        .RemoteNodeRecvPacketEnumeration.WalletWrongIdTransaction)
-                                                    .ConfigureAwait(false))
-                                                {
-                                                    _incomingConnectionStatus = false;
-                                                    return false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (ClassRemoteNodeSync.ListTransactionPerWallet.ContainsKey(
-                                                        walletId) != -1)
-                                                {
-                                                    if (ClassRemoteNodeSync.ListTransactionPerWallet
-                                                            .GetTransactionCount(walletId) <=
-                                                        idAnonymityTransactionAskFromWallet)
-                                                    {
-                                                        if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                                            .RemoteNodeRecvPacketEnumeration
-                                                            .WalletWrongIdTransaction).ConfigureAwait(false))
-                                                        {
-                                                            _incomingConnectionStatus = false;
-                                                            return false;
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        using (var apiTransaction = new ClassApiTransaction())
-                                                        {
-                                                            string resultTransaction =
-                                                                apiTransaction.GetTransactionFromWalletId(walletId,
-                                                                    idAnonymityTransactionAskFromWallet);
-                                                            if (resultTransaction == "WRONG")
-                                                            {
-                                                                if (!await SendPacketAsync(
-                                                                        ClassRemoteNodeCommandForWallet
-                                                                            .RemoteNodeRecvPacketEnumeration
-                                                                            .WalletWrongIdTransaction)
-                                                                    .ConfigureAwait(false))
-                                                                {
-                                                                    _incomingConnectionStatus = false;
-                                                                    return false;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                if (!await SendPacketAsync(
-                                                                    ClassRemoteNodeCommandForWallet
-                                                                        .RemoteNodeRecvPacketEnumeration
-                                                                        .WalletAnonymityTransactionPerId + "|" +
-                                                                    resultTransaction).ConfigureAwait(false))
-                                                                {
-                                                                    _incomingConnectionStatus = false;
-                                                                    return false;
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                                            .RemoteNodeRecvPacketEnumeration
-                                                            .WalletWrongIdTransaction)
-                                                        .ConfigureAwait(false))
-                                                    {
-                                                        _incomingConnectionStatus = false;
-                                                        return false;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskTransactionPerId:
-                                        if (long.TryParse(splitPacket[2], out var idTransactionAsk))
-                                        {
-                                            if (idTransactionAsk >= 0 && idTransactionAsk <
-                                                ClassRemoteNodeSync.ListOfTransaction.Count)
-                                            {
-                                                if (!await SendPacketAsync(
-                                                        ClassRemoteNodeCommandForWallet
-                                                            .RemoteNodeRecvPacketEnumeration
-                                                            .SendRemoteNodeTransactionPerId + "|" +
-                                                        ClassRemoteNodeSync.ListOfTransaction
-                                                            .GetTransaction(idTransactionAsk).Item1)
-                                                    .ConfigureAwait(false))
-                                                {
-                                                    _incomingConnectionStatus = false;
-                                                    return false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                _incomingConnectionStatus = false;
+                                                IncomingConnectionStatus = false;
                                                 return false;
                                             }
                                         }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskTransactionHashPerId:
-                                        if (int.TryParse(splitPacket[2], out var idTransactionAskTmp))
-                                        {
-                                            if (idTransactionAskTmp >= 0 && idTransactionAskTmp <
-                                                ClassRemoteNodeSync.ListOfTransaction.Count)
-                                            {
-                                                if (!await SendPacketAsync(
-                                                    ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                        .SendRemoteNodeAskTransactionHashPerId + "|" +
-                                                    ClassUtilsNode.ConvertStringToSha512(ClassRemoteNodeSync
-                                                        .ListOfTransaction.GetTransaction(idTransactionAskTmp)
-                                                        .Item1)).ConfigureAwait(false))
-                                                {
-                                                    _incomingConnectionStatus = false;
-                                                    return false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskBlockHashPerId:
-                                        if (int.TryParse(splitPacket[2], out var idBlockAskTmp))
-                                        {
-                                            if (idBlockAskTmp >= 0 && idBlockAskTmp <
-                                                ClassRemoteNodeSync.ListOfTransaction.Count)
-                                            {
-                                                if (!await SendPacketAsync(
-                                                        ClassRemoteNodeCommandForWallet
-                                                            .RemoteNodeRecvPacketEnumeration
-                                                            .SendRemoteNodeAskBlockHashPerId + "|" +
-                                                        ClassUtilsNode.ConvertStringToSha512(
-                                                            ClassRemoteNodeSync.ListOfBlock[idBlockAskTmp]))
-                                                    .ConfigureAwait(false))
-                                                {
-                                                    _incomingConnectionStatus = false;
-                                                    return false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskLastBlockFoundTimestamp:
-                                        if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .SendRemoteNodeLastBlockFoundTimestamp + "|" +
-                                                ClassRemoteNodeSync
-                                                    .ListOfBlock[ClassRemoteNodeSync.ListOfBlock.Count - 1]
-                                                    .Split(new[] {"#"}, StringSplitOptions.None)[4])
-                                            .ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskBlockPerId:
-                                        if (int.TryParse(splitPacket[2], out var idBlockAsk))
-                                        {
-                                            if (idBlockAsk >= 0 &&
-                                                idBlockAsk < ClassRemoteNodeSync.ListOfBlock.Count)
-                                            {
-                                                if (!await SendPacketAsync(
-                                                        ClassRemoteNodeCommandForWallet
-                                                            .RemoteNodeRecvPacketEnumeration
-                                                            .SendRemoteNodeBlockPerId + "|" +
-                                                        ClassRemoteNodeSync.ListOfBlock[idBlockAsk])
-                                                    .ConfigureAwait(false))
-                                                {
-                                                    _incomingConnectionStatus = false;
-                                                    return false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration
-                                        .AskHashListBlock:
-                                        if (!string.IsNullOrEmpty(ClassRemoteNodeSync.HashBlockList))
-                                        {
-                                            if (!await SendPacketAsync(
-                                                ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                                                    .SendRemoteNodeBlockHashList + "|" +
-                                                ClassRemoteNodeSync.HashBlockList).ConfigureAwait(false))
-                                            {
-                                                _incomingConnectionStatus = false;
-                                                return false;
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    case ClassRemoteNodeCommandForWallet.RemoteNodeSendPacketEnumeration.KeepAlive:
-
-                                        if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                                .RemoteNodeRecvPacketEnumeration.SendRemoteNodeKeepAlive)
-                                            .ConfigureAwait(false))
-                                        {
-                                            _incomingConnectionStatus = false;
-                                            return false;
-                                        }
-
-                                        break;
-                                    default: // Invalid packet
-                                        ClassApiBan.ListFilterObjects[_ip].TotalInvalidPacket++;
-                                        break;
+                                    }
+                                    else
+                                    {
+                                        ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                                        IncomingConnectionStatus = false;
+                                        return false;
+                                    }
+                                }
+                                else
+                                {
+                                    if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
+                                            .RemoteNodeRecvPacketEnumeration.WalletIdWrong)
+                                        .ConfigureAwait(false)) // Wrong Wallet ID
+                                    {
+                                        IncomingConnectionStatus = false;
+                                        return false;
+                                    }
                                 }
                             }
                         }
                         else
                         {
-                            if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet
-                                    .RemoteNodeRecvPacketEnumeration.WalletIdWrong)
-                                .ConfigureAwait(false)) // Wrong Wallet ID
+                            ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                            if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
+                                .EmptyPacket).ConfigureAwait(false)) // Empty Packet
                             {
-                                _incomingConnectionStatus = false;
+                                IncomingConnectionStatus = false;
                                 return false;
                             }
                         }
+
                     }
-                    else
+                    catch
                     {
-                        ClassApiBan.ListFilterObjects[_ip].TotalInvalidPacket++;
-                        if (!await SendPacketAsync(ClassRemoteNodeCommandForWallet.RemoteNodeRecvPacketEnumeration
-                            .EmptyPacket).ConfigureAwait(false)) // Empty Packet
+                        ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                    }
+                }
+                else
+                {
+                    if (_apiProxyNetwork != null)
+                    {
+                        if (!await _apiProxyNetwork.SendPacketToNetwork(packet))
                         {
-                            _incomingConnectionStatus = false;
                             return false;
                         }
                     }
-
-                }
-                catch
-                {
-                    ClassApiBan.ListFilterObjects[_ip].TotalInvalidPacket++;
                 }
 
                 return true;
@@ -1148,7 +1245,7 @@ namespace Xiropht_RemoteNode.Api
         /// </summary>
         /// <param name="packet"></param>
         /// <returns></returns>
-        private async Task<bool> SendPacketAsync(string packet)
+        public async Task<bool> SendPacketAsync(string packet)
         {
 
             try

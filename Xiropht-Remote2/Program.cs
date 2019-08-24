@@ -24,17 +24,37 @@ namespace Xiropht_RemoteNode
         /// <summary>
         /// Remote node object of sync.
         /// </summary>
-        public static ClassRemoteNodeObject RemoteNodeObjectCoinMaxSupply; // Sync the node for get coin max supply information.
-        public static ClassRemoteNodeObject RemoteNodeObjectCoinCirculating; // Sync the node for get coin circulating information.
-        public static ClassRemoteNodeObject RemoteNodeObjectTotalBlockMined; // Sync the node for get total block mined information.
-        public static ClassRemoteNodeObject RemoteNodeObjectTotalPendingTransaction; // Sync the node for get total pending transaction information.
-        public static ClassRemoteNodeObject RemoteNodeObjectCurrentDifficulty; // Sync the node for get current mining difficulty information.
-        public static ClassRemoteNodeObject RemoteNodeObjectCurrentRate; // Sync the node for get current mining hashrate information.
-        public static ClassRemoteNodeObject RemoteNodeObjectToBePublic; // Sync the node for get the public node list information and ask to be public if not.
-        public static ClassRemoteNodeObject RemoteNodeObjectTransaction; // Sync the node for get each transaction data information.
-        public static ClassRemoteNodeObject RemoteNodeObjectTotalFee; // Sync the node for get current amount of fee information.
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectCoinMaxSupply; // Sync the node for get coin max supply information.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectCoinCirculating; // Sync the node for get coin circulating information.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectTotalBlockMined; // Sync the node for get total block mined information.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectTotalPendingTransaction; // Sync the node for get total pending transaction information.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectCurrentDifficulty; // Sync the node for get current mining difficulty information.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectCurrentRate; // Sync the node for get current mining hashrate information.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectToBePublic; // Sync the node for get the public node list information and ask to be public if not.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectTransaction; // Sync the node for get each transaction data information.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectTotalFee; // Sync the node for get current amount of fee information.
+
         public static ClassRemoteNodeObject RemoteNodeObjectBlock; // Sync the node for get each block data information.
-        public static ClassRemoteNodeObject RemoteNodeObjectTotalTransaction; // Sync the node for get total number of transaction information.
+
+        public static ClassRemoteNodeObject
+            RemoteNodeObjectTotalTransaction; // Sync the node for get total number of transaction information.
 
 
         /// <summary>
@@ -51,6 +71,7 @@ namespace Xiropht_RemoteNode
         /// About log settings.
         /// </summary>
         public static int LogLevel;
+
         public static bool EnableWriteLog;
 
         /// <summary>
@@ -72,6 +93,7 @@ namespace Xiropht_RemoteNode
         /// About setting file.
         /// </summary>
         private static string ConfigFilePath = "\\config.json";
+
         private static string ConfigOldFilePath = "\\config.ini";
 
         /// <summary>
@@ -228,6 +250,23 @@ namespace Xiropht_RemoteNode
                     }
                 }
 
+
+                Console.WriteLine("Enable System of Generating Trusted Key's of Remote Node..");
+                ClassRemoteNodeKey.StartUpdateTrustedKey();
+
+                Console.WriteLine("Enable Auto save system..");
+                ClassRemoteNodeSave.SaveTransaction();
+                ClassRemoteNodeSave.SaveBlock();
+                ClassRemoteNodeSave.SaveWalletCache();
+
+                Console.WriteLine("Enable API..");
+                ClassApi.StartApiRemoteNode();
+                if (EnableApiHttp)
+                {
+                    Console.WriteLine("Enable API HTTP..");
+                    ClassApiHttp.StartApiHttpServer();
+                }
+
                 Console.WriteLine("Start Remote Node Sync Objects Connection..");
 
                 await Task.Factory.StartNew(() => RemoteNodeObjectCoinMaxSupply.StartConnectionAsync(),
@@ -268,37 +307,19 @@ namespace Xiropht_RemoteNode
 
                 }
 
+                Console.WriteLine("Enable Check Remote Node Objects connection..");
+                ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();
 
                 Console.WriteLine("Remote node objects successfully connected.");
 
 
 
-                Console.WriteLine("Enable Check Remote Node Objects connection..");
-                ClassCheckRemoteNodeSync.EnableCheckRemoteNodeSync();
-                Console.WriteLine("Enable System of Generating Trusted Key's of Remote Node..");
-                ClassRemoteNodeKey.StartUpdateTrustedKey();
 
-                Console.WriteLine("Enable Auto save system..");
-                ClassRemoteNodeSave.SaveTransaction();
-                ClassRemoteNodeSave.SaveBlock();
-                ClassRemoteNodeSave.SaveWalletCache();
-
-                Console.WriteLine("Enable API..");
-                ClassApi.StartApiRemoteNode();
-                if (EnableApiHttp)
-                {
-                    Console.WriteLine("Enable API HTTP..");
-                    ClassApiHttp.StartApiHttpServer();
-                }
             }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Current).ConfigureAwait(true);
 
 
             _threadCommandLine = new Thread(async delegate()
             {
-                while (!ClassApi.ApiReceiveConnectionStatus)
-                {
-                    Thread.Sleep(100);
-                }
 
                 Console.WriteLine(
                     "Remote node successfully started, you can run command: help for get the list of commands.");
@@ -329,32 +350,27 @@ namespace Xiropht_RemoteNode
             Console.WriteLine("Welcome, please write your wallet address:");
             RemoteNodeWalletAddress = Console.ReadLine();
 
-            if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(RemoteNodeWalletAddress))
+
+            Console.WriteLine("Checking wallet address..");
+            bool checkWalletAddress =
+                ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+
+            while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize ||
+                   RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize ||
+                   !checkWalletAddress)
             {
-                Console.WriteLine("Checking wallet address..");
-                bool checkWalletAddress =
-                    ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-
-                while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize ||
-                       RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize ||
-                       !checkWalletAddress)
-                {
-                    Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
-                    RemoteNodeWalletAddress = Console.ReadLine();
-                    RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
-                    Console.WriteLine("Checking wallet address..", 4);
-                    checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-                }
-
-                if (checkWalletAddress)
-                {
-                    Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
-                    if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(RemoteNodeWalletAddress))
-                    {
-                        ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Add(RemoteNodeWalletAddress, string.Empty);
-                    }
-                }
+                Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
+                RemoteNodeWalletAddress = Console.ReadLine();
+                RemoteNodeWalletAddress = ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
+                Console.WriteLine("Checking wallet address..", 4);
+                checkWalletAddress = ClassTokenNetwork.CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
             }
+
+            if (checkWalletAddress)
+            {
+                Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
+            }
+
 
             Console.WriteLine("Do you want load your node as a Public Remote Node? [Y/N]");
             var answer = Console.ReadLine();
@@ -388,7 +404,8 @@ namespace Xiropht_RemoteNode
                 answer = Console.ReadLine();
                 if (answer == "Y" || answer == "y")
                 {
-                    Console.WriteLine("Enter your port selected for your HTTP API: (By default: " + ClassConnectorSetting.RemoteNodeHttpPort + ")");
+                    Console.WriteLine("Enter your port selected for your HTTP API: (By default: " +
+                                      ClassConnectorSetting.RemoteNodeHttpPort + ")");
                     string portChoosed = Console.ReadLine();
                     while (!int.TryParse(portChoosed, out ClassApiHttp.PersonalRemoteNodeHttpPort))
                     {
@@ -397,6 +414,7 @@ namespace Xiropht_RemoteNode
                     }
                 }
             }
+
             SaveConfigFile();
         }
 
@@ -437,10 +455,13 @@ namespace Xiropht_RemoteNode
             }
 
             var jsonRemoteNodeSettingObject = JsonConvert.SerializeObject(remoteNodeSettingObject, Formatting.Indented);
-            using (StreamWriter writer = new StreamWriter(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)) { AutoFlush = true })
+            using (StreamWriter writer =
+                new StreamWriter(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath))
+                    {AutoFlush = true})
             {
                 writer.Write(jsonRemoteNodeSettingObject);
             }
+
             Console.WriteLine("Config file saved.");
         }
 
@@ -455,7 +476,9 @@ namespace Xiropht_RemoteNode
 
                 if (oldConfigFile)
                 {
-                    using (StreamReader reader = new StreamReader(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigOldFilePath)))
+                    using (StreamReader reader =
+                        new StreamReader(
+                            ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigOldFilePath)))
                     {
 
                         string line;
@@ -468,40 +491,35 @@ namespace Xiropht_RemoteNode
                                 if (line.Contains("WALLET_ADDRESS="))
                                 {
                                     RemoteNodeWalletAddress = line.Replace("WALLET_ADDRESS=", "");
-                                    if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
-                                        RemoteNodeWalletAddress))
+
+                                    Console.WriteLine("Checking wallet address..");
+                                    bool checkWalletAddress = ClassTokenNetwork
+                                        .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+
+                                    while (RemoteNodeWalletAddress.Length <
+                                           ClassConnectorSetting.MinWalletAddressSize ||
+                                           RemoteNodeWalletAddress.Length >
+                                           ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
                                     {
+                                        Console.WriteLine(
+                                            "Invalid wallet address - Please, write your valid wallet address:");
+                                        RemoteNodeWalletAddress = Console.ReadLine();
+                                        RemoteNodeWalletAddress =
+                                            ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
                                         Console.WriteLine("Checking wallet address..");
-                                        bool checkWalletAddress = ClassTokenNetwork
+                                        checkWalletAddress = ClassTokenNetwork
                                             .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-
-                                        while (RemoteNodeWalletAddress.Length <
-                                               ClassConnectorSetting.MinWalletAddressSize ||
-                                               RemoteNodeWalletAddress.Length >
-                                               ClassConnectorSetting.MaxWalletAddressSize || !checkWalletAddress)
-                                        {
-                                            Console.WriteLine(
-                                                "Invalid wallet address - Please, write your valid wallet address:");
-                                            RemoteNodeWalletAddress = Console.ReadLine();
-                                            RemoteNodeWalletAddress =
-                                                ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
-                                            Console.WriteLine("Checking wallet address..");
-                                            checkWalletAddress = ClassTokenNetwork
-                                                .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-                                        }
-
-                                        if (checkWalletAddress)
-                                        {
-                                            Console.WriteLine(
-                                                "Wallet address: " + RemoteNodeWalletAddress + " is valid.");
-                                            if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
-                                                RemoteNodeWalletAddress))
-                                            {
-                                                ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Add(RemoteNodeWalletAddress, string.Empty);
-                                            }
-                                        }
                                     }
+
+                                    if (checkWalletAddress)
+                                    {
+                                        Console.WriteLine(
+                                            "Wallet address: " + RemoteNodeWalletAddress + " is valid.");
+
+                                    }
+
                                 }
+
                                 if (line.Contains("ENABLE_PUBLIC_MODE="))
                                 {
                                     string option = line.Replace("ENABLE_PUBLIC_MODE=", "");
@@ -514,6 +532,7 @@ namespace Xiropht_RemoteNode
                                         ClassRemoteNodeSync.WantToBePublicNode = false;
                                     }
                                 }
+
                                 if (line.Contains("ENABLE_API_HTTP="))
                                 {
                                     string option = line.Replace("ENABLE_API_HTTP=", "");
@@ -522,14 +541,18 @@ namespace Xiropht_RemoteNode
                                         EnableApiHttp = true;
                                     }
                                 }
+
                                 if (line.Contains("API_HTTP_PORT="))
                                 {
-                                    int.TryParse(line.Replace("API_HTTP_PORT=", ""), out ClassApiHttp.PersonalRemoteNodeHttpPort);
+                                    int.TryParse(line.Replace("API_HTTP_PORT=", ""),
+                                        out ClassApiHttp.PersonalRemoteNodeHttpPort);
                                 }
+
                                 if (line.Contains("LOG_LEVEL="))
                                 {
                                     int.TryParse(line.Replace("LOG_LEVEL=", ""), out LogLevel);
                                 }
+
                                 if (line.Contains("WRITE_LOG="))
                                 {
                                     string option = line.Replace("WRITE_LOG=", "");
@@ -538,6 +561,7 @@ namespace Xiropht_RemoteNode
                                         EnableWriteLog = true;
                                     }
                                 }
+
                                 if (line.Contains("ENABLE_FILTERING_SYSTEM="))
                                 {
                                     string option = line.Replace("ENABLE_FILTERING_SYSTEM=", "");
@@ -546,10 +570,12 @@ namespace Xiropht_RemoteNode
                                         EnableFilteringSystem = true;
                                     }
                                 }
+
                                 if (line.Contains("CHAIN_FILTERING_SYSTEM="))
                                 {
                                     ClassApiBan.FilterChainName = line.Replace("CHAIN_FILTERING_SYSTEM=", "").ToLower();
                                 }
+
                                 if (line.Contains("NAME_FILTERING_SYSTEM="))
                                 {
                                     ClassApiBan.FilterSystem = line.Replace("NAME_FILTERING_SYSTEM=", "").ToLower();
@@ -557,14 +583,19 @@ namespace Xiropht_RemoteNode
                             }
                         }
                     }
+
                     SaveConfigFile();
                     File.Delete(AppDomain.CurrentDomain.BaseDirectory + ConfigOldFilePath);
                 }
+
                 #endregion
+
                 else
                 {
                     ClassRemoteNodeSetting remoteNodeSettingObject;
-                    using (StreamReader reader = new StreamReader(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
+                    using (StreamReader reader =
+                        new StreamReader(
+                            ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
                     {
 
                         string line;
@@ -580,43 +611,40 @@ namespace Xiropht_RemoteNode
                             }
                         }
 
-                        remoteNodeSettingObject = JsonConvert.DeserializeObject<ClassRemoteNodeSetting>(jsonSettingRemoteNodeObject);
+                        remoteNodeSettingObject =
+                            JsonConvert.DeserializeObject<ClassRemoteNodeSetting>(jsonSettingRemoteNodeObject);
 
 
                     }
+
                     if (remoteNodeSettingObject != null)
                     {
                         RemoteNodeWalletAddress = remoteNodeSettingObject.wallet_address;
                         bool wasWrongWalletAddress = false;
-                        if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(RemoteNodeWalletAddress))
-                        {
-                            Console.WriteLine("Checking wallet address..");
-                            bool checkWalletAddress = ClassTokenNetwork
-                                .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-                            while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize ||
-                                   RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize ||
-                                   !checkWalletAddress)
-                            {
-                                wasWrongWalletAddress = true;
-                                Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
-                                RemoteNodeWalletAddress = Console.ReadLine();
-                                RemoteNodeWalletAddress =
-                                    ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
-                                Console.WriteLine("Checking wallet address..", 4);
-                                checkWalletAddress = ClassTokenNetwork
-                                    .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
-                            }
 
-                            if (checkWalletAddress)
-                            {
-                                Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
-                                if (!ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
-                                    RemoteNodeWalletAddress))
-                                {
-                                    ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.Add(RemoteNodeWalletAddress, string.Empty);
-                                }
-                            }
+                        Console.WriteLine("Checking wallet address..");
+                        bool checkWalletAddress = ClassTokenNetwork
+                            .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
+
+                        while (RemoteNodeWalletAddress.Length < ClassConnectorSetting.MinWalletAddressSize ||
+                               RemoteNodeWalletAddress.Length > ClassConnectorSetting.MaxWalletAddressSize ||
+                               !checkWalletAddress)
+                        {
+                            wasWrongWalletAddress = true;
+                            Console.WriteLine("Invalid wallet address - Please, write your valid wallet address: ");
+                            RemoteNodeWalletAddress = Console.ReadLine();
+                            RemoteNodeWalletAddress =
+                                ClassUtilsNode.RemoveSpecialCharacters(RemoteNodeWalletAddress);
+                            Console.WriteLine("Checking wallet address..", 4);
+                            checkWalletAddress = ClassTokenNetwork
+                                .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
                         }
+
+                        if (checkWalletAddress)
+                        {
+                            Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
+                        }
+
 
                         ClassRemoteNodeSync.WantToBePublicNode = remoteNodeSettingObject.enable_public_mode;
                         EnableApiHttp = remoteNodeSettingObject.enable_api_http;
@@ -641,6 +669,7 @@ namespace Xiropht_RemoteNode
             {
                 return false;
             }
+
             return true;
         }
     }
