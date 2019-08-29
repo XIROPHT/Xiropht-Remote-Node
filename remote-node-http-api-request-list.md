@@ -46,6 +46,7 @@ Open the **config.json** file and edit the following line containing **"enable_a
 | /get_coin_block_per_hash |  return a block information from a block hash selected, for example: http://127.0.0.1:18001/get_coin_block_per_hash=hash_selected |
 | /get_coin_transaction_per_id |  return a transaction information per a transaction id example: http://127.0.0.1:18001/get_coin_transaction_per_id=1 |
 | /get_coin_transaction_per_hash |  return a transaction information per a transaction hash, for example: http://127.0.0.1:18001/get_coin_transaction_per_hash=hash_selected |
+| /get_last_blocktemplate | return the last blocktemplate |
 
 <h2>Responses informations: </h2>
 
@@ -231,7 +232,7 @@ Return a transaction information per a transaction hash example: http://127.0.0.
 
 | Field | type | Description |
 | ----- | ---- | ----------- |
-| transaction_id | long | Return the block id. |
+| transaction_id | long | Return the transaction id. |
 | transaction_id_sender | string | Return the unique of the sender. |
 | transaction_fake_amount | double | Return the fake amount of transaction. |
 | transaction_fake_fee | double | Return the fake fee of transaction. |
@@ -251,4 +252,23 @@ m = blockchain
 f = dev fee
 r = remote node fee 
 ~~~
+
+<h4>17. /get_last_blocktemplate</h4>
+
+| Field | type | Description |
+| ----- | ---- | ----------- |
+| block_id | long | return the block id. |
+| block_hash | string | return the block hash. |
+| block_algorithm | string | return the algorithm. |
+| block_size | int | return the block size. |
+| block_method | string | return the mining method of the block. |
+| block_job | string | return the range of the block. |
+| block_min_range | double | return the min range of the block. |
+| block_max_range | double | return the max range of the block. |
+| block_reward | double | return the block reward of the block. |
+| block_difficulty | double | return the block difficulty. |
+| block_network_hashrate | double | return the network hashrate. |
+| block_timestamp_create | long | return the timestamp create of the block. |
+| block_hash_indication | string | return the block hash indication. |
+| block_lifetime | int | return the block lifetime. |
 
