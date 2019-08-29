@@ -349,6 +349,7 @@ namespace Xiropht_RemoteNode.Api
 
             try
             {
+
                 while (IncomingConnectionStatus)
                 {
                     if (Program.Closed)
@@ -638,6 +639,54 @@ namespace Xiropht_RemoteNode.Api
                                 return false;
                             }
                         }
+                        else if (splitPacket[0] == ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration
+                                     .RemoteAskProxyConfirmation)
+                        {
+                            if (splitPacket[1].Length >= ClassConnectorSetting.MinWalletAddressSize &&
+                                splitPacket[1].Length <= ClassConnectorSetting.MaxWalletAddressSize)
+                            {
+                                if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
+                                    splitPacket[1]))
+                                {
+                                    
+                                }
+                                else
+                                {
+                                    if (await ClassTokenNetwork.CheckWalletAddressExistAsync(splitPacket[1]))
+                                    {
+                                        string packetQuestionResult = await ClassTokenNetwork.GetWalletQuestionConfirmation(splitPacket[1]);
+                                        if (!string.IsNullOrEmpty(packetQuestionResult))
+                                        {
+                                            if (packetQuestionResult == "WRONG")
+                                            {
+                                                ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                                                IncomingConnectionStatus = false;
+                                                return false;
+                                            }
+
+                                            await SendPacketAsync(packetQuestionResult);
+                                        }
+                                        else
+                                        {
+                                            IncomingConnectionStatus = false;
+                                            return false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        IncomingConnectionStatus = false;
+                                        return false;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                                IncomingConnectionStatus = false;
+                                return false;
+                            }
+                        }
+
                         else
                         {
                             if (float.TryParse(splitPacket[1], NumberStyles.Any, Program.GlobalCultureInfo,

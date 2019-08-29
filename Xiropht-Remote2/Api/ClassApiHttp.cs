@@ -13,11 +13,13 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xiropht_Connector_All.RPC.Token;
 using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Api.Object;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.Object;
+using Xiropht_RemoteNode.Token;
 using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode.Api
@@ -40,6 +42,7 @@ namespace Xiropht_RemoteNode.Api
         public const string GetCoinBlockPerHash = "get_coin_block_per_hash";
         public const string GetCoinTransactionPerId = "get_coin_transaction_per_id";
         public const string GetCoinTransactionPerHash = "get_coin_transaction_per_hash";
+        public const string GetLastBlocktemplate = "get_last_blocktemplate";
         public const string PacketFavicon = "favicon.ico";
         public const string PacketNotExist = "not_exist";
         public const string PacketError = "error";
@@ -52,6 +55,7 @@ namespace Xiropht_RemoteNode.Api
         private static Thread ThreadListenApiHttpConnection;
         private static TcpListener ListenerApiHttpConnection;
         private static bool ListenApiHttpConnectionStatus;
+        public static ClassTokenBlocktemplate LastTokenBlocktemplate;
 
         /// <summary>
         /// Enable http/https api of the remote node, listen incoming connection throught web client.
@@ -612,6 +616,25 @@ namespace Xiropht_RemoteNode.Api
                         var jsonNetworkStatsObject = JsonConvert.SerializeObject(networkStatsApiObject);
                         await BuildAndSendHttpPacketAsync(jsonNetworkStatsObject, false, null, true);
 
+                        break;
+                    case ClassApiHttpRequestEnumeration.GetLastBlocktemplate:
+                        string jsonLastBlockTemplateObject = string.Empty;
+                        if (ClassApiHttp.LastTokenBlocktemplate == null)
+                        {
+                            ClassApiHttp.LastTokenBlocktemplate = await ClassTokenNetwork.GetLastBlocktemplate();
+                            jsonLastBlockTemplateObject = JsonConvert.SerializeObject(ClassApiHttp.LastTokenBlocktemplate);
+                        }
+                        else
+                        {
+                            if (ClassApiHttp.LastTokenBlocktemplate.block_timestamp_create +
+                                ClassApiHttp.LastTokenBlocktemplate.block_lifetime <=
+                                DateTimeOffset.Now.ToUnixTimeSeconds())
+                            {
+                                ClassApiHttp.LastTokenBlocktemplate = await ClassTokenNetwork.GetLastBlocktemplate();
+                            }
+                            jsonLastBlockTemplateObject = JsonConvert.SerializeObject(ClassApiHttp.LastTokenBlocktemplate);
+                        }
+                        await BuildAndSendHttpPacketAsync(jsonLastBlockTemplateObject, false, null, true);
                         break;
                     case ClassApiHttpRequestEnumeration.PacketFavicon:
                         ClassLog.Log("HTTP API - packet received from IP: " + _ip + " - favicon request detected and ignored.", 6, 2);

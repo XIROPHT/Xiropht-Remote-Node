@@ -82,7 +82,20 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// <returns></returns>
         public async Task<bool> StartConnectionAsync()
         {
+            try
+            {
+                if (CancellationRemoteNodeObject != null)
+                {
+                    if (!CancellationRemoteNodeObject.IsCancellationRequested)
+                    {
+                        CancellationRemoteNodeObject.Cancel();
+                    }
+                }
+            }
+            catch
+            {
 
+            }
             CancellationRemoteNodeObject = new CancellationTokenSource();
 
             if (RemoteNodeObjectTcpClient == null)
@@ -168,9 +181,12 @@ namespace Xiropht_RemoteNode.RemoteNode
 
             try
             {
-                if (!CancellationRemoteNodeObject.IsCancellationRequested)
+                if (CancellationRemoteNodeObject != null)
                 {
-                    CancellationRemoteNodeObject.Cancel();
+                    if (!CancellationRemoteNodeObject.IsCancellationRequested)
+                    {
+                        CancellationRemoteNodeObject.Cancel();
+                    }
                 }
             }
             catch
@@ -178,7 +194,6 @@ namespace Xiropht_RemoteNode.RemoteNode
 
             }
 
-            CancellationRemoteNodeObject = new CancellationTokenSource();
         }
 
         /// <summary>
@@ -282,7 +297,6 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
             catch (Exception error)
             {
-                ClassLog.Log("RemoteNodeListenNetwork start thread exception: " + error.Message, 0, 2);
                 RemoteNodeObjectConnectionStatus = false;
                 RemoteNodeObjectThreadStatus = false;
             }
@@ -773,7 +787,8 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
             catch
             {
-                await StopConnection(string.Empty);
+                RemoteNodeObjectConnectionStatus = false;
+                RemoteNodeObjectThreadStatus = false;
             }
         }
 
