@@ -112,21 +112,13 @@ namespace Xiropht_RemoteNode.Token
                                         if (splitResultCheckWalletAddress[0] ==
                                             ClassRpcWalletCommand.SendTokenWalletQuestion)
                                         {
-                                            return resultCheckWalletAddress;
+                                            return splitResultCheckWalletAddress[1].Replace(ClassConnectorSetting.PacketSplitSeperator, "");
                                         }
-
-                                        return "WRONG";
                                     }
 
-                                    return "WRONG";
                                 }
-
-                                return "WRONG";
                             }
-
-                            return "WRONG";
                         }
-                        return "WRONG";
                     }
                 }
                 catch

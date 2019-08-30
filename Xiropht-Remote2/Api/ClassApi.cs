@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xiropht_Connector_All.Remote;
+using Xiropht_Connector_All.RPC;
 using Xiropht_Connector_All.Setting;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
@@ -639,8 +640,7 @@ namespace Xiropht_RemoteNode.Api
                                 return false;
                             }
                         }
-                        else if (splitPacket[0] == ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration
-                                     .RemoteAskProxyConfirmation)
+                        else if (splitPacket[0] == ClassRemoteNodeCommand.ClassRemoteNodeRecvFromSeedEnumeration.RemoteAskProxyConfirmation)
                         {
                             if (splitPacket[1].Length >= ClassConnectorSetting.MinWalletAddressSize &&
                                 splitPacket[1].Length <= ClassConnectorSetting.MaxWalletAddressSize)
@@ -648,7 +648,23 @@ namespace Xiropht_RemoteNode.Api
                                 if (ClassRemoteNodeSync.DictionaryCacheValidWalletAddress.ContainsKey(
                                     splitPacket[1]))
                                 {
-                                    
+                                    string packetQuestionResult = await ClassTokenNetwork.GetWalletQuestionConfirmation(splitPacket[1]);
+                                    if (!string.IsNullOrEmpty(packetQuestionResult))
+                                    {
+                                        if (packetQuestionResult == "WRONG")
+                                        {
+                                            ClassApiBan.ListFilterObjects[Ip].TotalInvalidPacket++;
+                                            IncomingConnectionStatus = false;
+                                            return false;
+                                        }
+
+                                        await SendPacketAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteSendProxyConfirmation + ClassConnectorSetting.PacketContentSeperator + packetQuestionResult);
+                                    }
+                                    else
+                                    {
+                                        IncomingConnectionStatus = false;
+                                        return false;
+                                    }
                                 }
                                 else
                                 {
@@ -664,7 +680,7 @@ namespace Xiropht_RemoteNode.Api
                                                 return false;
                                             }
 
-                                            await SendPacketAsync(packetQuestionResult);
+                                            await SendPacketAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteSendProxyConfirmation + ClassConnectorSetting.PacketContentSeperator + packetQuestionResult);
                                         }
                                         else
                                         {
