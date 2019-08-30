@@ -25,7 +25,7 @@ or:
 
 - sudo wget https://github.com/XIROPHT/Xiropht-Remote-Node/releases/download/0.3.0.0R/Xiropht-RemoteNode-0.3.0.0R-Raspberry.zip
 
-- sudo unzip Xiropht-RemoteNode-0.3.0.0R-Linux.zip
+- sudo unzip Xiropht-RemoteNode-0.3.0.0R-Linux-64bit.zip
 
 or:
 
