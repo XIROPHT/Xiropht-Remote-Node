@@ -106,6 +106,8 @@ namespace Xiropht_RemoteNode
         /// </summary>
         public static bool EnableFilteringSystem;
 
+        public static ClassRemoteNodeSetting RemoteNodeSettingObject;
+
 
         public static void Main(string[] args)
         {
@@ -133,24 +135,6 @@ namespace Xiropht_RemoteNode
             };
             Thread.CurrentThread.Name = Path.GetFileName(Environment.GetCommandLineArgs()[0]);
             ClassRemoteNodeSave.InitializePath();
-            if (ClassRemoteNodeSave.LoadBlockchainTransaction())
-            {
-                ClassRemoteNodeSave.LoadBlockchainBlock();
-                ClassRemoteNodeSave.LoadBlockchainWalletCache();
-            }
-            else
-            {
-                Console.WriteLine("Blockchain database corrupted, clean up..");
-                ClassRemoteNodeSync.ListOfTransaction.Clear();
-                ClassRemoteNodeSync.ListOfTransactionHash.Clear();
-                ClassRemoteNodeSync.ListTransactionPerWallet.Clear();
-                ClassRemoteNodeSync.ListOfBlock.Clear();
-                Thread.Sleep(2000);
-            }
-
-            Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "R");
-
-
             if (File.Exists(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
             {
                 if (ReadConfigFile())
@@ -218,6 +202,16 @@ namespace Xiropht_RemoteNode
                     FirstInitialization();
                 }
             }
+            if (ClassRemoteNodeSave.LoadBlockchainTransaction())
+            {
+                ClassRemoteNodeSave.LoadBlockchainBlock();
+                ClassRemoteNodeSave.LoadBlockchainWalletCache();
+            }
+
+            Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "R");
+
+
+
 
             Certificate = ClassUtils.GenerateCertificate();
             Console.WriteLine("Initialize Remote Node Sync Objects..");
@@ -426,7 +420,7 @@ namespace Xiropht_RemoteNode
             Console.WriteLine("Save config file..");
             File.Create(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)).Close();
 
-            var remoteNodeSettingObject = new ClassRemoteNodeSetting
+            RemoteNodeSettingObject = new ClassRemoteNodeSetting
             {
                 wallet_address = RemoteNodeWalletAddress,
                 api_http_port = ClassApiHttp.PersonalRemoteNodeHttpPort,
@@ -438,23 +432,23 @@ namespace Xiropht_RemoteNode
             };
             if (ClassRemoteNodeSync.WantToBePublicNode)
             {
-                remoteNodeSettingObject.enable_public_mode = true;
+                RemoteNodeSettingObject.enable_public_mode = true;
             }
             else
             {
-                remoteNodeSettingObject.enable_public_mode = false;
+                RemoteNodeSettingObject.enable_public_mode = false;
             }
 
             if (EnableApiHttp)
             {
-                remoteNodeSettingObject.enable_api_http = true;
+                RemoteNodeSettingObject.enable_api_http = true;
             }
             else
             {
-                remoteNodeSettingObject.enable_api_http = false;
+                RemoteNodeSettingObject.enable_api_http = false;
             }
 
-            var jsonRemoteNodeSettingObject = JsonConvert.SerializeObject(remoteNodeSettingObject, Formatting.Indented);
+            var jsonRemoteNodeSettingObject = JsonConvert.SerializeObject(RemoteNodeSettingObject, Formatting.Indented);
             using (StreamWriter writer =
                 new StreamWriter(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath))
                     {AutoFlush = true})
@@ -592,7 +586,8 @@ namespace Xiropht_RemoteNode
 
                 else
                 {
-                    ClassRemoteNodeSetting remoteNodeSettingObject;
+                    string jsonSettingRemoteNodeObject = string.Empty;
+
                     using (StreamReader reader =
                         new StreamReader(
                             ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
@@ -600,7 +595,6 @@ namespace Xiropht_RemoteNode
 
                         string line;
 
-                        string jsonSettingRemoteNodeObject = string.Empty;
                         while ((line = reader.ReadLine()) != null)
                         {
                             if (!line.StartsWith("/"))
@@ -611,15 +605,15 @@ namespace Xiropht_RemoteNode
                             }
                         }
 
-                        remoteNodeSettingObject =
+                        RemoteNodeSettingObject =
                             JsonConvert.DeserializeObject<ClassRemoteNodeSetting>(jsonSettingRemoteNodeObject);
 
 
                     }
 
-                    if (remoteNodeSettingObject != null)
+                    if (RemoteNodeSettingObject != null)
                     {
-                        RemoteNodeWalletAddress = remoteNodeSettingObject.wallet_address;
+                        RemoteNodeWalletAddress = RemoteNodeSettingObject.wallet_address;
                         bool wasWrongWalletAddress = false;
 
                         Console.WriteLine("Checking wallet address..");
@@ -640,21 +634,19 @@ namespace Xiropht_RemoteNode
                                 .CheckWalletAddressExistAsync(RemoteNodeWalletAddress).Result;
                         }
 
-                        if (checkWalletAddress)
-                        {
-                            Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
-                        }
+                        Console.WriteLine("Wallet address: " + RemoteNodeWalletAddress + " is valid.", 1);
 
 
-                        ClassRemoteNodeSync.WantToBePublicNode = remoteNodeSettingObject.enable_public_mode;
-                        EnableApiHttp = remoteNodeSettingObject.enable_api_http;
-                        ClassApiHttp.PersonalRemoteNodeHttpPort = remoteNodeSettingObject.api_http_port;
-                        LogLevel = remoteNodeSettingObject.log_level;
-                        EnableWriteLog = remoteNodeSettingObject.write_log;
-                        EnableFilteringSystem = remoteNodeSettingObject.enable_filtering_system;
-                        ClassApiBan.FilterChainName = remoteNodeSettingObject.chain_filtering_system;
-                        ClassApiBan.FilterSystem = remoteNodeSettingObject.name_filtering_system;
-                        if (wasWrongWalletAddress)
+
+                        ClassRemoteNodeSync.WantToBePublicNode = RemoteNodeSettingObject.enable_public_mode;
+                        EnableApiHttp = RemoteNodeSettingObject.enable_api_http;
+                        ClassApiHttp.PersonalRemoteNodeHttpPort = RemoteNodeSettingObject.api_http_port;
+                        LogLevel = RemoteNodeSettingObject.log_level;
+                        EnableWriteLog = RemoteNodeSettingObject.write_log;
+                        EnableFilteringSystem = RemoteNodeSettingObject.enable_filtering_system;
+                        ClassApiBan.FilterChainName = RemoteNodeSettingObject.chain_filtering_system;
+                        ClassApiBan.FilterSystem = RemoteNodeSettingObject.name_filtering_system;
+                        if (wasWrongWalletAddress || NewConfigOptions(jsonSettingRemoteNodeObject))
                         {
                             SaveConfigFile();
                         }
@@ -671,6 +663,23 @@ namespace Xiropht_RemoteNode
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Check if the content file miss new options.
+        /// </summary>
+        /// <param name="configContent"></param>
+        /// <returns></returns>
+        private static bool NewConfigOptions(string configContent)
+        {
+            if (!configContent.Contains("enable_save_sync_raw"))
+            {
+                RemoteNodeSettingObject.enable_save_sync_raw = true;
+                Console.WriteLine("New option implemented and enable on your config.json (a resync of your data can happen automatically): enable_save_sync_raw");
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -11,5 +11,6 @@
         public bool enable_filtering_system;
         public string chain_filtering_system;
         public string name_filtering_system;
+        public bool enable_save_sync_raw = true;
     }
 }

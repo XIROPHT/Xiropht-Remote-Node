@@ -121,8 +121,14 @@ namespace Xiropht_RemoteNode.RemoteNode
         {
             if (File.Exists(GetCurrentPath() + GetBlockchainTransactionPath() + BlockchainTransactonDatabase))
             {
-                Console.WriteLine("Load transaction database file..");
-
+                if (Program.RemoteNodeSettingObject.enable_save_sync_raw)
+                {
+                    Console.WriteLine("Load transaction database file - RAW data syntax enabled..");
+                }
+                else
+                {
+                    Console.WriteLine("Load transaction database file - JSON Data syntax enabled..");
+                }
                 long counter = 0;
                 try
                 {
@@ -137,19 +143,39 @@ namespace Xiropht_RemoteNode.RemoteNode
                         {
                             try
                             {
-                                var transactionObject = JsonConvert.DeserializeObject<ClassTransactionObject>(line);
-                                if (counter == transactionObject.transaction_id)
+                                if (Program.RemoteNodeSettingObject.enable_save_sync_raw)
                                 {
-                                    string transactionRaw = ClassTransactionUtility.BuildTransactionRaw(transactionObject);
-                                    if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionRaw, transactionObject.transaction_id))
+                                    var splitTransactionLine = line.Split(new[] { "%" }, StringSplitOptions.None);
+                                    long transactionId = long.Parse(splitTransactionLine[0]);
+                                    if (counter == transactionId)
                                     {
-                                        ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(transactionObject.transaction_id, transactionRaw);
+                                        if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(splitTransactionLine[1], transactionId))
+                                        {
+                                            ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(transactionId, splitTransactionLine[1]);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        error = true;
+                                        break;
                                     }
                                 }
                                 else
                                 {
-                                    error = true;
-                                    break;
+                                    var transactionObject = JsonConvert.DeserializeObject<ClassTransactionObject>(line);
+                                    if (counter == transactionObject.transaction_id)
+                                    {
+                                        string transactionRaw = ClassTransactionUtility.BuildTransactionRaw(transactionObject);
+                                        if (ClassRemoteNodeSortingTransactionPerWallet.AddNewTransactionSortedPerWallet(transactionRaw, transactionObject.transaction_id))
+                                        {
+                                            ClassRemoteNodeSync.ListOfTransaction.InsertTransaction(transactionObject.transaction_id, transactionRaw);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        error = true;
+                                        break;
+                                    }
                                 }
                             }
                             catch
@@ -368,7 +394,14 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
                                                     {
                                                         var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
-                                                        _blockchainTransactionWriter.WriteLine(JsonConvert.SerializeObject(ClassTransactionUtility.BuildTransactionObjectFromRaw(transactionObject.Item2, transactionObject.Item1), Formatting.None));
+                                                        if (Program.RemoteNodeSettingObject.enable_save_sync_raw)
+                                                        {
+                                                            _blockchainTransactionWriter.WriteLine(transactionObject.Item2+"%"+transactionObject.Item1);
+                                                        }
+                                                        else
+                                                        {
+                                                            _blockchainTransactionWriter.WriteLine(JsonConvert.SerializeObject(ClassTransactionUtility.BuildTransactionObjectFromRaw(transactionObject.Item2, transactionObject.Item1), Formatting.None));
+                                                        }
                                                     }
                                                 }
 
@@ -436,7 +469,14 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
                                             {
                                                 var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
-                                                sw.WriteLine(JsonConvert.SerializeObject(ClassTransactionUtility.BuildTransactionObjectFromRaw(transactionObject.Item2, transactionObject.Item1), Formatting.None));
+                                                if (Program.RemoteNodeSettingObject.enable_save_sync_raw)
+                                                {
+                                                    sw.WriteLine(transactionObject.Item2 + "%" + transactionObject.Item1);
+                                                }
+                                                else
+                                                {
+                                                    sw.WriteLine(JsonConvert.SerializeObject(ClassTransactionUtility.BuildTransactionObjectFromRaw(transactionObject.Item2, transactionObject.Item1), Formatting.None));
+                                                }
                                             }
                                         }
                                     }
