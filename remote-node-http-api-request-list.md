@@ -1,11 +1,11 @@
 <h2>Overview</h2>
 
-For the http/https api on your remote node, you have to enable the system if it's not case this is inside the setting file.
+For the http/https api on your remote node, you have to enable the system if it's not the case this is inside the settings file.
 
 **In version earlier than 0.2.8.1R:**
 
 
-Open the **config.ini** file and edit the line **ENABLE_API_HTTP** by:
+Open the **config.ini** file and edit the line **ENABLE_API_HTTP**:
 
 ~~~text
 ENABLE_API_HTTP=Y
@@ -14,7 +14,7 @@ ENABLE_API_HTTP=Y
 **In version equal or more than 0.2.8.1R:**
 
 
-Open the **config.json** file and edit the following line containing **"enable_api_http"** by:
+Open the **config.json** file and edit the following line containing **"enable_api_http"**:
 
 ~~~text
 "enable_api_http": true,
@@ -24,7 +24,7 @@ Open the **config.json** file and edit the following line containing **"enable_a
 
 <h2>Default port:</h2>
 
-**API HTTP:** 18001 (Can be used by website or other apps who use http protocols).
+**API HTTP:** 18001 (Can be used by website or other apps that use http protocols).
 
 <h2>API Command line:</h2>
 
@@ -52,7 +52,7 @@ Open the **config.json** file and edit the following line containing **"enable_a
 
 __On version earlier than **0.2.8.2R**:__
 
-__Every json responses sent by the API, return every values in **string** type.__
+__Every json responses sent by the API, returns every value in the string type.__
 
 -------------------------------------------------------------------------------------------------------------------
 
@@ -243,7 +243,7 @@ Return a transaction information per a transaction hash example: http://127.0.0.
 
 **Note:**
 
-the result of **transaction_id_sender** can be different of a number, please follow the list of specific tag of transaction:
+the result of **transaction_id_sender** can be different of a number, please follow the list of the specific tag of the transaction:
 
 List of specific tag of transaction:
 
