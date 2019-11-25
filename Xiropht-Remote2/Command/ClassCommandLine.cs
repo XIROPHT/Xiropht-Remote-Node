@@ -7,6 +7,7 @@ using Xiropht_RemoteNode.Api;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Log;
 using Xiropht_RemoteNode.RemoteNode;
+using Xiropht_RemoteNode.Utils;
 
 namespace Xiropht_RemoteNode.Command
 {
@@ -143,12 +144,11 @@ namespace Xiropht_RemoteNode.Command
                             ClassRemoteNodeKey.DataTransactionRead = string.Empty;
                             ClassRemoteNodeSave.TotalBlockSaved = 0;
                             ClassRemoteNodeSave.TotalTransactionSaved = 0;
-                            
-
                             Console.WriteLine("Clear finish, restart sync..");
                             ClassRemoteNodeKey.StartUpdateHashTransactionList();
                             ClassRemoteNodeKey.StartUpdateHashBlockList();
                             ClassRemoteNodeKey.StartUpdateTrustedKey();
+                            ClassUtilsNode.ClearGc();
                         }
                         break;
                     case ClassCommandLineEnumeration.CommandLineFilterList:
@@ -253,8 +253,9 @@ namespace Xiropht_RemoteNode.Command
                         }
                         ClassRemoteNodeSave.TotalWalletCacheSaved = 0;
                         ClassRemoteNodeSave.SaveWalletCache(false);
-                        Console.WriteLine("Sync saved.");
-                        Process.GetCurrentProcess().Kill();
+                        Console.WriteLine("Sync saved. Press Enter to exit.");
+                        Console.ReadLine();
+                        //Process.GetCurrentProcess().Kill();
                         return false;
                 }
             }

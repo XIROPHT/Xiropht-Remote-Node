@@ -19,6 +19,8 @@ namespace Xiropht_RemoteNode.RemoteNode
     {
         private static int ThreadLoopCheckRemoteNodeInterval = 5 * 1000; // Check every 5 seconds.
         private static int ThreadLoopCheckBlockchainNetworkInterval = 60 * 1000; // Check every 60 seconds.
+        private static int _totalBlockchainNetworkError = 0;
+        private const int MaxTotalBlockchainNetworkError = 5;
         public static bool BlockchainNetworkStatus;
         private static CancellationTokenSource _cancellationTokenSourceCheckRemoteNode;
 
@@ -27,7 +29,6 @@ namespace Xiropht_RemoteNode.RemoteNode
         /// </summary>
         public static void EnableCheckRemoteNodeSync()
         {
-            _cancellationTokenSourceCheckRemoteNode = new CancellationTokenSource();
             try
             {
                 Task.Factory.StartNew(async delegate()
@@ -632,7 +633,7 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
             catch
             {
-
+                // Catch the exception once the task is cancelled.
             }
         }
 
@@ -653,26 +654,37 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
             catch
             {
-
+                // Ignored.
             }
         }
 
+        /// <summary>
+        /// Check the blockchain network status.
+        /// </summary>
         public static void AutoCheckBlockchainNetwork()
         {
-            var threadCheckBlockchainNetwork = new Thread(async delegate ()
+            _cancellationTokenSourceCheckRemoteNode = new CancellationTokenSource();
+
+            try
             {
-                while (!Program.Closed)
+                Task.Factory.StartNew(async delegate
                 {
-                    if (Program.Closed)
+                    while (!Program.Closed)
                     {
-                        break;
+                        if (Program.Closed)
+                        {
+                            break;
+                        }
+                        await CheckBlockchainNetwork();
+
+                        await Task.Delay(ThreadLoopCheckBlockchainNetworkInterval);
                     }
-                    await CheckBlockchainNetwork();
-                   
-                    Thread.Sleep(ThreadLoopCheckBlockchainNetworkInterval);
-                }
-            });
-            threadCheckBlockchainNetwork.Start();
+                }, _cancellationTokenSourceCheckRemoteNode.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Catch the exception once the task is cancelled.
+            }
         }
 
 
@@ -699,21 +711,47 @@ namespace Xiropht_RemoteNode.RemoteNode
                     }
                 }
 
-                BlockchainNetworkStatus = testNetwork;
+                if (!testNetwork)
+                {
+                    _totalBlockchainNetworkError++;
+                    if (_totalBlockchainNetworkError >= MaxTotalBlockchainNetworkError)
+                    {
+                        BlockchainNetworkStatus = false;
+                        await Program.RemoteNodeObjectBlock.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectTransaction.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectTotalTransaction.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectCoinCirculating.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectCoinMaxSupply.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectCurrentDifficulty.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectCurrentRate.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectTotalBlockMined.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectTotalFee.StopConnection(string.Empty);
+                        await Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(string.Empty);
+                    }
+                }
+                else
+                {
+                    BlockchainNetworkStatus = true;
+                    _totalBlockchainNetworkError = 0;
+                }
             }
             catch
             {
-                BlockchainNetworkStatus = false;
-                await Program.RemoteNodeObjectBlock.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectTransaction.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectTotalTransaction.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectCoinCirculating.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectCoinMaxSupply.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectCurrentDifficulty.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectCurrentRate.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectTotalBlockMined.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectTotalFee.StopConnection(string.Empty);
-                await Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(string.Empty);
+                _totalBlockchainNetworkError++;
+                if (_totalBlockchainNetworkError >= MaxTotalBlockchainNetworkError)
+                {
+                    BlockchainNetworkStatus = false;
+                    await Program.RemoteNodeObjectBlock.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectTransaction.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectTotalTransaction.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectCoinCirculating.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectCoinMaxSupply.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectCurrentDifficulty.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectCurrentRate.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectTotalBlockMined.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectTotalFee.StopConnection(string.Empty);
+                    await Program.RemoteNodeObjectTotalPendingTransaction.StopConnection(string.Empty);
+                }
             }
         }
     }

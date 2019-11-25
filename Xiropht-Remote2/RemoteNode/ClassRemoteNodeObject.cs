@@ -110,14 +110,14 @@ namespace Xiropht_RemoteNode.RemoteNode
                 ClassRemoteNodeSync.MyOwnIP = string.Empty;
             }
             if (await RemoteNodeObjectTcpClient
-                .StartConnectToSeedAsync(string.Empty, ClassConnectorSetting.SeedNodePort))
+                .StartConnectToSeedAsync(string.Empty))
             {
                 RemoteNodeObjectConnectionStatus = true;
                 RemoteNodeListenNetworkAsync();
                 if (await RemoteNodeObjectTcpClient
-                    .SendPacketToSeedNodeAsync(Program.Certificate, string.Empty, false, false))
+                    .SendPacketToSeedNodeAsync(Program.Certificate, string.Empty))
                     if (await RemoteNodeObjectTcpClient
-                        .SendPacketToSeedNodeAsync(ClassConnectorSettingEnumeration.RemoteLoginType + "|" + Program.RemoteNodeWalletAddress, Program.Certificate,
+                        .SendPacketToSeedNodeAsync(ClassConnectorSettingEnumeration.RemoteLoginType + ClassConnectorSetting.PacketContentSeperator + Program.RemoteNodeWalletAddress, Program.Certificate,
                             false, true))
                     {
                         RemoteNodeSendNetworkAsync();
@@ -163,7 +163,7 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
             catch
             {
-
+                // Ignored.
             }
 
             if (RemoteNodeObjectType == SyncEnumerationObject.ObjectToBePublic)
@@ -191,7 +191,7 @@ namespace Xiropht_RemoteNode.RemoteNode
             }
             catch
             {
-
+                // Ignored.
             }
 
         }
@@ -357,7 +357,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                 if (!await RemoteNodeObjectTcpClient
                                                                     .SendPacketToSeedNodeAsync(
                                                                         ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration
-                                                                            .RemoteAskBlockPerId + "|" + blockIdAsked.ToString("F0"),
+                                                                            .RemoteAskBlockPerId + ClassConnectorSetting.PacketContentSeperator + blockIdAsked.ToString("F0"),
                                                                         Program.Certificate,
                                                                         false, true))
                                                                 {
@@ -462,15 +462,15 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                             .SendPacketToSeedNodeAsync(
                                                                                 ClassRemoteNodeCommand
                                                                                     .ClassRemoteNodeSendToSeedEnumeration
-                                                                                    .RemoteAskTransactionPerRange + "|" +
-                                                                                transactionIdAsked.ToString("F0") + "|" + MaxTransactionRange, Program.Certificate, false, true))
+                                                                                    .RemoteAskTransactionPerRange + ClassConnectorSetting.PacketContentSeperator +
+                                                                                transactionIdAsked.ToString("F0") + ClassConnectorSetting.PacketContentSeperator + MaxTransactionRange, Program.Certificate, false, true))
                                                                         {
                                                                             RemoteNodeObjectConnectionStatus = false;
                                                                         }
                                                                     }
                                                                     else
                                                                     {
-                                                                        if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskTransactionPerId + "|" + transactionIdAsked.ToString("F0"), Program.Certificate, false, true))
+                                                                        if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteAskTransactionPerId + ClassConnectorSetting.PacketContentSeperator + transactionIdAsked.ToString("F0"), Program.Certificate, false, true))
                                                                         {
                                                                             RemoteNodeObjectConnectionStatus = false;
                                                                         }
@@ -526,7 +526,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                                                         .SendPacketToSeedNodeAsync(
                                                                                             ClassRemoteNodeCommand
                                                                                                 .ClassRemoteNodeSendToSeedEnumeration
-                                                                                                .RemoteAskTransactionPerId + "|" +
+                                                                                                .RemoteAskTransactionPerId + ClassConnectorSetting.PacketContentSeperator +
                                                                                             i.ToString("F0"), Program.Certificate, false, true))
                                                                                     {
                                                                                         RemoteNodeObjectConnectionStatus = false;
@@ -800,7 +800,7 @@ namespace Xiropht_RemoteNode.RemoteNode
         {
             try
             {
-                var packetSplit = packet.Split(new[] { "|" }, StringSplitOptions.None);
+                var packetSplit = packet.Split(new[] { ClassConnectorSetting.PacketContentSeperator }, StringSplitOptions.None);
 
                 switch (packetSplit[0])
                 {
@@ -1183,7 +1183,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                 if (!await RemoteNodeObjectTcpClient
                                     .SendPacketToSeedNodeAsync(
                                         ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration
-                                            .RemoteCheckBlockPerId + "|" + ClassRemoteNodeSync.ListOfBlock[blockId],
+                                            .RemoteCheckBlockPerId + ClassConnectorSetting.PacketContentSeperator + ClassRemoteNodeSync.ListOfBlock[blockId],
                                         Program.Certificate, false, true))
                                 {
                                     RemoteNodeObjectConnectionStatus = false;
@@ -1206,7 +1206,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                             if (ClassRemoteNodeSync.ListOfTransaction.Count > transactionId)
                                 if (!await RemoteNodeObjectTcpClient.SendPacketToSeedNodeAsync(
                                     ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration
-                                        .RemoteCheckTransactionPerId + "|" +
+                                        .RemoteCheckTransactionPerId + ClassConnectorSetting.PacketContentSeperator +
                                     ClassRemoteNodeSync.ListOfTransaction.GetTransaction(transactionId).Item1, Program.Certificate, false,
                                     true))
                                 {
@@ -1228,7 +1228,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         if (!await RemoteNodeObjectTcpClient
                             .SendPacketToSeedNodeAsync(
-                                ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteCheckBlockHash + "|" +
+                                ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteCheckBlockHash + ClassConnectorSetting.PacketContentSeperator +
                                 ClassRemoteNodeSync.HashBlockList, Program.Certificate, false, true)
                             )
                         {
@@ -1251,7 +1251,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         if (!await RemoteNodeObjectTcpClient
                             .SendPacketToSeedNodeAsync(
                                 ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteCheckTransactionHash +
-                                "|" + ClassRemoteNodeSync.HashTransactionList, Program.Certificate, false, true)
+                                ClassConnectorSetting.PacketContentSeperator + ClassRemoteNodeSync.HashTransactionList, Program.Certificate, false, true)
                             )
                         {
                             RemoteNodeObjectConnectionStatus = false;
@@ -1273,7 +1273,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         if (!await RemoteNodeObjectTcpClient
                             .SendPacketToSeedNodeAsync(
                                 ClassRemoteNodeCommand.ClassRemoteNodeSendToSeedEnumeration.RemoteCheckTrustedKey +
-                                "|" + ClassRemoteNodeSync.TrustedKey, Program.Certificate, false, true)
+                                ClassConnectorSetting.PacketContentSeperator + ClassRemoteNodeSync.TrustedKey, Program.Certificate, false, true)
                             )
                         {
                             RemoteNodeObjectConnectionStatus = false;
@@ -1294,7 +1294,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         RemoteNodeObjectLastPacketReceived = DateTimeOffset.Now.ToUnixTimeSeconds();
                         if (!string.IsNullOrEmpty(ClassRemoteNodeSync.MyOwnIP))
                         {
-                            var splitRemoteNodeList = packet.Split(new[] { "|" }, StringSplitOptions.None);
+                            var splitRemoteNodeList = packet.Split(new[] { ClassConnectorSetting.PacketContentSeperator }, StringSplitOptions.None);
                             var imPublic = false;
                             var listTmpNode = new List<string>();
                             foreach (var node in splitRemoteNodeList)

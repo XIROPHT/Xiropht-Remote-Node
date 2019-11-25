@@ -98,6 +98,14 @@ namespace Xiropht_RemoteNode.Utils
             }
         }
 
-
+        /// <summary>
+        /// Clear memory stored on the Garbage Collector.
+        /// </summary>
+        public static void ClearGc()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
     }
 }

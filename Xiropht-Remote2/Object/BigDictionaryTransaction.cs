@@ -3,118 +3,179 @@ using System.Collections.Generic;
 
 namespace Xiropht_RemoteNode.Object
 {
+    public class ClassTransactionObject
+    {
+        public long transaction_id;
+        public string transaction_wallet_sender_id;
+        public decimal transaction_fake_amount;
+        public decimal transaction_fake_fee;
+        public string transaction_wallet_receiver_id;
+        public long transaction_send_date;
+        public string transaction_hash;
+        public long transaction_recv_date;
+        public string transaction_block_height;
+        public string transaction_encrypted_information;
+    }
+
+    public class ClassTransactionUtility
+    {
+        /// <summary>
+        /// Build original data of a transaction from a transaction object.
+        /// </summary>
+        /// <param name="transactionObject"></param>
+        /// <returns></returns>
+        public static string BuildTransactionRaw(ClassTransactionObject transactionObject)
+        {
+            return transactionObject.transaction_wallet_sender_id + "-" +
+                   transactionObject.transaction_fake_amount + "-" +
+                   transactionObject.transaction_fake_fee + "-" +
+                   transactionObject.transaction_wallet_receiver_id + "-" +
+                   transactionObject.transaction_send_date + "-" +
+                   transactionObject.transaction_hash + "-" +
+                   transactionObject.transaction_recv_date + "-" +
+                   transactionObject.transaction_block_height + "#" +
+                   transactionObject.transaction_encrypted_information;
+        }
+
+        /// <summary>
+        /// Build transaction object from original transaction data.
+        /// </summary>
+        /// <param name="transactionId"></param>
+        /// <param name="transaction"></param>
+        /// <returns></returns>
+        public static ClassTransactionObject BuildTransactionObjectFromRaw(long transactionId, string transaction)
+        {
+            var splitTransaction = transaction.Split(new[] { "-" }, StringSplitOptions.None);
+            var splitTransactionInformation = splitTransaction[7].Split(new[] { "#" }, StringSplitOptions.None);
+
+            return new ClassTransactionObject
+            {
+                transaction_id = transactionId,
+                transaction_wallet_sender_id = splitTransaction[0],
+                transaction_fake_amount = 0,
+                transaction_fake_fee = 0,
+                transaction_wallet_receiver_id = splitTransaction[3],
+                transaction_hash = splitTransaction[5],
+                transaction_send_date = long.Parse(splitTransaction[4]),
+                transaction_recv_date = long.Parse(splitTransaction[6]),
+                transaction_block_height = splitTransactionInformation[0],
+                transaction_encrypted_information = splitTransactionInformation[1] + "#" +splitTransactionInformation[2]
+            };
+        }
+    }
+
     public class BigDictionaryTransaction // Limited to 1 009 999 999 transactions around 39,2GB of ram
     {
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction1; // 0 - 9 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction2; // 9 999 999 - 19 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction3; // 19 999 999 - 29 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction4; // 29 999 999 - 39 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction5; // 39 999 999 - 49 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction6; // 99 999 999 - 59 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction7; // 59 999 999 - 69 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction8; // 79 999 999 - 89 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction9; // 89 999 999 - 99 999 999 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction10; // 99 999 999 - 109 999 999 ~3.962 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction1; // 0 - 9 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction2; // 9 999 999 - 19 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction3; // 19 999 999 - 29 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction4; // 29 999 999 - 39 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction5; // 39 999 999 - 49 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction6; // 99 999 999 - 59 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction7; // 59 999 999 - 69 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction8; // 79 999 999 - 89 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction9; // 89 999 999 - 99 999 999 
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction10; // 99 999 999 - 109 999 999 ~3.962 GB
 
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction11; // 109 999 999 - 119 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction12; // 119 999 999 - 129 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction13; // 129 999 999 - 139 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction14; // 139 999 999 - 149 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction15; // 149 999 999 - 159 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction16; // 159 999 999 - 169 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction17; // 169 999 999 - 179 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction18; // 179 999 999 - 189 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction19; // 189 999 999 - 199 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction20; // 199 999 999 - 209 999 999 ~7.924 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction11; // 109 999 999 - 119 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction12; // 119 999 999 - 129 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction13; // 129 999 999 - 139 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction14; // 139 999 999 - 149 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction15; // 149 999 999 - 159 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction16; // 159 999 999 - 169 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction17; // 169 999 999 - 179 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction18; // 179 999 999 - 189 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction19; // 189 999 999 - 199 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction20; // 199 999 999 - 209 999 999 ~7.924 GB
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction21; // 209 999 999 - 219 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction22; // 219 999 999 - 229 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction23; // 229 999 999 - 239 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction24; // 239 999 999 - 249 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction25; // 249 999 999 - 259 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction26; // 259 999 999 - 269 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction27; // 269 999 999 - 279 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction28; // 279 999 999 - 289 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction29; // 289 999 999 - 299 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction30; // 299 999 999 - 309 999 999 ~11,886 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction21; // 209 999 999 - 219 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction22; // 219 999 999 - 229 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction23; // 229 999 999 - 239 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction24; // 239 999 999 - 249 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction25; // 249 999 999 - 259 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction26; // 259 999 999 - 269 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction27; // 269 999 999 - 279 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction28; // 279 999 999 - 289 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction29; // 289 999 999 - 299 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction30; // 299 999 999 - 309 999 999 ~11,886 GB
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction31; // 309 999 999 - 319 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction32; // 319 999 999 - 329 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction33; // 329 999 999 - 339 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction34; // 339 999 999 - 349 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction35; // 349 999 999 - 359 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction36; // 359 999 999 - 369 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction37; // 369 999 999 - 379 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction38; // 379 999 999 - 389 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction39; // 389 999 999 - 399 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction40; // 399 999 999 - 409 999 999 ~15.848 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction31; // 309 999 999 - 319 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction32; // 319 999 999 - 329 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction33; // 329 999 999 - 339 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction34; // 339 999 999 - 349 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction35; // 349 999 999 - 359 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction36; // 359 999 999 - 369 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction37; // 369 999 999 - 379 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction38; // 379 999 999 - 389 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction39; // 389 999 999 - 399 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction40; // 399 999 999 - 409 999 999 ~15.848 GB
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction41; // 409 999 999 - 419 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction42; // 419 999 999 - 429 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction43; // 429 999 999 - 439 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction44; // 439 999 999 - 449 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction45; // 449 999 999 - 459 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction46; // 459 999 999 - 469 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction47; // 469 999 999 - 479 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction48; // 479 999 999 - 489 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction49; // 489 999 999 - 499 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction50; // 499 999 999 - 509 999 999 ~19.810 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction41; // 409 999 999 - 419 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction42; // 419 999 999 - 429 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction43; // 429 999 999 - 439 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction44; // 439 999 999 - 449 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction45; // 449 999 999 - 459 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction46; // 459 999 999 - 469 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction47; // 469 999 999 - 479 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction48; // 479 999 999 - 489 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction49; // 489 999 999 - 499 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction50; // 499 999 999 - 509 999 999 ~19.810 GB
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction51; // 509 999 999 - 519 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction52; // 519 999 999 - 529 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction53; // 529 999 999 - 539 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction54; // 539 999 999 - 549 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction55; // 549 999 999 - 559 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction56; // 559 999 999 - 569 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction57; // 569 999 999 - 579 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction58; // 579 999 999 - 589 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction59; // 589 999 999 - 599 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction60; // 599 999 999 - 609 999 999 ~23.772 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction51; // 509 999 999 - 519 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction52; // 519 999 999 - 529 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction53; // 529 999 999 - 539 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction54; // 539 999 999 - 549 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction55; // 549 999 999 - 559 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction56; // 559 999 999 - 569 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction57; // 569 999 999 - 579 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction58; // 579 999 999 - 589 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction59; // 589 999 999 - 599 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction60; // 599 999 999 - 609 999 999 ~23.772 GB
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction61; // 609 999 999 - 619 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction62; // 619 999 999 - 629 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction63; // 629 999 999 - 639 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction64; // 639 999 999 - 649 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction65; // 649 999 999 - 659 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction66; // 659 999 999 - 669 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction67; // 669 999 999 - 679 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction68; // 679 999 999 - 689 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction69; // 689 999 999 - 699 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction70; // 699 999 999 - 709 999 999 ~27.734 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction61; // 609 999 999 - 619 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction62; // 619 999 999 - 629 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction63; // 629 999 999 - 639 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction64; // 639 999 999 - 649 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction65; // 649 999 999 - 659 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction66; // 659 999 999 - 669 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction67; // 669 999 999 - 679 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction68; // 679 999 999 - 689 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction69; // 689 999 999 - 699 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction70; // 699 999 999 - 709 999 999 ~27.734 GB
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction71; // 709 999 999 - 719 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction72; // 719 999 999 - 729 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction73; // 729 999 999 - 739 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction74; // 739 999 999 - 749 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction75; // 749 999 999 - 759 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction76; // 759 999 999 - 769 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction77; // 769 999 999 - 779 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction78; // 779 999 999 - 789 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction79; // 789 999 999 - 799 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction80; // 799 999 999 - 809 999 999 ~31.696 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction71; // 709 999 999 - 719 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction72; // 719 999 999 - 729 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction73; // 729 999 999 - 739 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction74; // 739 999 999 - 749 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction75; // 749 999 999 - 759 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction76; // 759 999 999 - 769 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction77; // 769 999 999 - 779 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction78; // 779 999 999 - 789 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction79; // 789 999 999 - 799 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction80; // 799 999 999 - 809 999 999 ~31.696 GB
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction81; // 809 999 999 - 819 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction82; // 819 999 999 - 829 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction83; // 829 999 999 - 839 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction84; // 839 999 999 - 849 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction85; // 849 999 999 - 859 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction86; // 859 999 999 - 869 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction87; // 869 999 999 - 879 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction88; // 879 999 999 - 889 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction89; // 889 999 999 - 899 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction90; // 899 999 999 - 909 999 999 ~35.658 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction81; // 809 999 999 - 819 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction82; // 819 999 999 - 829 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction83; // 829 999 999 - 839 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction84; // 839 999 999 - 849 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction85; // 849 999 999 - 859 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction86; // 859 999 999 - 869 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction87; // 869 999 999 - 879 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction88; // 879 999 999 - 889 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction89; // 889 999 999 - 899 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction90; // 899 999 999 - 909 999 999 ~35.658 GB
 
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction91; // 909 999 999 - 919 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction92; // 919 999 999 - 929 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction93; // 929 999 999 - 939 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction94; // 939 999 999 - 949 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction95; // 949 999 999 - 959 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction96; // 959 999 999 - 969 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction97; // 969 999 999 - 979 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction98; // 979 999 999 - 989 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction99; // 989 999 999 - 999 999 999
-        private Dictionary<long, Tuple<string, long>> _bigDictionaryTransaction100; // 999 999 999 - 1 009 999 999 ~39.620 GB
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction91; // 909 999 999 - 919 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction92; // 919 999 999 - 929 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction93; // 929 999 999 - 939 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction94; // 939 999 999 - 949 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction95; // 949 999 999 - 959 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction96; // 959 999 999 - 969 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction97; // 969 999 999 - 979 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction98; // 979 999 999 - 989 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction99; // 989 999 999 - 999 999 999
+        private Dictionary<long,Tuple<string, long>> _bigDictionaryTransaction100; // 999 999 999 - 1 009 999 999 ~39.620 GB
 
 
         public const int MaxTransactionPerDictionary = 10000000; // 10 millions of transactions per dictionary
@@ -122,124 +183,118 @@ namespace Xiropht_RemoteNode.Object
 
         public BigDictionaryTransaction()
         {
-            _bigDictionaryTransaction1 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction2 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction3 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction4 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction5 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction6 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction7 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction8 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction9 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction10 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction1 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction2 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction3 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction4 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction5 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction6 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction7 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction8 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction9 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction10 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction11 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction12 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction13 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction14 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction15 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction16 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction17 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction18 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction19 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction20 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction11 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction12 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction13 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction14 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction15 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction16 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction17 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction18 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction19 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction20 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction21 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction22 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction23 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction24 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction25 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction26 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction27 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction28 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction29 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction30 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction21 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction22 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction23 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction24 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction25 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction26 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction27 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction28 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction29 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction30 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction31 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction32 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction33 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction34 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction35 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction36 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction37 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction38 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction39 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction40 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction31 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction32 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction33 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction34 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction35 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction36 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction37 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction38 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction39 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction40 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction41 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction42 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction43 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction44 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction45 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction46 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction47 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction48 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction49 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction50 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction41 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction42 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction43 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction44 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction45 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction46 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction47 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction48 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction49 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction50 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction51 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction52 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction53 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction54 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction55 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction56 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction57 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction58 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction59 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction60 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction51 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction52 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction53 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction54 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction55 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction56 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction57 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction58 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction59 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction60 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction61 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction62 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction63 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction64 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction65 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction66 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction67 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction68 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction69 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction70 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction61 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction62 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction63 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction64 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction65 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction66 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction67 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction68 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction69 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction70 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction71 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction72 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction73 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction74 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction75 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction76 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction77 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction78 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction79 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction80 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction71 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction72 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction73 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction74 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction75 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction76 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction77 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction78 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction79 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction80 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction81 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction82 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction83 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction84 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction85 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction86 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction87 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction88 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction89 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction90 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction81 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction82 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction83 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction84 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction85 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction86 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction87 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction88 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction89 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction90 = new Dictionary<long,Tuple<string, long>>();
 
-            _bigDictionaryTransaction91 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction92 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction93 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction94 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction95 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction96 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction97 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction98 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction99 = new Dictionary<long, Tuple<string, long>>();
-            _bigDictionaryTransaction100 = new Dictionary<long, Tuple<string, long>>();
+            _bigDictionaryTransaction91 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction92 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction93 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction94 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction95 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction96 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction97 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction98 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction99 = new Dictionary<long,Tuple<string, long>>();
+            _bigDictionaryTransaction100 = new Dictionary<long,Tuple<string, long>>();
         }
 
-        public long Count
-        {
-            get
-            {
-                return CountTransaction();
-            }
-        }
+        public long Count => CountTransaction();
 
 
         /// <summary>
@@ -576,7 +631,7 @@ namespace Xiropht_RemoteNode.Object
         {
             if (id < 0)
             {
-                return new Tuple<string, long>("WRONG", -1);
+                return new Tuple<string, long>(null, -1);
             }
 
             long idDictionary = (long)Math.Ceiling((double)(id / MaxTransactionPerDictionary));
@@ -787,7 +842,7 @@ namespace Xiropht_RemoteNode.Object
                 case 99:
                     return _bigDictionaryTransaction100[id];
             }
-            return new Tuple<string, long>("WRONG", -1);
+            return new Tuple<string, long>(null, -1);
         }
 
 
