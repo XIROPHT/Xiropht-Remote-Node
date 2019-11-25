@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Xiropht_Connector_All.Utils;
 using Xiropht_RemoteNode.Data;
 using Xiropht_RemoteNode.Object;
 using Xiropht_RemoteNode.Utils;
@@ -137,7 +138,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                         {
                             try
                             {
-                                var transactionObject = JsonConvert.DeserializeObject<ClassTransactionObject>(line);
+                                var transactionObject = JsonConvert.DeserializeObject<ClassTransactionObject>(ClassUtils.DecompressData(line));
                                 if (counter == transactionObject.transaction_id)
                                 {
                                     string transactionRaw = ClassTransactionUtility.BuildTransactionRaw(transactionObject);
@@ -368,7 +369,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                                     if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
                                                     {
                                                         var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
-                                                        _blockchainTransactionWriter.WriteLine(JsonConvert.SerializeObject(ClassTransactionUtility.BuildTransactionObjectFromRaw(transactionObject.Item2, transactionObject.Item1), Formatting.None));
+                                                        _blockchainTransactionWriter.WriteLine(ClassUtils.CompressData(JsonConvert.SerializeObject(ClassTransactionUtility.BuildTransactionObjectFromRaw(transactionObject.Item2, transactionObject.Item1), Formatting.None)));
                                                     }
                                                 }
 
@@ -436,7 +437,7 @@ namespace Xiropht_RemoteNode.RemoteNode
                                             if (ClassRemoteNodeSync.ListOfTransaction.ContainsKey(i))
                                             {
                                                 var transactionObject = ClassRemoteNodeSync.ListOfTransaction.GetTransaction(i);
-                                                sw.WriteLine(JsonConvert.SerializeObject(ClassTransactionUtility.BuildTransactionObjectFromRaw(transactionObject.Item2, transactionObject.Item1), Formatting.None));
+                                                sw.WriteLine(ClassUtils.CompressData(JsonConvert.SerializeObject(ClassTransactionUtility.BuildTransactionObjectFromRaw(transactionObject.Item2, transactionObject.Item1), Formatting.None)));
                                             }
                                         }
                                     }
