@@ -135,6 +135,10 @@ namespace Xiropht_RemoteNode
             };
             Thread.CurrentThread.Name = Path.GetFileName(Environment.GetCommandLineArgs()[0]);
             ClassRemoteNodeSave.InitializePath();
+
+            ClassRemoteNodeSave.LoadBlockchainWalletCache();
+
+
             if (File.Exists(ClassUtilsNode.ConvertPath(AppDomain.CurrentDomain.BaseDirectory + ConfigFilePath)))
             {
                 if (ReadConfigFile())
@@ -205,7 +209,6 @@ namespace Xiropht_RemoteNode
             if (ClassRemoteNodeSave.LoadBlockchainTransaction())
             {
                 ClassRemoteNodeSave.LoadBlockchainBlock();
-                ClassRemoteNodeSave.LoadBlockchainWalletCache();
             }
 
             Console.WriteLine("Remote node Xiropht - " + Assembly.GetExecutingAssembly().GetName().Version + "R");
